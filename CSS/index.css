@@ -1,0 +1,86 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+}
+
+.left-section {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff;
+    padding: 20px;
+}
+
+.right-section {
+    width: 50%;
+}
+
+.right-section img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.logo {
+    width: 80px;
+    margin-bottom: 20px;
+}
+
+.login-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+.login-buttons button {
+    width: 250px;
+    padding: 15px;
+    margin: 10px 0;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    color: white;
+    border-radius: 5px;
+    text-align: center;
+}
+
+
+.student-btn { 
+    background-color: green; 
+    align-items: center;
+}
+
+.admin-btn, .security-btn { 
+    background-color: red; 
+    align-items: center;
+}
+
+.login-buttons button:hover {
+    opacity: 0.8;
+}
+
+.terms {
+    margin-top: 20px;
+    font-size: 12px;
+}
+
+.terms a {
+    color: blue;
+    text-decoration: none;
+}
