@@ -1,0 +1,344 @@
+CREATE DATABASE  IF NOT EXISTS `pup_trackersys` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `pup_trackersys`;
+-- MySQL dump 10.13  Distrib 8.0.36, for Win64 (x86_64)
+--
+-- Host: 127.0.0.1    Database: pup_trackersys
+-- ------------------------------------------------------
+-- Server version	8.0.36
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `admin_info_tbl`
+--
+
+DROP TABLE IF EXISTS `admin_info_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `admin_info_tbl` (
+  `Admin_id` int NOT NULL AUTO_INCREMENT,
+  `Firstname` varchar(255) DEFAULT NULL,
+  `Middlename` varchar(255) DEFAULT NULL,
+  `Lastname` varchar(255) DEFAULT NULL,
+  `Email` varchar(255) DEFAULT NULL,
+  `Password` varchar(255) NOT NULL,
+  PRIMARY KEY (`Admin_id`),
+  UNIQUE KEY `Email` (`Email`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `admins`
+--
+
+DROP TABLE IF EXISTS `admins`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `admins` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `firstname` varchar(255) NOT NULL,
+  `middlename` varchar(255) DEFAULT NULL,
+  `lastname` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `course_tbl`
+--
+
+DROP TABLE IF EXISTS `course_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `course_tbl` (
+  `course_id` int NOT NULL AUTO_INCREMENT,
+  `course_name` varchar(255) NOT NULL,
+  PRIMARY KEY (`course_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `offenses_tbl`
+--
+
+DROP TABLE IF EXISTS `offenses_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `offenses_tbl` (
+  `offense_id` int NOT NULL AUTO_INCREMENT,
+  `violation_id` int DEFAULT NULL,
+  `count_offense` int DEFAULT NULL,
+  PRIMARY KEY (`offense_id`),
+  KEY `violation_id` (`violation_id`),
+  CONSTRAINT `offenses_tbl_ibfk_1` FOREIGN KEY (`violation_id`) REFERENCES `violation_type_tbl` (`violation_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `roles_tbl`
+--
+
+DROP TABLE IF EXISTS `roles_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `roles_tbl` (
+  `roles_id` int NOT NULL AUTO_INCREMENT,
+  `roles_name` varchar(255) NOT NULL,
+  PRIMARY KEY (`roles_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sanction_category_tbl`
+--
+
+DROP TABLE IF EXISTS `sanction_category_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sanction_category_tbl` (
+  `sanc_categ_id` int NOT NULL AUTO_INCREMENT,
+  `sanction_category` varchar(255) NOT NULL,
+  PRIMARY KEY (`sanc_categ_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sanction_type_tbl`
+--
+
+DROP TABLE IF EXISTS `sanction_type_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sanction_type_tbl` (
+  `sanction_id` int NOT NULL AUTO_INCREMENT,
+  `sanction_name` varchar(255) DEFAULT NULL,
+  `sanction_category` int DEFAULT NULL,
+  `isApproved` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`sanction_id`),
+  KEY `sanction_category` (`sanction_category`),
+  CONSTRAINT `sanction_type_tbl_ibfk_1` FOREIGN KEY (`sanction_category`) REFERENCES `sanction_category_tbl` (`sanc_categ_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sanction_violation_tbl`
+--
+
+DROP TABLE IF EXISTS `sanction_violation_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sanction_violation_tbl` (
+  `sanc_violation_id` int NOT NULL AUTO_INCREMENT,
+  `violation_id` int DEFAULT NULL,
+  `sanction_id` int DEFAULT NULL,
+  `offense_id` int DEFAULT NULL,
+  PRIMARY KEY (`sanc_violation_id`),
+  KEY `violation_id` (`violation_id`),
+  KEY `sanction_id` (`sanction_id`),
+  KEY `offense_id` (`offense_id`),
+  CONSTRAINT `sanction_violation_tbl_ibfk_1` FOREIGN KEY (`violation_id`) REFERENCES `violation_type_tbl` (`violation_id`),
+  CONSTRAINT `sanction_violation_tbl_ibfk_2` FOREIGN KEY (`sanction_id`) REFERENCES `sanction_type_tbl` (`sanction_id`),
+  CONSTRAINT `sanction_violation_tbl_ibfk_3` FOREIGN KEY (`offense_id`) REFERENCES `offenses_tbl` (`offense_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `security_info_tbl`
+--
+
+DROP TABLE IF EXISTS `security_info_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `security_info_tbl` (
+  `security_id` int NOT NULL AUTO_INCREMENT,
+  `Firstname` varchar(255) DEFAULT NULL,
+  `Middlename` varchar(255) DEFAULT NULL,
+  `Lastname` varchar(255) DEFAULT NULL,
+  `Email` varchar(255) DEFAULT NULL,
+  `Password` varchar(255) NOT NULL,
+  PRIMARY KEY (`security_id`),
+  UNIQUE KEY `Email` (`Email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `status_tbl`
+--
+
+DROP TABLE IF EXISTS `status_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `status_tbl` (
+  `status_id` int NOT NULL AUTO_INCREMENT,
+  `status_name` varchar(255) NOT NULL,
+  PRIMARY KEY (`status_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `student_info_tbl`
+--
+
+DROP TABLE IF EXISTS `student_info_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `student_info_tbl` (
+  `student_id` int NOT NULL AUTO_INCREMENT,
+  `course_id` int DEFAULT NULL,
+  `year_id` int DEFAULT NULL,
+  `Firstname` varchar(255) DEFAULT NULL,
+  `Middlename` varchar(255) DEFAULT NULL,
+  `Lastname` varchar(255) DEFAULT NULL,
+  `Stud_number` varchar(50) DEFAULT NULL,
+  `Email` varchar(255) DEFAULT NULL,
+  `Birthday` date DEFAULT NULL,
+  `Gender` enum('Male','Female','Other') DEFAULT NULL,
+  `Password` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`student_id`),
+  UNIQUE KEY `Stud_number` (`Stud_number`),
+  UNIQUE KEY `Email` (`Email`),
+  KEY `course_id` (`course_id`),
+  KEY `year_id` (`year_id`),
+  CONSTRAINT `student_info_tbl_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `course_tbl` (`course_id`),
+  CONSTRAINT `student_info_tbl_ibfk_2` FOREIGN KEY (`year_id`) REFERENCES `year_tbl` (`year_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `student_sanction_tbl`
+--
+
+DROP TABLE IF EXISTS `student_sanction_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `student_sanction_tbl` (
+  `stud_sanction_id` int NOT NULL AUTO_INCREMENT,
+  `stud_id` int DEFAULT NULL,
+  `violation_id` int DEFAULT NULL,
+  `sanction_id` int DEFAULT NULL,
+  `status_id` int DEFAULT NULL,
+  `offense_id` int DEFAULT NULL,
+  `compiled_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `approved_date` timestamp NULL DEFAULT NULL,
+  `isApproved` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`stud_sanction_id`),
+  KEY `stud_id` (`stud_id`),
+  KEY `violation_id` (`violation_id`),
+  KEY `sanction_id` (`sanction_id`),
+  KEY `status_id` (`status_id`),
+  KEY `offense_id` (`offense_id`),
+  CONSTRAINT `student_sanction_tbl_ibfk_1` FOREIGN KEY (`stud_id`) REFERENCES `student_info_tbl` (`student_id`),
+  CONSTRAINT `student_sanction_tbl_ibfk_2` FOREIGN KEY (`violation_id`) REFERENCES `violation_type_tbl` (`violation_id`),
+  CONSTRAINT `student_sanction_tbl_ibfk_3` FOREIGN KEY (`sanction_id`) REFERENCES `sanction_type_tbl` (`sanction_id`),
+  CONSTRAINT `student_sanction_tbl_ibfk_4` FOREIGN KEY (`status_id`) REFERENCES `status_tbl` (`status_id`),
+  CONSTRAINT `student_sanction_tbl_ibfk_5` FOREIGN KEY (`offense_id`) REFERENCES `offenses_tbl` (`offense_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `student_violation_tbl`
+--
+
+DROP TABLE IF EXISTS `student_violation_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `student_violation_tbl` (
+  `stud_violation_id` int NOT NULL AUTO_INCREMENT,
+  `stud_id` int DEFAULT NULL,
+  `sanction_id` int DEFAULT NULL,
+  `violation_id` int DEFAULT NULL,
+  `status_id` int DEFAULT NULL,
+  `date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `edited_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`stud_violation_id`),
+  KEY `stud_id` (`stud_id`),
+  KEY `sanction_id` (`sanction_id`),
+  KEY `violation_id` (`violation_id`),
+  KEY `status_id` (`status_id`),
+  CONSTRAINT `student_violation_tbl_ibfk_1` FOREIGN KEY (`stud_id`) REFERENCES `student_info_tbl` (`student_id`),
+  CONSTRAINT `student_violation_tbl_ibfk_2` FOREIGN KEY (`sanction_id`) REFERENCES `sanction_type_tbl` (`sanction_id`),
+  CONSTRAINT `student_violation_tbl_ibfk_3` FOREIGN KEY (`violation_id`) REFERENCES `violation_type_tbl` (`violation_id`),
+  CONSTRAINT `student_violation_tbl_ibfk_4` FOREIGN KEY (`status_id`) REFERENCES `status_tbl` (`status_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `violation_category_tbl`
+--
+
+DROP TABLE IF EXISTS `violation_category_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `violation_category_tbl` (
+  `violation_category_id` int NOT NULL AUTO_INCREMENT,
+  `violation_category` varchar(255) NOT NULL,
+  PRIMARY KEY (`violation_category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `violation_type_tbl`
+--
+
+DROP TABLE IF EXISTS `violation_type_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `violation_type_tbl` (
+  `violation_id` int NOT NULL AUTO_INCREMENT,
+  `violation_name` varchar(255) NOT NULL,
+  `violation_category` int DEFAULT NULL,
+  PRIMARY KEY (`violation_id`),
+  KEY `violation_category` (`violation_category`),
+  CONSTRAINT `violation_type_tbl_ibfk_1` FOREIGN KEY (`violation_category`) REFERENCES `violation_category_tbl` (`violation_category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `year_tbl`
+--
+
+DROP TABLE IF EXISTS `year_tbl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `year_tbl` (
+  `year_id` int NOT NULL AUTO_INCREMENT,
+  `year` varchar(255) NOT NULL,
+  PRIMARY KEY (`year_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping events for database 'pup_trackersys'
+--
+
+--
+-- Dumping routines for database 'pup_trackersys'
+--
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-03-05 23:21:29
