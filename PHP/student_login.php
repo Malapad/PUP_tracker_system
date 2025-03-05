@@ -65,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Login</title>
-    <link rel="stylesheet" href="/CSS/student_login_style.css">
+    <link rel="stylesheet" href="../CSS/student_login_style.css">
 </head>
 <body>
 
@@ -76,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
         
         <div class="login-section">
-            <img src="/assets/PUP_logo.png" alt="PUP Logo" class="logo">
+            <img src="../assets/PUP_logo.png" alt="PUP Logo" class="logo">
             <h2>Student Account</h2>
             
             <form action="" method="POST">
