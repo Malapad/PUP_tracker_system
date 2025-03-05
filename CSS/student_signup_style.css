@@ -13,6 +13,23 @@ body {
     height: 100vh;
 }
 
+.head-container {
+    display: flex;
+    align-items: center; 
+    justify-content: flex-start; 
+    gap: 10px; 
+}
+
+.head-container img {
+    width: 50px;
+    margin-bottom: 20px;
+}
+
+.head-container h2 {
+    font-size: 24px;
+    font-weight: bold;
+}
+
 .signup-container {
     display: flex;
     justify-content: center;
