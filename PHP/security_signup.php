@@ -52,28 +52,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Security Personnel Sign Up</title>
-    <link rel="stylesheet" href="/CSS/security_signup_style.css">
+    <link rel="stylesheet" href="../CSS/security_signup_style.css">
 </head>
 <body>
     <div class="container">
         <div class="signup-box">
-            <img src="/assets/PUP_logo.png" alt="Security Logo" class="logo"> 
+           <div class="head-container"> 
+            <img src="../assets/PUP_logo.png" alt="Security Logo" class="logo"> 
             <h2>Create an Account</h2>
+           </div>  
             <form action="security_signup.php" method="POST">
-                <div class="input-group">
+                <div class="row">
                     <input type="text" name="firstname" placeholder="First Name" required>
                     <input type="email" name="email" placeholder="Email" required>
                 </div>
-                <div class="input-group">
+                <div class="row">
                     <input type="text" name="middlename" placeholder="Middle Name">
                     <input type="password" name="password" placeholder="New Password" required>
                 </div>
-                <div class="input-group">
+                <div class="row">
                     <input type="text" name="lastname" placeholder="Last Name" required>
                     <input type="password" name="confirm_password" placeholder="Confirm Password" required>
                 </div>
+                <div class="row">
+                    <input type="text" name="security number" placeholder="Security Number" required>
+                </div>
                 <p><a href="security_login.php">Already have an account?</a></p>
-                <button type="submit" class="btn">Sign Up</button>
+
+                <button type="submit" class="sign-up-btn">Sign Up</button>
             </form>
         </div>
     </div>
