@@ -11,6 +11,10 @@ body {
     width: 100vw;
 }
 
+h2 {
+    margin-bottom: 20px;
+}
+
 .container {
     display: flex;
     width: 100%;
@@ -38,7 +42,7 @@ body {
 
 .logo {
     width: 80px;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
 .login-buttons {
@@ -48,7 +52,7 @@ body {
     width: 100%;
 }
 .login-buttons a {
-    width: 250px;
+    width: 290px;
     padding: 15px;
     margin: 10px 0;
     font-size: 18px;
@@ -62,12 +66,12 @@ body {
 
 
 .student-btn { 
-    background-color: green; 
+    background-color: #15B507; 
     align-items: center;
 }
 
 .admin-btn, .security-btn { 
-    background-color: red; 
+    background-color: #D90801; 
     align-items: center;
 }
 
@@ -76,7 +80,7 @@ body {
 }
 
 .terms {
-    margin-top: 20px;
+    margin-top: 40px;
     font-size: 12px;
 }
 
