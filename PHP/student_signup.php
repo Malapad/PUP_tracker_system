@@ -17,6 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
+    // Hash the password
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Check if student number or email already exists
@@ -29,6 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows > 0) {
         echo "<script>alert('Student Number or Email already exists!'); window.history.back();</script>";
     } else {
+        // Insert new user into database
         $sql = "INSERT INTO student_info_tbl (Firstname, Middlename, Lastname, Birthday, Stud_number, Email, Password) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)";
 
@@ -46,3 +48,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->close();
 }
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Sign-Up</title>
+    <link rel="stylesheet" href="/CSS/student_signup_style.css">
+</head>
+<body>
+
+    <div class="signup-container">
+        <div class="signup-box">
+            <div class="head-container"> 
+                <img src="../assets/PUP_logo.png" alt="Security Logo" class="logo"> 
+                <h2>Create an Account</h2>
+            </div>  
+            
+            <form action="student_signup.php" method="POST">
+                <div class="row">
+                    <input type="text" name="first_name" placeholder="First Name" required>
+                    <input type="date" name="birthdate" required>
+                </div>
+                <div class="row">
+                    <input type="text" name="middle_name" placeholder="Middle Name">
+                    <input type="text" name="student_number" placeholder="Student Number" required>
+                </div>
+                <div class="row">
+                    <input type="text" name="last_name" placeholder="Last Name" required>
+                    <input type="password" name="password" placeholder="New Password" required>
+                </div>
+                <div class="row">
+                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+                </div>
+
+                <p>Already have an account? <a href="/PHP/student_login.php">Sign In</a></p>
+                
+                <button type="submit" class="signup-btn">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
