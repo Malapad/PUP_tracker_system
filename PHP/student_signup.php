@@ -30,7 +30,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows > 0) {
         echo "<script>alert('Student Number or Email already exists!'); window.history.back();</script>";
     } else {
-        // Insert new user into database
         $sql = "INSERT INTO student_info_tbl (Firstname, Middlename, Lastname, Birthday, Stud_number, Email, Password) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)";
 

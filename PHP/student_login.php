@@ -16,7 +16,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("Database connection failed: " . mysqli_connect_error());
     }
 
-    // Query to check student number in the database
     $sql = "SELECT student_id, Firstname, Password FROM student_info_tbl WHERE Stud_number = ?";
 
     // Debug: Check if statement prepared successfully
@@ -26,7 +25,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $stmt->bind_param("s", $studentNumber);
 
-    // Debug: Check execution
     if (!$stmt->execute()) {
         die("Execution failed: " . $stmt->error);
     }

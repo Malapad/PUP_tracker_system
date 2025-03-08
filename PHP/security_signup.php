@@ -9,6 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
+    $security_number = trim($_POST['security_number']);
 
     // Check if passwords match
     if ($password !== $confirm_password) {
@@ -31,11 +32,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    $sql = "INSERT INTO security_info_tbl (Firstname, Middlename, Lastname, Email) VALUES (?, ?, ?, ?)";
+    $sql = "INSERT INTO security_info_tbl (Firstname, Middlename, Lastname, Email, Password, Security_Number) VALUES (?, ?, ?, ?, ?, ?)";
     if ($stmt = $conn->prepare($sql)) {
-        $stmt->bind_param("ssss", $firstname, $middlename, $lastname, $email);
+        $stmt->bind_param("ssssss", $firstname, $middlename, $lastname, $email, $hashed_password, $security_number);
         if ($stmt->execute()) {
-            echo "<script>alert('Registration Successful!'); window.location.href='../HTML/security_login.html';</script>";
+            echo "<script>alert('Registration Successful!'); window.location.href='../PHP/security_login.php';</script>";
         } else {
             echo "<script>alert('Something went wrong. Try again!'); window.history.back();</script>";
         }
@@ -75,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="password" name="confirm_password" placeholder="Confirm Password" required>
                 </div>
                 <div class="row">
-                    <input type="text" name="security number" placeholder="Security Number" required>
+                    <input type="text" name="security_number" placeholder="Security Number" required>
                 </div>
                 <p><a href="security_login.php">Already have an account?</a></p>
 

@@ -3,11 +3,11 @@ session_start();
 include '../PHP/dbcon.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $security_number = $_POST['security_number'];
-    $password = $_POST['password'];
+    $security_number = $_POST['Security_Number'];
+    $password = $_POST['Password'];
 
     // Check if security personnel exists
-    $query = "SELECT * FROM security WHERE security_number=?";
+    $query = "SELECT * FROM security_info_tbl WHERE Security_Number=?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("s", $security_number);
     $stmt->execute();
@@ -16,9 +16,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows == 1) {
         $security = $result->fetch_assoc();
 
-        if (password_verify($password, $security['password'])) {
-            $_SESSION['security_id'] = $security['id'];
-            $_SESSION['security_name'] = $security['firstname'];
+        if (password_verify($password, $security['Password'])) {
+            $_SESSION['security_id'] = $security['security_id'];
+            $_SESSION['security_name'] = $security['Firstname'];
+
             echo "<script>alert('Login successful!'); window.location.href='security_dashboard.php';</script>";
         } else {
             echo "<script>alert('Incorrect password!'); window.history.back();</script>";
@@ -51,8 +52,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <img src="/assets/PUP_logo.png" alt="PUP Logo">
             <h3>Security Personnel Login</h3>
             <form method="POST" action="security_login.php">
-                <input type="text" name="security_number" placeholder="Security Number" required>
-                <input type="password" name="password" placeholder="Password" required>
+                <input type="text" name="Security_Number" placeholder="Security Number" required> <!-- Match DB column -->
+                <input type="password" name="Password" placeholder="Password" required> <!-- Match DB column -->
                 <p class="signup-link">Don't have an account? <a href="/PHP/security_signup.php">Sign up here</a></p>
                 <button type="submit">Sign In</button>
             </form>
