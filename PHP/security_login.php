@@ -3,11 +3,10 @@ session_start();
 include '../PHP/dbcon.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $security_number = $_POST['Security_Number'];
+    $security_number = trim($_POST['Security_Number']);
     $password = $_POST['Password'];
 
-    // Check if security personnel exists
-    $query = "SELECT * FROM security_info_tbl WHERE Security_Number=?";
+    $query = "SELECT security_id, Firstname, Password FROM security_info_tbl WHERE Security_Number=?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("s", $security_number);
     $stmt->execute();
@@ -20,18 +19,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['security_id'] = $security['security_id'];
             $_SESSION['security_name'] = $security['Firstname'];
 
-            echo "<script>alert('Login successful!'); window.location.href='security_dashboard.php';</script>";
+            echo "<script>window.location.href='/HTML/security_homepage.html';</script>";
+            exit;
         } else {
-            echo "<script>alert('Incorrect password!'); window.history.back();</script>";
+            echo "<script>alert('Incorrect security number or password!'); window.history.back();</script>";
         }
     } else {
-        echo "<script>alert('Security personnel not found!'); window.history.back();</script>";
+        echo "<script>alert('Incorrect security number or password!'); window.history.back();</script>";
     }
 
     $stmt->close();
     $conn->close();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

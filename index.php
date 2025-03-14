@@ -13,9 +13,9 @@
             <img src="./assets/PUP_logo.png" alt="Logo" class="logo">
             <h2>Choose your log in account.</h2>
             <div class="login-buttons">
-                <a href="/PHP/student_login.php" target="_blank" class="student-btn">Student</a>
-                <a href="/HTML/admin_login.html" target="_blank" class="admin-btn">Admin</a>
-                <a href="/HTML/security_login.html" target="_blank" class="security-btn">Security Personnel</a>
+                <a href="/PHP/student_login.php" class="student-btn">Student</a>
+                <a href="/PHP/admin_login.php" class="admin-btn">Admin</a>
+                <a href="/PHP/security_login.php" class="security-btn">Security Personnel</a>
             </div>
             <div class="terms">
                 <a href="#">Privacy Terms and Condition</a>

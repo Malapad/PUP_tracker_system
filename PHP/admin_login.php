@@ -3,37 +3,32 @@ session_start();
 include 'dbcon.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
-    // Get email and password input
     $email = trim(mysqli_real_escape_string($conn, $_POST['email']));
     $password = $_POST['password'];
 
-    // Debug: Check email before query
-    echo "<script>console.log('Email entered: $email');</script>";
-
-    // Check if email exists in the database
     $query = "SELECT Admin_id, Email, Password FROM admin_info_tbl WHERE Email='$email'";
     $result = mysqli_query($conn, $query);
 
     if (!$result) {
-        die("<script>alert('Database Error: " . mysqli_error($conn) . "');</script>");
+        echo "<script>alert('Database Error: " . mysqli_error($conn) . "');</script>";
+        exit;
     }
 
     if (mysqli_num_rows($result) == 1) {
         $admin = mysqli_fetch_assoc($result);
 
-        // Debug: Check hashed password
-        echo "<script>console.log('Hashed password from DB: " . addslashes($admin['Password']) . "');</script>";
-
         // Verify the password
         if (password_verify($password, $admin['Password'])) {
             $_SESSION['admin_id'] = $admin['Admin_id'];
             $_SESSION['admin_email'] = $admin['Email'];
-            echo "<script>alert('Login successful!'); window.location.href='admin_dashboard.php';</script>";
+            
+            echo "<script>window.location.href='/HTML/admin_homepage.html';</script>";
+            exit;
         } else {
-            echo "<script>alert('Incorrect password!');</script>";
+            echo "<script>alert('Incorrect email or password!');</script>";
         }
     } else {
-        echo "<script>alert('No admin found with this email!');</script>";
+        echo "<script>alert('Incorrect email or password!');</script>";
     }
 }
 ?>
