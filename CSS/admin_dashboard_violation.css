@@ -18,6 +18,7 @@ header {
 
 .logo img {
     width: 50px;
+    margin-left: 70px;
 }
 
 nav {
@@ -31,11 +32,22 @@ nav a {
     color: black;
 }
 
+/* icon images */
 .admin-icons {
     display: flex;
     gap: 15px;
-    font-size: 18px;
+    font-size: 15px;
+    margin-right: 55px;
 }
+
+.admin-icons img {
+    width: 35px;
+}
+
+.notification {
+    width: 34px;
+}
+
 
 /* Search Bar */
 .search-bar {
@@ -49,6 +61,17 @@ nav a {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+}
+
+/* Student Sanction List */
+.container {
+    width: 90%;
+    margin: auto;
+}
+
+h1 {
+    font-size: larger;
+    margin-left: 70px;
 }
 
 /* Student Sanction List */
