@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Violations</title>
+    <title>Student Sanction List</title>
     <link rel="stylesheet" href="../CSS/admin_violation_style.css">
 </head>
 <body>
-
-    <!-- Navbar -->
-    <header>
+     <!-- Navbar -->
+     <header>
         <div class="logo">
-            <img src="/assets/PUP_logo.png" alt="PUP Logo">
+            <img src="../assets/PUPlogo.png" alt="PUP Logo">
         </div>
         <nav>
             <a href="/HTML/admin_homepage.html">Home</a>
@@ -19,8 +18,10 @@
             <a href="/HTML/admin_sanction.html">Student Sanction</a>
         </nav>
         <div class="admin-icons">
-            <span class="notification">🔔</span>
-            <span class="admin">👤 Admin</span>
+            <a href="notification.html" class="notification">
+                <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000"/></a>
+            <a href="admin_account.html" class="admin">
+               <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000"/></a>
         </div>
     </header>
 
@@ -31,7 +32,7 @@
 
     <!-- Student Violations Table -->
     <div class="container">
-        <h2>Student List Violators</h2>
+        <h1>Student List Violators</h1>
         <table>
             <thead>
                 <tr>
