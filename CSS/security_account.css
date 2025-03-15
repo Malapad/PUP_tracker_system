@@ -63,68 +63,60 @@ h1 {
     color: #3f3f3f;
 }
 
-/* Search Bar */
-.search-bar {
-    display: flex;
-    justify-content: center;
-    margin: 20px 0;
+.container {
+    width: 90%;
+    margin: auto;
 }
 
-input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+h1 {
+    font-size: larger;
+    color: #3f3f3f;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
+/* */
+
+/* Container Styling */
+.container {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 500px;
+    margin-top: 60px;
 }
 
-thead {
-    background-color: #b00000;
-    color: white;
-}
 
-th, td {
-    padding: 12px;
+
+/* Information Box */
+.info-box {
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+    padding: 15px;
 }
 
-td {
-    background-color: #d3d3d3;
+p, strong {
+    font-style: normal;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    margin: 10px;
+    color: #3f3f3f;
 }
 
-.buttons {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
-
+/* Button */
 button {
-    padding: 10px 15px;
+    background-color: #AF1414;
+    color: white;
     border: none;
+    padding: 12px 20px;
     border-radius: 5px;
-    font-size: 16px;
     cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+    border: #343434;
+
 }
 
-.add-btn {
-    background-color: green;
-    color: white;
+button:hover {
+    background-color: #ff2f2f;
 }
-
-.edit-btn {
-    background-color: yellow;
-    color: black;
-}
-
-.delete-btn {
-    background-color: red;
-    color: white;
-}
-

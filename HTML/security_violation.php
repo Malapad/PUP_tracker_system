@@ -1,4 +1,4 @@
-/*<?php
+<?php
 session_start();
 require '../dbcon.php';
 
@@ -20,7 +20,8 @@ $sql = "SELECT sv.stud_violation_id, s.Stud_number,
         ORDER BY sv.date DESC";
 
 $result = $conn->query($sql);
-?>*/
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +31,23 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="../CSS/security_style.css">
 </head>
 <body>
-    <h2>Student List Violators</h2>
+         <!-- Navbar -->
+         <header>
+        <div class="logo">
+            <img src="../assets/PUPlogo.png" alt="PUP Logo">
+        </div>
+        <nav>
+            <a href="../HTML/security_homepage.html">Home</a>
+            <a href="../HTML/security_violation.html">Violations</a>
+        </nav>
+        <div class="admin-icons">
+            <a href="notification.html" class="notification">
+                <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000"/></a>
+            <a href="security.account.html" class="admin">
+               <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000"/></a>
+        </div>
+    </header>
+    <h1>Student List Violators</h1>
     
     <table>
         <thead>
