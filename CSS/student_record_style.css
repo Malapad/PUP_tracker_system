@@ -1,3 +1,4 @@
+/* Reset Default Styles */
 * {
     margin: 0;
     padding: 0;
@@ -5,90 +6,186 @@
     font-family: Arial, sans-serif;
 }
 
-body {
-    background-color: #f5f5f5;
-}
-
+/* Navbar */
 header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     background: white;
-    padding: 15px 30px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 10px 20px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .logo img {
     width: 50px;
+    margin-left: 70px;
+}
+
+nav {
+    display: flex;
+    gap: 20px;
 }
 
 nav a {
-    margin: 0 15px;
     text-decoration: none;
-    color: black;
     font-weight: bold;
+    color: black;
 }
 
-.user-info {
+nav a:hover {
+    color: #AF1414;
+}
+
+/* icon images */
+.admin-icons {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    gap: 15px;
+    font-size: 15px;
+    margin-right: 55px;
 }
 
-.record-container {
+.admin-icons img {
+    width: 35px;
+}
+
+.notification {
+    width: 34px;
+}
+
+
+/* Search Bar */
+.search-bar {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.search-bar input {
+    width: 60%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Student Sanction List */
+.container {
+    width: 90%;
+    margin: auto;
+}
+
+h1 {
+    font-size: larger;
+    margin-left: 10%;
+    padding-bottom: 10px;
+}
+
+.container {
     width: 80%;
-    margin: 40px auto;
-    background: white;
+    margin: auto;
     padding: 20px;
+    background: white;
     border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.record-container h2 {
-    font-size: 22px;
-}
-
-.record-container p {
-    margin-bottom: 15px;
-}
-
-.violation-record {
-    margin-top: 20px;
-}
-
-h3 {
-    text-align: center;
-    color: #b30000;
+h2 {
+    color: #AF1414;
     font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.section {
+    margin-bottom: 20px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-bottom: 20px;
 }
 
 th, td {
+    border: 1px solid #ddd;
     padding: 10px;
     text-align: center;
 }
 
 th {
-    background: #b30000;
+    background-color: #AF1414;
     color: white;
+}
+
+.reminder {
+    font-size: 12px;
+    color: #898686;
+    text-align: justify;
+    margin-bottom: 20px;
+}
+
+.offense-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 5px;
+}
+
+.offense-count {
+    font-size: 16px;
     font-weight: bold;
 }
 
-td {
-    background: #d9d9d9;
+button {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
-.pending {
-    color: black;
-    font-weight: bold;
+#requestButton {
+    background-color: gray;
+    color: white;
+    cursor: not-allowed;
 }
 
-.completed {
-    color: green;
-    font-weight: bold;
+#requestButton.active {
+    background-color: #15B507;
+    cursor: pointer;
+}
+
+#requestButton:hover {
+    background-color: rgb(112, 244, 112);
+   
+}
+
+#closeOverlay:hover {
+    background-color: #f55555;
+}
+
+/* Overlay */
+#overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.overlay-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+#closeOverlay {
+    margin-top: 10px;
+    background: #AF1414;
+    color: white;
 }
