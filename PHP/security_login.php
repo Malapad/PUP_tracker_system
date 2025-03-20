@@ -2,14 +2,13 @@
 session_start();
 include '../PHP/dbcon.php';
 
-$errors = []; // Array to store error messages
-$Security_Number = $Password = ""; // Keep original variable names
+$errors = []; 
+$Security_Number = $Password = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $Security_Number = trim($_POST['Security_Number']);
     $Password = $_POST['Password'];
 
-    // Check if fields are empty
     if (empty($Security_Number)) {
         $errors['Security_Number'] = "Security number is required!";
     }
@@ -58,13 +57,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
 
     <div class="container">
-        <!-- Left Side Panel -->
         <div class="left-panel">
             <h2>Welcome PUPTians!</h2>
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
         </div>
 
-        <!-- Right Side Panel (Login Form) -->
         <div class="right-panel">
             <img src="../assets/PUP_logo.png" alt="PUP Logo" class="logo">
             <h3>Security Personnel Account</h3>

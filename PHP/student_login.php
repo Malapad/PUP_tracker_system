@@ -2,14 +2,13 @@
     require_once "../PHP/dbcon.php";
     session_start();
 
-    $errors = []; // Array to store error messages
-    $studentNumber = $password = ""; // Initialize variables
+    $errors = []; 
+    $studentNumber = $password = ""; 
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $studentNumber = trim($_POST['student_number']);
         $password = $_POST['password'];
 
-        // Check if fields are empty
         if (empty($studentNumber)) {
             $errors['student_number'] = "Student number is required!";
         }
@@ -62,13 +61,11 @@
     <body>
 
         <div class="container">
-            <!-- Left Side Panel -->
             <div class="left-panel">
                 <h2>Welcome PUPTians!</h2>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
             </div>
 
-            <!-- Right Side Panel (Login Form) -->
             <div class="right-panel">
                 <img src="../assets/PUP_logo.png" alt="PUP Logo" class="logo">
                 <h3>Student Account</h3>

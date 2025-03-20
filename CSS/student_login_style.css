@@ -125,7 +125,6 @@ form {
     background: #6f1414;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .container {
         flex-direction: column;

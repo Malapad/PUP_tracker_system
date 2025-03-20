@@ -2,8 +2,8 @@
 session_start();
 include 'dbcon.php';
 
-$errors = []; // Array to store error messages
-$email = $password = ""; // Initialize variables
+$errors = []; 
+$email = $password = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     $email = trim(mysqli_real_escape_string($conn, $_POST['email']));
