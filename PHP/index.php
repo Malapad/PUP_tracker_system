@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PUPTracker</title>
-    <link rel="stylesheet" href="CSS/index.css">
+    <link rel="stylesheet" href="/CSS/index.css">
 </head>
 <body>
     <div class="container">
         <div class="left-section">
-            <img src="./assets/PUP_logo.png" alt="Logo" class="logo">
+            <img src="/assets/PUP_logo.png" alt="Logo" class="logo">
             <h2>Choose your log in account.</h2>
             <div class="login-buttons">
                 <a href="/PHP/student_login.php" class="student-btn">Student</a>
@@ -22,7 +22,7 @@
             </div>
         </div>
         <div class="right-section">
-            <img src="./assets/PUPT picture.jpg" alt="Campus Image">
+            <img src="/assets/PUPT picture.jpg" alt="Campus Image">
         </div>
     </div>
 </body>
