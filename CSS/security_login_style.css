@@ -1,4 +1,4 @@
-/* General styles */
+/* Reset Default Styles */
 * {
     margin: 0;
     padding: 0;
@@ -6,26 +6,28 @@
     font-family: Arial, sans-serif;
 }
 
+/* Background Styling with Blur Effect */
 body {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #maroon;
+    background: url('../assets/sample.jpg') no-repeat center center/cover; 
+    backdrop-filter: blur(8px); /* Apply Blur Effect */
 }
 
-/* Container styling */
+/* Container Styling */
 .container {
     display: flex;
     width: 800px;
     max-width: 90%;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.9); /* Slight Transparency */
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Left panel (Welcome message) */
+/* Left Panel (Welcome Box) */
 .left-panel {
     width: 40%;
     background: #8a1c1c;
@@ -46,7 +48,7 @@ body {
     font-size: 14px;
 }
 
-/* Right panel (Login form) */
+/* Right Panel (Login Form) */
 .right-panel {
     width: 60%;
     padding: 40px;
@@ -76,6 +78,7 @@ form {
 .input-group {
     margin-bottom: 15px;
     text-align: left;
+    width: 100%;
 }
 
 .input-group input {
@@ -86,7 +89,7 @@ form {
     font-size: 16px;
 }
 
-/* Error messages */
+/* Error Messages */
 .error {
     color: red;
     font-size: 14px;
@@ -94,7 +97,7 @@ form {
     margin-top: 5px;
 }
 
-/* Signup text */
+/* Signup Text */
 .signup-text {
     font-size: 14px;
     margin-bottom: 15px;
