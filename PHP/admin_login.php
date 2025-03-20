@@ -2,33 +2,43 @@
 session_start();
 include 'dbcon.php';
 
+$errors = []; // Array to store error messages
+$email = $password = ""; // Initialize variables
+
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     $email = trim(mysqli_real_escape_string($conn, $_POST['email']));
     $password = $_POST['password'];
 
-    $query = "SELECT Admin_id, Email, Password FROM admin_info_tbl WHERE Email='$email'";
-    $result = mysqli_query($conn, $query);
-
-    if (!$result) {
-        echo "<script>alert('Database Error: " . mysqli_error($conn) . "');</script>";
-        exit;
+    if (empty($email)) {
+        $errors['email'] = "Email is required!";
+    }
+    if (empty($password)) {
+        $errors['password'] = "Password is required!";
     }
 
-    if (mysqli_num_rows($result) == 1) {
-        $admin = mysqli_fetch_assoc($result);
+    if (empty($errors)) {
+        $query = "SELECT Admin_id, Email, Password FROM admin_info_tbl WHERE Email='$email'";
+        $result = mysqli_query($conn, $query);
 
-        // Verify the password
-        if (password_verify($password, $admin['Password'])) {
-            $_SESSION['admin_id'] = $admin['Admin_id'];
-            $_SESSION['admin_email'] = $admin['Email'];
-            
-            echo "<script>window.location.href='/HTML/admin_homepage.html';</script>";
-            exit;
-        } else {
-            echo "<script>alert('Incorrect email or password!');</script>";
+        if (!$result) {
+            die("Database Error: " . mysqli_error($conn));
         }
-    } else {
-        echo "<script>alert('Incorrect email or password!');</script>";
+
+        if (mysqli_num_rows($result) == 1) {
+            $admin = mysqli_fetch_assoc($result);
+
+            if (password_verify($password, $admin['Password'])) {
+                $_SESSION['admin_id'] = $admin['Admin_id'];
+                $_SESSION['admin_email'] = $admin['Email'];
+
+                header("Location: /HTML/admin_homepage.html");
+                exit;
+            } else {
+                $errors['password'] = "Incorrect password! Please try again.";
+            }
+        } else {
+            $errors['email'] = "Email address not found! Please sign up.";
+        }
     }
 }
 ?>
@@ -43,18 +53,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
 </head>
 <body>
     <div class="container">
-        <div class="welcome-section">
-            <h1>Welcome PUPTians!</h1>
+        <div class="left-panel">
+            <h2>Welcome PUPTians!</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
         </div>
-        <div class="login-section">
+        <div class="right-panel">
             <img src="/assets/PUP_logo.png" alt="PUP Logo" class="logo">
-            <h2>Admin Account</h2>
-            
+            <h3>Admin Account</h3>
+
             <form action="" method="POST">
-                <input type="email" name="email" placeholder="Email" required>
-                <input type="password" name="password" placeholder="Password" required>
-                <p>Don’t have an account? <a href="admin_signup.php">Sign up here</a></p>
-                <button type="submit" name="login">Sign In</button>
+                <div class="input-group">
+                    <input type="email" name="email" placeholder="Email" 
+                        value="<?= htmlspecialchars($email) ?>" required>
+                    <span class="error"><?= $errors['email'] ?? '' ?></span>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" name="password" placeholder="Password" required>
+                    <span class="error"><?= $errors['password'] ?? '' ?></span>
+                </div>
+
+                <p class="signup-text">Don’t have an account? <a href="admin_signup.php">Sign up here</a></p>
+                <button type="submit" name="login" class="login-btn">Sign In</button>
             </form>
         </div>
     </div>
