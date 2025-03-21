@@ -52,11 +52,6 @@ nav a:hover {
     width: 34px;
 }
 
-/* Student Sanction List */
-.container {
-    width: 90%;
-    margin: auto;
-}
 
 /* Search Bar */
 .search-bar {
@@ -72,30 +67,6 @@ nav a:hover {
     border-radius: 5px;
 }
 
-/* Content Sections */
-.content {
-    display: flex;
-    justify-content: space-between;
-    padding: 20px;
-    margin-left: 70px;
-    margin-right: 55px;
-}
-
-/* Student Handbook & Program List */
-.box {
-    width: 30%;
-}
-
-.box h3 {
-    margin-bottom: 10px;
-}
-
-.placeholder {
-    width: 100%;
-    height: 200px;
-    background: lightgray;
-    border-radius: 5px;
-}
 
 /* Menu Button */
 .button-display {
@@ -103,18 +74,19 @@ nav a:hover {
     text-align: center;
     text-decoration: none;
     display: inline-block;
+    font-size: 16px;
     margin: 4px 2px;
     cursor: pointer;
   }
 
 .btn-menu, .btn-year {
-    background-color: #D90801;
+    background-color: #AF1414;
     color: white;
     padding: 10px;
     font-size: 13px;
     border: none;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 8px;
 }
   
 .menu-group, .year-group {
