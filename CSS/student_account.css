@@ -94,7 +94,7 @@ p, strong {
 }
 
 /* Button */
-button {
+#signOutBtn {
     background-color: #AF1414;
     color: white;
     border: none;
@@ -107,6 +107,6 @@ button {
 
 }
 
-button:hover {
+#signOutBtn:hover {
     background-color: #ff2f2f;
 }
