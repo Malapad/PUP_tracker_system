@@ -11,27 +11,32 @@ include 'dbcon.php';
     <link rel="stylesheet" href="/CSS/admin_signup_style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="signup-box">
+    <div class="signup-container">
+      <div class="signup-box">
+        <div class="head-container">
             <img src="/assets/PUP_logo.png" alt="PUP Logo" class="logo">
             <h2>Create an Account</h2>
-            <form action="" method="POST">
-                <div class="input-group">
-                    <input type="text" name="firstname" placeholder="First Name" required>
-                    <input type="email" name="email" placeholder="Email" required>
-                </div>
-                <div class="input-group">
-                    <input type="text" name="middlename" placeholder="Middle Name">
-                    <input type="password" name="password" placeholder="New Password" required>
-                </div>
-                <div class="input-group">
-                    <input type="text" name="lastname" placeholder="Last Name" required>
-                    <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-                </div>
-                <a href="admin_login.php" class="signin-link">Already have an account?</a>
-                <button type="submit" name="signup">Sign Up</button>
-            </form>
         </div>
+
+        <form action="" method="POST">
+            <div class="row">
+                <input type="text" name="firstname" placeholder="First Name" required>
+                <input type="email" name="email" placeholder="Email" required>
+            </div>
+            <div class="row">
+                <input type="text" name="middlename" placeholder="Middle Name">
+                <input type="password" name="password" placeholder="New Password" required>
+            </div>
+            <div class="row">
+                <input type="text" name="lastname" placeholder="Last Name" required>
+                <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+            </div>
+
+            <p class="login-text">Already have an account? <a href="/PHP/admin_login.php">Log in</a></p>
+
+                <button type="submit" name="signup" class="signup-btn">Sign Up</button>
+        </form>
+      </div>
     </div>
 
     <?php

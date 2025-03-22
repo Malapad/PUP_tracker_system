@@ -99,7 +99,7 @@ form {
 /* Signup Text */
 .signup-text {
     font-size: 14px;
-    margin-bottom: 15px;
+    margin-top: 15px;
 }
 
 .signup-text a {
@@ -123,6 +123,14 @@ form {
     border-radius: 5px;
     cursor: pointer;
     transition: 0.3s;
+}
+
+.forget {
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: blue;
+    text-decoration: none;
+    margin-left: 190px;
 }
 
 .login-btn:hover {

@@ -56,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="../CSS/security_signup_style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="signup-container">
         <div class="signup-box">
            <div class="head-container"> 
             <img src="../assets/PUP_logo.png" alt="Security Logo" class="logo"> 
@@ -78,9 +78,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="row">
                     <input type="text" name="security_number" placeholder="Security Number" required>
                 </div>
-                <p><a href="security_login.php">Already have an account?</a></p>
 
-                <button type="submit" class="sign-up-btn">Sign Up</button>
+                
+                <p class="login-text">Already have an account? <a href="/PHP/security_login.php">Log in</a></p>
+
+                <button type="submit" class="signup-btn">Sign Up</button>
             </form>
         </div>
     </div>

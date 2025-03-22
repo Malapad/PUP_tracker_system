@@ -100,7 +100,7 @@ form {
 /* Signup Text */
 .signup-text {
     font-size: 14px;
-    margin-bottom: 15px;
+    margin-top: 15px;
 }
 
 .signup-text a {
@@ -128,6 +128,14 @@ form {
 
 .login-btn:hover {
     background: #6f1414;
+}
+
+.forget {
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: blue;
+    text-decoration: none;
+    margin-left: 190px;
 }
 
 @media (max-width: 768px) {

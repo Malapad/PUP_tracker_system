@@ -54,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Sign-Up</title>
-    <link rel="stylesheet" href="/CSS/student_signup_style.css">
+    <link rel="stylesheet" href="../CSS/student_signup_style.css">
 </head>
 <body>
 
@@ -83,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="password" name="confirm_password" placeholder="Confirm Password" required>
                 </div>
 
-                <p>Already have an account? <a href="/PHP/student_login.php">Sign In</a></p>
+                <p class="login-text">Already have an account? <a href="/PHP/student_login.php">Log in</a></p>
                 
                 <button type="submit" class="signup-btn">Sign Up</button>
             </form>

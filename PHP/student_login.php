@@ -81,9 +81,11 @@
                         <span class="error"><?= $errors['password'] ?? '' ?></span>
                     </div>
 
-                    <p class="signup-text">Don't have an account? <a href="../PHP/student_signup.php">Sign up here</a></p>
+                    <p class="forget"><a>Forget password</a></p>
                     
-                    <button type="submit" class="login-btn">Sign In</button>
+                    <button type="submit" class="login-btn">Log in</button>
+
+                    <p class="signup-text">Don't have an account? <a href="../PHP/student_signup.php">Sign up here</a></p>
                 </form>
             </div>
         </div>

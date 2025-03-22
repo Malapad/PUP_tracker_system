@@ -73,8 +73,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
                     <span class="error"><?= $errors['password'] ?? '' ?></span>
                 </div>
 
+                <p class="forget"><a>Forget password</a></p>
+
+                <button type="submit" name="login" class="login-btn">Log in</button>
                 <p class="signup-text">Don’t have an account? <a href="admin_signup.php">Sign up here</a></p>
-                <button type="submit" name="login" class="login-btn">Sign In</button>
             </form>
         </div>
     </div>

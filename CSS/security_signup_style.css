@@ -6,11 +6,12 @@
 }
 
 body {
-    background-color: #e0e0e0;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
+    background: url('../assets/PUPT\ picture.jpg') no-repeat center center/cover; 
+    backdrop-filter: blur(8px); /* Apply Blur Effect */
 }
 
 .head-container {
@@ -76,27 +77,29 @@ input {
     border-radius: 5px;
 }
 
-p {
-    font-size: 12px;
-    margin-bottom: 10px;
+/* login Text */
+.login-text {
+    font-size: 14px;
+    margin-bottom: 15px;
 }
 
-a {
-    color: blue;
+.login-text a {
+    color: #8a1c1c;
     text-decoration: none;
+    font-weight: bold;
 }
 
-.sign-up-btn {
+.login-text a:hover {
+    text-decoration: underline;
+}
+
+.signup-btn {
     width: 50%;
     padding: 10px;
-    background-color: #15B507;
+    background-color: green;
     color: white;
     border: none;
-    border-radius: 100px;
+    border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
-}
-
-.sign-up-btn:hover {
-    color: #0e9202;
 }
