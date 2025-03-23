@@ -26,25 +26,33 @@
 
 <main>
     <div class="container">
-    <h3>Violation Notice!</h3>
-    <div class="left-section">
+        <!-- Violation Notice Section -->
+        <div class="box">
+            <div class="header">Violation Notice!</div>
+            <div class="content" id="violation-container">
+        <!-- New "Clear All Violations" Button -->
+            <button id="clear-violations-btn">Clear All Violations</button>
+                <p id="no-violations">No new violations.</p>
+                <ul id="violation-list"></ul>
+            </div>
+        </div>
 
-        <div class="content"></div>
-    </div>
-    <div class="right-section">
+        <!-- Student Handbook Section -->
+        <div class="box">
+            <div class="header">Student Handbook</div>
+            <di class="content">
         <!-- Search Bar -->
         <div class="search-bar">
-            <input type="text" placeholder="Search Violation">
-            </div>
-        <div class="right-section">
-            <h3>Student Handbook</h3>
-        <div>
-            <embed src="../assets/PUP-Student-Handbook.pdf" type="application/pdf" 
+            <input class="search-box" type="text" placeholder="Search">
+        </div>
+            <div  class="handbook">
+                <embed src="../assets/PUP-Student-Handbook.pdf" type="application/pdf" 
                 width="300px" height="400" />
-        </div>
+            </div>
+            </div>
         </div>
     </div>
-    </div>
+
 </main>
 
 </body>
