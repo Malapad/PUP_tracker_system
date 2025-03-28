@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Sanction List</title>
+    <title>Student Violation List</title>
     <link rel="stylesheet" href="../CSS/admin_violation_style.css">
 </head>
 <body>
@@ -16,6 +16,7 @@
             <a href="../HTML/admin_homepage.html">Home</a>
             <a href="../HTML/admin_dashboard_violation.html">Violations</a>
             <a href="../HTML/admin_sanction.html">Student Sanction</a>
+            <a href="../HTML/user_management.html">User Management</a>
         </nav>
         <div class="admin-icons">
             <a href="notification.html" class="notification">
@@ -29,53 +30,105 @@
     <div class="search-bar">
         <input type="text" placeholder="Search">
     </div>
-
-    <!-- Student Violations Table -->
-    <div class="container">
-        <h1>Student List Violators</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Student Number</th>
-                    <th>Student Name</th>
-                    <th>Program</th>
-                    <th>Violations</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>2022-00191-TG-0</td>
-                    <td>Andrea Mailgaya Donatos</td>
-                    <td>DIT</td>
-                    <td>No ID</td>
-                    <td>02/24/25</td>
-                </tr>
-                <tr>
-                    <td>2022-00191-TG-0</td>
-                    <td>Andrea Mailgaya Donatos</td>
-                    <td>DIT</td>
-                    <td>Not wearing ID</td>
-                    <td>02/24/25</td>
-                </tr>
-                <tr>
-                    <td>2022-00191-TG-0</td>
-                    <td>Andrea Mailgaya Donatos</td>
-                    <td>DIT</td>
-                    <td>No ID</td>
-                    <td>02/24/25</td>
-                </tr>
-            </tbody>
-        </table>
-
         <!-- Buttons -->
-        <div class="buttons">
-            <button class="add">Add</button>
-            <button class="edit">Edit</button>
-            <button class="delete">Delete</button>
-        </div>
-    </div>
 
-    <script src="/JS/admin_violation.js" defer></script>
+        <div class="container">
+            <h1>Student Violation Information</h1>
+            <button id="addStudentBtn">Add Student</button>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student Number</th>
+                        <th>Last Name</th>
+                        <th>First Name</th>
+                        <th>Middle Name</th>
+                        <th>Program</th>
+                        <th>Year & Section</th>
+                        <th>Violation</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody">
+                </tbody>
+            </table>
+        </div>
+    
+<!-- Modal for Adding Student --> 
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <div class="head-modal">
+            <h3>Add Student</h3>
+        </div>
+        <form id="studentForm" class="form-container">
+
+            <div class="row">
+                <div class="column">
+                    <label>Student Number:</label>
+                    <input type="text" id="studentNumber" required>
+                </div>
+                <div class="column">
+                    <label>Last Name:</label>
+                    <input type="text" id="lastName" required>
+                </div>
+            </div>  
+
+            <div class="row">
+                <div class="column">
+                    <label>First Name:</label>
+                    <input type="text" id="firstName" required>
+                </div>
+                <div class="column">
+                    <label>Middle Name:</label>
+                    <input type="text" id="middleName">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="column">
+                    <label>Program:</label>
+                    <select id="program">
+                        <option value="DIT">DIT</option>
+                        <option value="BSIT">BSIT</option>
+                        <option value="DOMT">DOMT</option>
+                        <option value="BSOA">BSOA</option>
+                    </select>
+                </div>
+                <div class="column">
+                    <label>Year & Section:</label>
+                    <select id="yearSection">
+                        <option value="1st Year">Select</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="column">
+                    <label>Violation:</label>
+                    <input type="text" id="violation">
+                </div>
+                <div class="column">
+                    <label>Date:</label>
+                    <input type="date" id="date">
+                </div>
+            </div>
+
+            <div class="button-row">
+                <button type="submit">add</button>
+                <button type="button" id="closeModal">Cancel</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+    
+    
+    <script src="../JS/admin_violation.js" defer></script>
 </body>
 </html>
