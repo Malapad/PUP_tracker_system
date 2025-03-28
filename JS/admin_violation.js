@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+/*document.addEventListener("DOMContentLoaded", function () {
     const table = document.querySelector("table tbody");
     const addButton = document.querySelector(".add");
     const editButton = document.querySelector(".edit");
@@ -88,4 +88,85 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Load violation entry if available
     loadViolationEntry();
+});
+*/
+
+document.getElementById("addStudentBtn").addEventListener("click", function() {
+    document.getElementById("modal").style.display = "block";
+});
+
+document.getElementById("closeModal").addEventListener("click", function() {
+    document.getElementById("modal").style.display = "none";
+});
+
+document.getElementById("studentForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    let studentNumber = document.getElementById("studentNumber").value;
+    let lastName = document.getElementById("lastName").value;
+    let firstName = document.getElementById("firstName").value;
+    let middleName = document.getElementById("middleName").value;
+    let program = document.getElementById("program").value;
+    let yearSection = document.getElementById("yearSection").value;
+    let violation = document.getElementById("violation").value;
+    let date = document.getElementById("date").value;
+
+    let table = document.getElementById("studentTableBody");
+
+    let row = document.createElement("tr");
+    row.innerHTML = `
+        <td>${studentNumber}</td>
+        <td>${lastName}</td>
+        <td>${firstName}</td>
+        <td>${middleName}</td>
+        <td>${program}</td>
+        <td>${yearSection}</td>
+        <td>${violation}</td>
+        <td>${date}</td>
+        <td>
+            <button class="edit">Edit</button>
+            <button class="save" disabled>Save</button>
+        </td>
+    `;
+
+    table.appendChild(row);
+    document.getElementById("modal").style.display = "none";
+});
+
+// Edit and Save functionality
+document.getElementById("studentTableBody").addEventListener("click", function(event) {
+    let target = event.target;
+
+    if (target.classList.contains("edit")) {
+        let row = target.parentElement.parentElement;
+        let cells = row.querySelectorAll("td:not(:last-child)");
+        
+        cells.forEach((cell, index) => {
+            if (index > 0) {
+                let input = document.createElement("input");
+                input.type = "text";
+                input.value = cell.innerText;
+                cell.innerHTML = "";
+                cell.appendChild(input);
+            }
+        });
+
+        let saveButton = row.querySelector(".save");
+        saveButton.disabled = false;
+    }
+
+    if (target.classList.contains("save")) {
+        let row = target.parentElement.parentElement;
+        let inputs = row.querySelectorAll("input");
+
+        let isConfirmed = confirm("Are you sure you want to save?");
+        if (isConfirmed) {
+            inputs.forEach((input, index) => {
+                let cell = input.parentElement;
+                cell.innerText = input.value;
+            });
+
+            target.disabled = true;
+        }
+    }
 });
