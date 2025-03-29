@@ -342,3 +342,18 @@ CREATE TABLE `year_tbl` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2025-03-05 23:21:29
+
+
+/*Table structure for table `admin_violation_tbl`
+CREATE TABLE students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_number VARCHAR(50),
+    last_name VARCHAR(50),
+    first_name VARCHAR(50),
+    middle_name VARCHAR(50),
+    program VARCHAR(50),
+    year_section VARCHAR(50),
+    violation VARCHAR(100),
+    date DATE
+);
+*/
