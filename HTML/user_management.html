@@ -58,8 +58,69 @@
           <a class="dropdown-item" href="#">2025</a>
     </ul>
     </div>
-
 </div>
+    <div class="container">
+        <h2>User Management</h2>
+        <div class="tabs">
+            <button class="tab active">Users</button>
+            <button class="tab">Students</button>
+        </div>
 
+        <div class="controls">
+            <select id="filter-student-number"><option>Student Number</option></select>
+            <select id="filter-course"><option>Course</option></select>
+            <select id="filter-year"><option>Year</option></select>
+            <select id="filter-status"><option>Status</option></select>
+            <button id="add-student" class="blue-button">Add Student</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Number</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Middle Name</th>
+                    <th>Email</th>
+                    <th>Course</th>
+                    <th>Year</th>
+                    <th>Section</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="student-table">
+                <tr><td colspan="10">No data available</td></tr>
+            </tbody>
+        </table>
+
+        <div class="actions">
+            <button id="activate-btn" disabled>Activate</button>
+            <button id="deactivate-btn" disabled>Deactivate</button>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Add Student</h3>
+            <form id="student-form">
+                <input type="text" id="student-number" placeholder="Student Number" required>
+                <input type="text" id="first-name" placeholder="First Name" required>
+                <input type="text" id="middle-name" placeholder="Middle Name">
+                <input type="text" id="last-name" placeholder="Last Name" required>
+                <input type="email" id="email" placeholder="Email" required>
+                <select id="course"><option>Course</option></select>
+                <select id="year"><option>Year</option></select>
+                <select id="section"><option>Section</option></select>
+                <select id="gender"><option>Gender</option></select>
+                <input type="password" id="password" placeholder="Password" required>
+                <input type="password" id="confirm-password" placeholder="Confirm Password" required>
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../JS/user_management.js"></script>
 </body>
 </html>
