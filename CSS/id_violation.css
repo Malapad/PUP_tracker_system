@@ -1,8 +1,170 @@
-table, th, td {
-    border: 1px solid black;
-    border-collapse: collapse;
-    padding: 8px;
+/* Reset Default Styles */
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
 }
+
+/* Navbar */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    padding: 10px 20px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo img {
+    width: 50px;
+    margin-left: 70px;
+}
+
+nav {
+    display: flex;
+    gap: 20px;
+}
+
+nav a {
+    text-decoration: none;
+    font-weight: bold;
+    color: black;
+}
+
+nav a:hover {
+    color: #AF1414;
+}
+
+/* icon images */
+.admin-icons {
+    display: flex;
+    gap: 15px;
+    font-size: 15px;
+    margin-right: 55px;
+}
+
+.admin-icons img {
+    width: 35px;
+}
+
+.notification {
+    width: 34px;
+}
+
+/* Search Bar */
+.search-bar {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.search-bar input {
+    width: 60%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/*id violation*/
+.container {
+    margin: auto;
+    text-align: center;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-size: larger;
+    margin-left: 70px;
+}
+
+
 button {
-    margin: 2px;
+    margin-left: 80%; 
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: blue;
+    color: white;
+    cursor: pointer;
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead tr {
+    background: darkred;
+    color: white;
+}
+
+thead th {
+    padding: 10px;
+    text-align: left;
+}
+
+tbody tr {
+    background: #ccc;
+}
+
+tbody td {
+    padding: 10px;
+}
+
+.add {
+    background: green;
+}
+
+.edit {
+    background: yellow;
+    color: black;
+}
+
+.delete {
+    background: red;
+}
+ 
+/*Edited*/
+
+.container {
+    width: 80%;
+    margin: auto;
+    text-align: center;
+}
+
+button {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: blue;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: maroon;
+    color: white;
+}
+
+tr:hover {
+    background-color: lightgray;
 }

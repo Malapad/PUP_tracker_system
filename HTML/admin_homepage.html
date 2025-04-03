@@ -31,18 +31,26 @@
         <input type="text" placeholder="Search">
     </div>
 
-    <!-- Content Sections -->
-    <div class="content">
+    <div class="container">
+        <!-- Violation Notice Section -->
         <div class="box">
-            <h3>Student Handbook</h3>
-            <div class="placeholder"></div>
+            <div class="header">No new violation</div>
+            <div class="content" id="violation-container">
+        <!-- New "Clear All Violations" Button -->
+            <button id="clear-violations-btn">Clear All Violations</button>
+         <!--<p id="no-violations">No new violations.</p>-->
+                <ul id="violation-list"></ul>
+            </div>
         </div>
+
+        <!-- Student Handbook Section -->
         <div class="box">
-            <h3>Program List</h3>
-            <div class="placeholder"></div>
-        </div>
+            <div class="header">Violation Summary</div>
+            <div class="content">
+            </div>
         </div>
     </div>
+
     <!--Buttons-->
     <div class="button-display"> 
         <!-- Menu -->   
