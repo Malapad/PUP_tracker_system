@@ -66,6 +66,14 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Fetch Error:", error);
         alert("Network error: Check console for details.");
     });
+
+    // Maintain search input value after form submission
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchValue = urlParams.get('search');
+    if (searchValue) {
+        document.getElementById("search-input").value = searchValue;
+    }
+
 });
 
 });
