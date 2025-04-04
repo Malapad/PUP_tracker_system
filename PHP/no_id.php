@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html>
 <head>
     <title>Violation Record</title>
-    <link rel="stylesheet" href="/CSS/late_validation.css">
+    <link rel="stylesheet" href="/CSS/no_id.css">
 </head>
 <body>
     <h2>Violation Record</h2>
@@ -50,6 +50,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <th>Actions</th>
         </tr>
     </table>
-    <script src="/JS/late_validation.js"></script>
+    <script src="/JS/no_id.js"></script>
 </body>
 </html>

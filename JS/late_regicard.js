@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (type === "select") {
                 const select = document.createElement("select");
                 const options = index === 4 ? ["DIT", "DOMT", "BSIT", "BSECE", "BSME", "BSED-MATH", "BSED-ENGLISH"] :
-                               index === 5 ? ["1st", "2nd", "3rd", "4th", "Ladderized"] : ["Late ID Violation"];
+                               index === 5 ? ["1st", "2nd", "3rd", "4th", "Ladderized"] : ["Late Registration Card"];
                 select.innerHTML = `<option disabled selected hidden>Select</option>` + options.map(opt => `<option>${opt}</option>`).join("");
                 cell.appendChild(select);
             } else if (type === "action") {
@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     studentData.append("date", inputs[7].value);
 
                     // Send the data via AJAX to the PHP script
-                    fetch("late_validation.php", {
+                    fetch("late_regicard.php", {
                         method: "POST",
                         body: studentData
                     })
