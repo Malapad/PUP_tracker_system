@@ -85,6 +85,7 @@ button {
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
 }
 
 thead tr {
@@ -95,18 +96,22 @@ thead tr {
 thead th {
     padding: 10px;
     text-align: left;
+    background-color: maroon;
+    color: white;
 }
 
 tbody tr {
-    background: #ccc;
+    background: white;
 }
 
 tbody td {
     padding: 10px;
+    background-color: white;
+
 }
 
-.add {
-    background: green;
+.add-student {
+    background: darkred;
 }
 
 .edit {

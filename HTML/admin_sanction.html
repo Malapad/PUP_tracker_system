@@ -26,14 +26,27 @@
         </div>
     </header>
 
-    <!-- Search Bar -->
+    <!-- Search Bar 
     <div class="search-bar">
         <input type="text" placeholder="Search">
-    </div>
+    </div>-->
 
     <!-- Student Sanction List -->
     <div class="container">
-        <h1>Student Sanction List</h1>
+        <h2>Student Sanction List</h2>
+        <form method="GET" action="">
+            <select id="status" name="status" required onchange="this.form.submit()">
+                <option value="">Select Status</option>
+                <?php
+                $statusQuery = "SELECT status_id, status_name FROM status_tbl";
+                $statusResult = mysqli_query($conn, $statusQuery);
+                while ($row = mysqli_fetch_assoc($statusResult)) {
+                    $selected = isset($_GET['status']) && $_GET['status'] == $row['status_id'] ? 'selected' : '';
+                    echo "<option value='{$row['status_id']}' $selected>{$row['status_name']}</option>";
+                }
+                ?>
+            </select>
+        </form>
         <table>
             <thead>
                 <tr>
@@ -90,7 +103,7 @@
             </tbody>
         </table>
 
-        <!-- Student Sanction Approval Box -->
+        <!-- Student Sanction Approval Box 
         <div class="sanction-approval">
             <h3>Student Sanction Approval</h3>
             <p class="student-id">2022-00123-TG-0</p>
@@ -98,6 +111,6 @@
             <button class="view">View</button>
         </div>
     </div>
-
+-->
 </body>
 </html>
