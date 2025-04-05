@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <a href="../HTML/admin_homepage.html">Home</a>
             <a href="../HTML/admin_dashboard_violation.html">Violations</a>
             <a href="../HTML/admin_sanction.html">Student Sanction</a>
-            <a href="../HTML/user_management.html">User Management</a>
+            <a href="../user-management/user_management.php">User Management</a>
         </nav>
         <div class="admin-icons">
             <a href="notification.html" class="notification">

@@ -22,7 +22,7 @@ include '../PHP/dbcon.php';
             <a href="../HTML/admin_homepage.html">Home</a>
             <a href="../HTML/admin_dashboard_violation.html">Violations</a>
             <a href="../HTML/admin_sanction.html">Student Sanction</a>
-            <a href="../HTML/user_management.html">User Management</a>
+            <a href="../user-management/user_management.php">User Management</a>
         </nav>
         <div class="admin-icons">
             <a href="notification.html" class="notification">
@@ -31,34 +31,6 @@ include '../PHP/dbcon.php';
                 <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" /></a>
         </div>
     </header>
-
-    <div class="button-display">
-        <div class="menu-group">
-            <button type="button" class="btn-menu" data-bs-toggle="dropdown" aria-expanded="false">
-                Menu
-            </button>
-            <ul class="dropdown-menu">
-                <a class="dropdown-item" href="#">User Management</a>
-                <a class="dropdown-item" href="#">aaaaa</a>
-                <a class="dropdown-item" href="#">bbbbb</a>
-            </ul>
-        </div>
-
-        <div class="year-group">
-            <button type="button" class="btn-year" data-bs-toggle="dropdown" aria-expanded="false">
-                Year
-            </button>
-            <ul class="dropdown-menu">
-                <a class="dropdown-item" href="#">2019</a>
-                <a class="dropdown-item" href="#">2020</a>
-                <a class="dropdown-item" href="#">2021</a>
-                <a class="dropdown-item" href="#">2022</a>
-                <a class="dropdown-item" href="#">2023</a>
-                <a class="dropdown-item" href="#">2024</a>
-                <a class="dropdown-item" href="#">2025</a>
-            </ul>
-        </div>
-    </div>
 
     <div class="container">
         <h2>User Management</h2>
