@@ -187,27 +187,35 @@ include '../PHP/dbcon.php';
 
                 if (mysqli_num_rows($result) > 0) {
                     while ($row = mysqli_fetch_assoc($result)) {
-                        echo "<tr>
-                                <td>{$row['student_number']}</td>
-                                <td>{$row['last_name']}</td>
-                                <td>{$row['first_name']}</td>
-                                <td>{$row['middle_name']}</td>
-                                <td>{$row['email']}</td>
-                                <td>{$row['course_name']}</td>
-                                <td>{$row['year']}</td>
-                                <td>{$row['section_name']}</td>
-                                <td>{$row['status_name']}</td>
-                                <td>
-                                    <button class='edit-btn'>Edit</button>
-                                    <button class='delete-btn'>Delete</button>
-                                </td>
-                            </tr>";
+                        ?>
+                        <tr>
+                            <td><?php echo $row['student_number']; ?></td>
+                            <td><?php echo $row['last_name']; ?></td>
+                            <td><?php echo $row['first_name']; ?></td>
+                            <td><?php echo $row['middle_name']; ?></td>
+                            <td><?php echo $row['email']; ?></td>
+                            <td><?php echo $row['course_name']; ?></td>
+                            <td><?php echo $row['year']; ?></td>
+                            <td><?php echo $row['section_name']; ?></td>
+                            <td><?php echo $row['status_name']; ?></td>
+                            <td>
+                            <button class='edit-btn' data-student='<?php echo htmlspecialchars(json_encode($row)); ?>'>Edit</button>
+
+
+                
+                                <form action="delete_student.php" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this student?');">
+                                    <input type="hidden" name="student_number" value="<?php echo $row['student_number']; ?>">
+                                    <button type="submit" class="delete-btn">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php
                     }
                 } else {
                     echo "<tr><td colspan='11'>No data available</td></tr>";
                 }
                 ?>
-            </tbody>
+                </tbody>
         </table>
 
         <div class="actions">
@@ -277,6 +285,56 @@ include '../PHP/dbcon.php';
             </form>
         </div>
     </div>
+
+<div id="edit-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-edit">&times;</span>
+        <h3>Edit Student</h3>
+        <form id="edit-student-form">
+            <input type="hidden" id="edit-student-number" name="student_number">
+            <input type="text" id="edit-first-name" name="first_name" placeholder="First Name" required>
+            <input type="text" id="edit-middle-name" name="middle_name" placeholder="Middle Name">
+            <input type="text" id="edit-last-name" name="last_name" placeholder="Last Name" required>
+            <input type="email" id="edit-email" name="email" placeholder="Email" required>
+
+            <select id="edit-course" name="course_id" required>
+                <option value="">Select Course</option>
+                <?php
+                $courseResult = mysqli_query($conn, "SELECT course_id, course_name FROM course_tbl");
+                while ($row = mysqli_fetch_assoc($courseResult)) {
+                    echo "<option value='{$row['course_id']}'>{$row['course_name']}</option>";
+                }
+                ?>
+            </select>
+
+            <select id="edit-year" name="year_id" required>
+                <option value="">Select Year</option>
+                <?php
+                $yearResult = mysqli_query($conn, "SELECT year_id, year FROM year_tbl");
+                while ($row = mysqli_fetch_assoc($yearResult)) {
+                    echo "<option value='{$row['year_id']}'>{$row['year']}</option>";
+                }
+                ?>
+            </select>
+
+            <select id="edit-section" name="section_id" required>
+                <option value="">Select Section</option>
+                <?php
+                $sectionResult = mysqli_query($conn, "SELECT section_id, section_name FROM section_tbl");
+                while ($row = mysqli_fetch_assoc($sectionResult)) {
+                    echo "<option value='{$row['section_id']}'>{$row['section_name']}</option>";
+                }
+                ?>
+            </select>
+
+            <button type="submit" class="save-btn">Update</button>
+        </form>
+    </div>
+</div>
+
+    
 </body>
+<script src="./user_management.js"></script>
+
 
 </html>
