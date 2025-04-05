@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $date = mysqli_real_escape_string($conn, $_POST['date']);
 
     // Insert data into the database
-    $sql = "INSERT INTO violation_tbl (student_number, last_name, first_name, middle_name, course, year, violation_type, date)
+    $sql = "INSERT INTO late_validation (student_number, last_name, first_name, middle_name, course, year, violation_type, date)
             VALUES ('$studentNumber', '$lastName', '$firstName', '$middleName', '$course', '$year', '$violationType', '$date')";
 
     if (mysqli_query($conn, $sql)) {
@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html>
 <head>
     <title>Violation Record</title>
-    <link rel="stylesheet" href="/CSS/late_validation.css">
+    <link rel="stylesheet" href="../CSS/late_regicard.css">
 </head>
 <body>
               <!-- Navbar -->
@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
              </div>
              <nav>
                  <a href="../HTML/admin_homepage.html">Home</a>
-                 <a href="../HTML/id_violation.php">Violations</a>
+                 <a href="../HTML/admin_dashboard_violation.html">Violations</a>
                  <a href="../HTML/admin_sanction.html">Student Sanction</a>
                  <a href="../user-management/user_management.php">User Management</a>
              </nav>
