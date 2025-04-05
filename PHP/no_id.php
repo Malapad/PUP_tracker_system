@@ -32,11 +32,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html>
 <head>
     <title>Violation Record</title>
-    <link rel="stylesheet" href="/CSS/no_id.css">
+    <link rel="stylesheet" href="../CSS/no_id.css">
 </head>
 <body>
-    <h2>Violation Record</h2>
-    <button>Add Row</button>
+          <!-- Navbar -->
+          <header>
+             <div class="logo">
+                 <img src="../assets/PUPlogo.png" alt="PUP Logo">
+             </div>
+             <nav>
+                 <a href="../HTML/admin_homepage.html">Home</a>
+                 <a href="../HTML/id_violation.php">Violations</a>
+                 <a href="../HTML/admin_sanction.html">Student Sanction</a>
+                 <a href="../user-management/user_management.php">User Management</a>
+             </nav>
+             <div class="admin-icons">
+                 <a href="notification.html" class="notification">
+                     <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000"/></a>
+                 <a href="admin_account.html" class="admin">
+                    <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000"/></a>
+             </div>
+         </header>
+<div class="container">
+    <h1>Violation Record</h1>
+    <button class="add-student">Add Student</button>
     <table>
         <tr>
             <th>Student Number</th>
@@ -50,6 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <th>Actions</th>
         </tr>
     </table>
+</div>
     <script src="/JS/no_id.js"></script>
 </body>
 </html>

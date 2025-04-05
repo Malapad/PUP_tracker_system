@@ -81,78 +81,11 @@ nav a:hover {
     margin-right: 55px;
 }
 
-/* Student Handbook & Program List */
-.box {
-    width: 30%;
-}
-
-.box h3 {
-    margin-bottom: 10px;
-}
-
 .placeholder {
     width: 100%;
     height: 200px;
     background: lightgray;
     border-radius: 5px;
-}
-
-/* Menu Button */
-.button-display {
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    margin: 4px 2px;
-    cursor: pointer;
-  }
-
-.btn-menu, .btn-year {
-    background-color: #D90801;
-    color: white;
-    padding: 10px;
-    font-size: 13px;
-    border: none;
-    cursor: pointer;
-    border-radius: 6px;
-}
-  
-.menu-group, .year-group {
-    position: relative;
-    display: inline-block;
-    border-radius: 20px;
-}
-  
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-}
-  
-.dropdown-menu a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    font-size: 13px;
-}
-  
-.dropdown-menu a:hover {
-    background-color: #c9c9c9
-}
-
-.btn-menu:hover, .btn-year:hover {
-    background-color: #bd2727;
-}
-.menu-group:hover .dropdown-menu {
-    display: block;
-}
-
-.year-group:hover .dropdown-menu {
-    display: block;
 }
 
 /*content*/
@@ -163,24 +96,6 @@ h3 {
     padding-bottom: 10px;
 }
 
-/* Main Container */
-.container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding: 20px;
-}
-
-/* Box Styling */
-.box {
-    margin-top: 10px;
-    width: 40%;
-    height: 200px;
-    overflow: hidden;
-    background: #f0f0f0;
-    border-radius: 10px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-}
 
 /* Header Styling */
 .header {
@@ -242,4 +157,85 @@ h3 {
 
 #clear-violations-btn:hover {
     background-color: #555;
+}
+
+/*graph styles
+  .container {
+    width: 90%;
+    margin: auto;
+  }
+  
+  .search {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
+  
+  .cards {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .card {
+    flex: 1 1 45%;
+    background: #f0f0f0;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  
+  .card-header {
+    background-color: #b01616;
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+  }
+  
+  .card-body {
+    padding: 20px;
+  }
+  
+*/
+.container {
+    display: flex;
+    gap: 20px;
+}
+
+.cards {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+.card {
+    background-color: #f1f1f1;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 50%;
+    height: 20%;
+}
+
+.card-header {
+    background-color: #b61616;
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.card-body {
+    padding: 10px;
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-body canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 220px;
 }

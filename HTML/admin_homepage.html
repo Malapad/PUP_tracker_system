@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Sanction List</title>
     <link rel="stylesheet" href="../CSS/admin_homepage_style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
      <!-- Navbar -->
@@ -32,26 +33,21 @@
     </div>
 
     <div class="container">
-        <!-- Violation Notice Section -->
-        <div class="box">
-            <div class="header">No new violation</div>
-            <div class="content" id="violation-container">
-        <!-- New "Clear All Violations" Button -->
-            <button id="clear-violations-btn">Clear All Violations</button>
-         <!--<p id="no-violations">No new violations.</p>-->
-                <ul id="violation-list"></ul>
+        <div class="card">
+            <div class="card-header">Number of student</div>
+            <div class="card-body">
+                <canvas id="coursePieChart"></canvas>
             </div>
         </div>
-
-        <!-- Student Handbook Section -->
-        <div class="box">
-            <div class="header">Violation Summary</div>
-            <div class="content">
+        
+            <div class="card">
+              <div class="card-header">Violation Summary</div>
+              <div class="card-body">
+                <canvas id="violationChart"></canvas>
+              </div>
             </div>
-        </div>
+          </div>
     </div>
-
-    
         <!--
         <div class="menu-group">
           <button type="button" class="btn-menu" data-bs-toggle="dropdown" aria-expanded="false">
@@ -76,6 +72,6 @@
         </div>
     
     </div>-->
-
+    <script src="../JS/admin_homepage.js"></script>
 </body>
 </html>
