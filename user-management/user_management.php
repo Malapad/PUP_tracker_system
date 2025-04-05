@@ -22,13 +22,13 @@ include '../PHP/dbcon.php';
             <a href="../HTML/admin_homepage.html">Home</a>
             <a href="../HTML/admin_dashboard_violation.html">Violations</a>
             <a href="../HTML/admin_sanction.html">Student Sanction</a>
-            <a href="../user-management/user_management.php">User Management</a>
+            <a href="./user_management.php">User Management</a>
         </nav>
         <div class="admin-icons">
-            <a href="notification.html" class="notification">
-                <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" /></a>
-            <a href="admin_account.html" class="admin">
-                <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" /></a>
+            <a href="" class="notification">
+                <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000"/></a>
+            <a href="../HTML/admin_account.html" class="admin">
+               <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000"/></a>
         </div>
     </header>
 
