@@ -34,22 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $status_id = getIdFromTable($conn, 'status_tbl', 'status_name', 'status_id', $status);
 
     if (!$course_id || !$year_id || !$section_id || !$gender_id || !$status_id) {
-        echo json_encode([
-            "success" => false, 
-            "error" => "Invalid data provided",
-            "debug" => [
-                "course_name" => $course_name,
-                "course_id" => $course_id,
-                "year_name" => $year_name,
-                "year_id" => $year_id,
-                "section_name" => $section_name,
-                "section_id" => $section_id,
-                "gender_name" => $gender_name,
-                "gender_id" => $gender_id,
-                "status_name" => $status,
-                "status_id" => $status_id
-            ]
-        ]);
+        echo json_encode(["success" => false, "error" => "Invalid data provided"]);
         exit;
     }
 
@@ -65,9 +50,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $stmt->bind_param("ssssssssss", $student_number, $last_name, $first_name, $middle_name, $email, $course_id, $year_id, $section_id, $gender_id, $status_id);
 
     if ($stmt->execute()) {
-        echo json_encode(["success" => true]);
+        echo json_encode([
+            "success" => true,
+            "student_number" => $student_number,
+            "first_name" => $first_name,
+            "middle_name" => $middle_name,
+            "last_name" => $last_name,
+            "email" => $email,
+            "course" => $course_name,
+            "year" => $year_name,
+            "section" => $section_name,
+            "gender" => $gender_name,
+            "status" => $status
+        ]);
     } else {
-        echo json_encode(["success" => false, "error" => $stmt->error]);
+        echo json_encode(["success" => false, "error" => "Error executing query: " . $stmt->error]);
     }
 
     $stmt->close();
