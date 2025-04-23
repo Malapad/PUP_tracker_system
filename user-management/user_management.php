@@ -41,71 +41,68 @@ include '../PHP/dbcon.php';
 
 
         <div class="controls">
-            <form method="GET" action="">
-                <select id="course" name="course" required onchange="this.form.submit()">
-                    <option value="">Select Course</option>
-                    <?php
-                    $courseQuery = "SELECT course_id, course_name FROM course_tbl";
-                    $courseResult = mysqli_query($conn, $courseQuery);
-                    while ($row = mysqli_fetch_assoc($courseResult)) {
-                        $selected = isset($_GET['course']) && $_GET['course'] == $row['course_id'] ? 'selected' : '';
-                        echo "<option value='{$row['course_id']}' $selected>{$row['course_name']}</option>";
-                    }
-                    ?>
-                </select>
-            </form>
+    <div class="filter-group">
+        <form method="GET" action="" id="filter-form">
+            <select id="course" name="course" required onchange="this.form.submit()">
+                <option value="">Select Course</option>
+                <?php
+                $courseQuery = "SELECT course_id, course_name FROM course_tbl";
+                $courseResult = mysqli_query($conn, $courseQuery);
+                while ($row = mysqli_fetch_assoc($courseResult)) {
+                    $selected = isset($_GET['course']) && $_GET['course'] == $row['course_id'] ? 'selected' : '';
+                    echo "<option value='{$row['course_id']}' $selected>{$row['course_name']}</option>";
+                }
+                ?>
+            </select>
 
-            <form method="GET" action="">
-                <select id="year" name="year" required onchange="this.form.submit()">
-                    <option value="">Select Year</option>
-                    <?php
-                    $yearQuery = "SELECT year_id, year FROM year_tbl";
-                    $yearResult = mysqli_query($conn, $yearQuery);
-                    while ($row = mysqli_fetch_assoc($yearResult)) {
-                        $selected = isset($_GET['year']) && $_GET['year'] == $row['year_id'] ? 'selected' : '';
-                        echo "<option value='{$row['year_id']}' $selected>{$row['year']}</option>";
-                    }
-                    ?>
-                </select>
-            </form>
+            <select id="year" name="year" required onchange="this.form.submit()">
+                <option value="">Select Year</option>
+                <?php
+                $yearQuery = "SELECT year_id, year FROM year_tbl";
+                $yearResult = mysqli_query($conn, $yearQuery);
+                while ($row = mysqli_fetch_assoc($yearResult)) {
+                    $selected = isset($_GET['year']) && $_GET['year'] == $row['year_id'] ? 'selected' : '';
+                    echo "<option value='{$row['year_id']}' $selected>{$row['year']}</option>";
+                }
+                ?>
+            </select>
 
-            <form method="GET" action="">
-                <select id="section" name="section" required onchange="this.form.submit()">
-                    <option value="">Select Section</option>
-                    <?php
-                    $sectionQuery = "SELECT section_id, section_name FROM section_tbl";
-                    $sectionResult = mysqli_query($conn, $sectionQuery);
-                    while ($row = mysqli_fetch_assoc($sectionResult)) {
-                        $selected = isset($_GET['section']) && $_GET['section'] == $row['section_id'] ? 'selected' : '';
-                        echo "<option value='{$row['section_id']}' $selected>{$row['section_name']}</option>";
-                    }
-                    ?>
-                </select>
-            </form>
+            <select id="section" name="section" required onchange="this.form.submit()">
+                <option value="">Select Section</option>
+                <?php
+                $sectionQuery = "SELECT section_id, section_name FROM section_tbl";
+                $sectionResult = mysqli_query($conn, $sectionQuery);
+                while ($row = mysqli_fetch_assoc($sectionResult)) {
+                    $selected = isset($_GET['section']) && $_GET['section'] == $row['section_id'] ? 'selected' : '';
+                    echo "<option value='{$row['section_id']}' $selected>{$row['section_name']}</option>";
+                }
+                ?>
+            </select>
 
-            <form method="GET" action="">
-                <select id="status" name="status" required onchange="this.form.submit()">
-                    <option value="">Select Status</option>
-                    <?php
-                    $statusQuery = "SELECT status_id, status_name FROM status_tbl";
-                    $statusResult = mysqli_query($conn, $statusQuery);
-                    while ($row = mysqli_fetch_assoc($statusResult)) {
-                        $selected = isset($_GET['status']) && $_GET['status'] == $row['status_id'] ? 'selected' : '';
-                        echo "<option value='{$row['status_id']}' $selected>{$row['status_name']}</option>";
-                    }
-                    ?>
-                </select>
-            </form>
+            <select id="status" name="status" required onchange="this.form.submit()">
+                <option value="">Select Status</option>
+                <?php
+                $statusQuery = "SELECT status_id, status_name FROM status_tbl";
+                $statusResult = mysqli_query($conn, $statusQuery);
+                while ($row = mysqli_fetch_assoc($statusResult)) {
+                    $selected = isset($_GET['status']) && $_GET['status'] == $row['status_id'] ? 'selected' : '';
+                    echo "<option value='{$row['status_id']}' $selected>{$row['status_name']}</option>";
+                }
+                ?>
+            </select>
+        </form>
+    </div>
 
-            <div class="search-bar">
-            <form method="GET" action="">
-                <input type="text" name="search" id="search-input" placeholder="Search by Student Number" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
-                <button type="submit">Search</button>
-            </form>
-        </div>
+    <div class="search-bar">
+        <form method="GET" action="">
+            <input type="text" name="search" id="search-input" placeholder="Search by Student Number" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+            <button type="submit">Search</button>
+        </form>
+    </div>
 
-            <button id="add-student" class="blue-button">Add Student</button>
-        </div>
+    <button id="add-student" class="blue-button">Add Student</button>
+</div>
+
 
         <table id="student-table">
             <thead>
@@ -190,10 +187,10 @@ include '../PHP/dbcon.php';
                 </tbody>
         </table>
 
-        <div class="actions">
+       <!-- <div class="actions">
             <button id="activate-btn" disabled>Activate</button>
             <button id="deactivate-btn" disabled>Deactivate</button>
-        </div>
+        </div> -->
     </div>
 
     <div id="modal" class="modal">

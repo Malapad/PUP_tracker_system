@@ -111,4 +111,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("Update error:", error);
         });
     });
+function submitFilters() {
+    document.getElementById("filter-form").submit();
+}
+
 });
