@@ -1,0 +1,60 @@
+  .container-handbook {
+    max-width: 900px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background-color: #fff;
+    border: 2px solid #b40000;
+    border-radius: 8px;
+  }
+  
+  header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  h1 {
+    color: #b40000;
+    font-size: 2.2rem;
+  }
+  
+  p {
+    color: #555;
+  }
+  
+  .search-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+  }
+  
+  #searchInput {
+    padding: 0.7rem 1rem;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    outline: none;
+  }
+  
+  ul#violationList {
+    list-style-type: decimal;
+    padding-left: 2rem;
+    line-height: 1.6;
+  }
+  
+  ul#violationList li {
+    margin-bottom: 0.5rem;
+  }
+
+
+  .violation-link {
+    text-decoration: none;
+    color: #b00020;
+    display: block;
+    margin: 8px 0;
+    font-weight: bold;
+    transition: 0.2s ease;
+}
+.violation-link:hover {
+    color: #ff4a4a;
+    text-decoration: underline;
+}

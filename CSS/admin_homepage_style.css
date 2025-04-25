@@ -21,6 +21,12 @@ header {
     margin-left: 70px;
 }
 
+#system_name {
+    text-decoration: none;
+    font-weight: bold;
+    color: black; 
+}
+
 nav {
     display: flex;
     gap: 20px;
