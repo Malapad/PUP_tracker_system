@@ -72,32 +72,17 @@
 
 */
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Course data (hardcoded)
-    const courses = {
-        "DIT": 15,
-        "BSIT": 20,
-        "BSOA": 8,
-        "DOMT": 5,
-        "BS-EDEN": 6,
-        "BS-EDMT": 7,
-        "BSA": 10,
-        "BSPSYCH": 4,
-        "BSME": 3,
-        "BSECE": 2
-    };
-
+document.addEventListener("DOMContentLoaded", async () => {
+    let courses = await fetch('../PHP/admin_homepage.php');
+    courses = await courses.json();
+    
     const courseCtx = document.getElementById('coursePieChart').getContext('2d');
     new Chart(courseCtx, {
         type: 'pie',
         data: {
-            labels: Object.keys(courses),
+            labels: courses.courses.labels,
             datasets: [{
-                data: Object.values(courses),
-                backgroundColor: [
-                    '#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#ffa600',
-                    '#4bc0c0', '#9966ff', '#c9cbcf', '#ff9f40', '#8bc34a'
-                ]
+                data: courses.courses.data
             }]
         },
         options: {
