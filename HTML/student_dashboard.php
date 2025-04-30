@@ -10,6 +10,7 @@ include '../PHP/dbcon.php';
     <title>Student Dashboard</title>
     <link rel="stylesheet" href="../CSS/student_dashboard_style.css">
     <link rel="stylesheet" href="../search violations/styles.css">
+
 </head>
 <body>
          <!-- Navbar -->
@@ -41,86 +42,32 @@ include '../PHP/dbcon.php';
                 <ul id="violation-list"></ul>
             </div>
         </div>
+<!-- Student Handbook Section -->
+<div class="box">
+  <div class="header">Student Handbook</div>
+  <div class="content">
+    <!-- Search Bar -->
+   <form id="handbookSearchForm">
+     <div class="search-wrapper">
+        <input type="text" id="handbookSearchInput" placeholder="Search violation..." />
+        <button type="submit">Search</button>
+      </div>
+    </form>
 
-        <!-- Student Handbook Section -->
-        <div class="box">
-            <div class="header">Student Handbook</div>
-            <di class="content">
-        <!-- Search Bar -->
-        <div class="search-wrapper">
-            <input class="search-wrapper" type="text" placeholder="Search">
-        </div>
-        <div>
-        <div class="container">
-    <header>
-      <h1>Code of Discipline</h1>
-      <p>Summary of University Violations</p>
-    </header>
-
-    <div class="search-wrapper">
-      <input type="text" id="searchInput" placeholder="Search violation...">
-    </div>
-
-    <ul id="violationList">
+    <ul id="handbookViolationList">
       <?php
-      $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-      $query = "SELECT * FROM violations";
+        include '../PHP/dbcon.php';
+        $query = "SELECT * FROM violations";
+        $result = $conn->query($query);
 
-      if (!empty($search)) {
-          $query .= " WHERE title = ?";
-          $stmt = $conn->prepare($query);
-          $stmt->bind_param("s", $search);
-      } else {
-          $stmt = $conn->prepare($query);
-      }
-
-      if ($stmt) {
-          $stmt->execute();
-          $result = $stmt->get_result();
-
-          while ($row = $result->fetch_assoc()) {
-              echo "<li><a href='view.php?id={$row['id']}' class='violation-link'>{$row['id']}. {$row['title']}</a></li>";
-          }
-      } else {
-          echo "<li>Query error: " . $conn->error . "</li>";
-      }
+        while ($row = $result->fetch_assoc()) {
+            echo "<li class='violation-item'><a href='#' class='violation-link' data-id='{$row['id']}'>{$row['id']}. {$row['title']}</a></li>";
+        }
       ?>
     </ul>
   </div>
-        </div>
-        <ul id="violationList">
-      <?php
-      $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-      $query = "SELECT * FROM violations";
+</div>
 
-      if (!empty($search)) {
-          $query .= " WHERE title = ?";
-          $stmt = $conn->prepare($query);
-          $stmt->bind_param("s", $search);
-      } else {
-          $stmt = $conn->prepare($query);
-      }
-
-      if ($stmt) {
-          $stmt->execute();
-          $result = $stmt->get_result();
-
-          while ($row = $result->fetch_assoc()) {
-              echo "<li><a href='view.php?id={$row['id']}' class='violation-link'>{$row['id']}. {$row['title']}</a></li>";
-          }
-      } else {
-          echo "<li>Query error: " . $conn->error . "</li>";
-      }
-      ?>
-    </ul>
-  </div>
-    <!--        <div  class="handbook">
-                <embed src="../assets/PUP-Student-Handbook.pdf" type="application/pdf" 
-                width="300px" height="400" />
-            </div> -->
-            </div>
-        </div>
-    </div>
 
 </main>
        <script src="../search violations/script.js"></script>
