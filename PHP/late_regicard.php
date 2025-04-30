@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="container">
 
     <h1>Violation Record</h1>
-    <button>Add Row</button>
+    <button>Add Student</button>
     <table>
         <tr>
             <th>Student Number</th>

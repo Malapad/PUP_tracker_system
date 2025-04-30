@@ -91,14 +91,17 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 */
 
+// Open modal when "Add Student" button is clicked
 document.getElementById("addStudentBtn").addEventListener("click", function() {
     document.getElementById("modal").style.display = "block";
 });
 
+// Close modal when "Cancel" button is clicked
 document.getElementById("closeModal").addEventListener("click", function() {
-    document.getElementById("modal").style.display = "none";
+    document.getElementById("modal").style.display = "none"; 
 });
 
+// Handle the form submission and add student to the table
 document.getElementById("studentForm").addEventListener("submit", function(event) {
     event.preventDefault();
 
@@ -109,11 +112,12 @@ document.getElementById("studentForm").addEventListener("submit", function(event
     let program = document.getElementById("program").value;
     let yearSection = document.getElementById("yearSection").value;
     let violation = document.getElementById("violation").value;
-    let date = document.getElementById("date").value;
+    let date = document.getElementById("date").value || new Date().toISOString().split("T")[0];  // Default to today
 
     let table = document.getElementById("studentTableBody");
 
     let row = document.createElement("tr");
+    row.classList.add('row-item');  // Add class to identify rows
     row.innerHTML = `
         <td>${studentNumber}</td>
         <td>${lastName}</td>
@@ -123,50 +127,48 @@ document.getElementById("studentForm").addEventListener("submit", function(event
         <td>${yearSection}</td>
         <td>${violation}</td>
         <td>${date}</td>
-        <td>
-            <button class="edit">Edit</button>
-            <button class="save" disabled>Save</button>
-        </td>
     `;
 
     table.appendChild(row);
     document.getElementById("modal").style.display = "none";
 });
 
-// Edit and Save functionality
+// Row click to display Edit and Delete buttons
 document.getElementById("studentTableBody").addEventListener("click", function(event) {
     let target = event.target;
+    let row = target.closest('tr');
 
-    if (target.classList.contains("edit")) {
-        let row = target.parentElement.parentElement;
-        let cells = row.querySelectorAll("td:not(:last-child)");
-        
-        cells.forEach((cell, index) => {
-            if (index > 0) {
-                let input = document.createElement("input");
-                input.type = "text";
-                input.value = cell.innerText;
-                cell.innerHTML = "";
-                cell.appendChild(input);
-            }
-        });
+    if (row && row.classList.contains('row-item')) {
+        // Add selected-row class for hover effect
+        document.querySelectorAll('.row-item').forEach(item => item.classList.remove('selected-row'));
+        row.classList.add('selected-row');
 
-        let saveButton = row.querySelector(".save");
-        saveButton.disabled = false;
-    }
+        // Show Edit and Delete buttons
+        document.getElementById("editRowBtn").style.display = "inline-block";
+        document.getElementById("deleteRowBtn").style.display = "inline-block";
 
-    if (target.classList.contains("save")) {
-        let row = target.parentElement.parentElement;
-        let inputs = row.querySelectorAll("input");
+        // Edit button functionality
+        document.getElementById("editRowBtn").onclick = function() {
+            let cells = row.querySelectorAll('td');
+            document.getElementById("studentNumber").value = cells[0].innerText;
+            document.getElementById("lastName").value = cells[1].innerText;
+            document.getElementById("firstName").value = cells[2].innerText;
+            document.getElementById("middleName").value = cells[3].innerText;
+            document.getElementById("program").value = cells[4].innerText;
+            document.getElementById("yearSection").value = cells[5].innerText;
+            document.getElementById("violation").value = cells[6].innerText;
+            document.getElementById("date").value = cells[7].innerText;
 
-        let isConfirmed = confirm("Are you sure you want to save?");
-        if (isConfirmed) {
-            inputs.forEach((input, index) => {
-                let cell = input.parentElement;
-                cell.innerText = input.value;
-            });
+            document.getElementById("modal").style.display = "block";
+            document.getElementById("editRowBtn").style.display = "none";
+            document.getElementById("deleteRowBtn").style.display = "none";
+        };
 
-            target.disabled = true;
-        }
+        // Delete button functionality
+        document.getElementById("deleteRowBtn").onclick = function() {
+            row.remove();
+            document.getElementById("editRowBtn").style.display = "none";
+            document.getElementById("deleteRowBtn").style.display = "none";
+        };
     }
 });
