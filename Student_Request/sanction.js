@@ -1,32 +1,30 @@
-// Example student sanctions data
+// Sanctions data
 const sanctions = [
-    { id: 1, type: "Dress Code Violation", status: "Active", reason: "Wore shorts", canRequest: true },
-    { id: 2, type: "Tardiness", status: "Cleared", reason: "Late 3 times", canRequest: false }
-  ];
-  
-  const sanctionsList = document.getElementById('sanctions-list');
-  
-  function renderSanctions() {
-    sanctions.forEach(sanction => {
-      const container = document.createElement('div');
-      container.innerHTML = `
-        <p><strong>Type:</strong> ${sanction.type}</p>
-        <p><strong>Status:</strong> ${sanction.status}</p>
-        <p><strong>Reason:</strong> ${sanction.reason}</p>
-        ${sanction.canRequest 
-          ? `<button onclick="requestClearance(${sanction.id})">Request Clearance</button>` 
-          : `<p><em>No action available</em></p>`
+  { id: 1, violation: "Not wearing ID", date: "January 25, 2025", canRequest: true },
+  { id: 2, violation: "Not wearing school uniform", date: "January 23, 2025", canRequest: true }
+];
+
+const sanctionsList = document.getElementById("sanctions-list");
+
+function renderSanctions() {
+  sanctions.forEach(sanction => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${sanction.violation}</td>
+      <td>${sanction.date}</td>
+      <td>
+        ${sanction.canRequest
+          ? `<button class="action-btn" onclick="requestClearance(${sanction.id})">Request Clearance</button>`
+          : `<span>No Action</span>`
         }
-        <hr>
-      `;
-      sanctionsList.appendChild(container);
-    });
-  }
-  
-  function requestClearance(sanctionId) {
-    // You would send this to the backend in a real app
-    alert(`Clearance request sent for sanction ID: ${sanctionId}`);
-  }
-  
-  renderSanctions();
-  
+      </td>
+    `;
+    sanctionsList.appendChild(row);
+  });
+}
+
+function requestClearance(id) {
+  alert(`Request for clearance has been sent for sanction ID: ${id}`);
+}
+
+renderSanctions();

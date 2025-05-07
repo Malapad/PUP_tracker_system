@@ -2,12 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Student Sanctions</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h2>My Sanctions</h2>
-  <div id="sanctions-list"></div>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">PUP-TVTS</div>
+      <nav class="menu">
+        <a href="#">Dashboard</a>
+        <a href="#">Student Violations</a>
+        <a href="#">Sanction</a>
+        <a href="#">Notifications</a>
+      </nav>
+      <div class="footer-links">
+        <a href="#">Privacy and Policy</a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <input type="text" class="search" placeholder="Search" />
+        <div class="profile">
+          <span class="icon">👤</span> Student
+        </div>
+      </header>
+
+      <section class="student-info">
+        <p><strong>Last Name, First Name Middle Name</strong></p>
+        <p>0000-00000-TG-0</p>
+        <p>DIT 3-1</p>
+      </section>
+
+      <section class="violations-section">
+        <h2>Student Violations</h2>
+        <table class="violations-table">
+          <thead>
+            <tr>
+              <th>Violation</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="sanctions-list">
+            <!-- JS will insert rows here -->
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
 
   <script src="sanctions.js"></script>
 </body>
