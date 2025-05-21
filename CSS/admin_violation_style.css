@@ -57,6 +57,7 @@ nav a:hover {
     display: flex;
     justify-content: center;
     margin: 20px 0;
+    gap: 8px;
 }
 
 .search-bar input {
@@ -72,6 +73,19 @@ nav a:hover {
     padding: 0;
     box-sizing: border-box; 
     font-family: Arial, sans-serif; 
+}
+
+/* Filter dropdown styles */
+.filters {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: 10px 55px 10px auto;
+}
+.filters select {
+    padding: 6px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
 }
 
 /* Student Violation List */
@@ -103,8 +117,27 @@ button {
     border-radius: 5px;
 }
 
+#search-btn {
+    background: #AF1414;
+    color: white;
+}
+
+#search-btn:hover {
+    background-color: #981515;
+    color: white;
+}
+
+.search-bar {
+    margin-left: 2px;
+}
+
 .add {
     background: green;
+}
+
+.add:hover {
+    background-color: rgb(6, 106, 6);
+    color: white;
 }
 
 .edit {
@@ -196,6 +229,60 @@ input, select {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+}
+
+/* History Modal */
+#historyModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+#historyModalContent {
+    margin: 10% auto;
+    width: 50%;
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.history {
+    background: #AF1414;
+}
+.history:hover {
+    background:#981515;
+}
+
+/* Show success message */
+.success-msg {
+    position: fixed;
+    top: 10%;
+    right: 20px;
+    background: green;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: none;
+    z-index: 9999;
+}
+
+.success-msg.edit {
+    background: darkorange;
+}
+
+/* Align filters to the right side */
+.filter-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    align-self: flex-start; /* Aligns the filters to the right */
 }
 
 @media (max-width: 768px) {

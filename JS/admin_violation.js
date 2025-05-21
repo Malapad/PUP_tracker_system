@@ -1,96 +1,3 @@
-/*document.addEventListener("DOMContentLoaded", function () {
-    const table = document.querySelector("table tbody");
-    const addButton = document.querySelector(".add");
-    const editButton = document.querySelector(".edit");
-    const deleteButton = document.querySelector(".delete");
-
-    // Add a new row
-    addButton.addEventListener("click", function () {
-        const studentNumber = prompt("Enter Student Number:");
-        const studentName = prompt("Enter Student Name:");
-        const program = prompt("Enter Program:");
-        const violation = prompt("Enter Violation:");
-        const date = prompt("Enter Date (MM/DD/YY):");
-
-        if (studentNumber && studentName && program && violation && date) {
-            const newRow = document.createElement("tr");
-            newRow.innerHTML = `
-                <td>${studentNumber}</td>
-                <td>${studentName}</td>
-                <td>${program}</td>
-                <td>${violation}</td>
-                <td>${date}</td>
-            `;
-            table.appendChild(newRow);
-        } else {
-            alert("All fields are required!");
-        }
-    });
-
-    // Edit a selected row
-    editButton.addEventListener("click", function () {
-        const rows = document.querySelectorAll("table tbody tr");
-        let rowIndex = prompt("Enter row number to edit (starting from 1):");
-        rowIndex = parseInt(rowIndex) - 1;
-
-        if (rowIndex >= 0 && rowIndex < rows.length) {
-            const cells = rows[rowIndex].children;
-            cells[0].textContent = prompt("Edit Student Number:", cells[0].textContent);
-            cells[1].textContent = prompt("Edit Student Name:", cells[1].textContent);
-            cells[2].textContent = prompt("Edit Program:", cells[2].textContent);
-            cells[3].textContent = prompt("Edit Violation:", cells[3].textContent);
-            cells[4].textContent = prompt("Edit Date:", cells[4].textContent);
-        } else {
-            alert("Invalid row number!");
-        }
-    });
-
-    // Delete a selected row
-    deleteButton.addEventListener("click", function () {
-        const rows = document.querySelectorAll("table tbody tr");
-        let rowIndex = prompt("Enter row number to delete (starting from 1):");
-        rowIndex = parseInt(rowIndex) - 1;
-
-        if (rowIndex >= 0 && rowIndex < rows.length) {
-            rows[rowIndex].remove();
-        } else {
-            alert("Invalid row number!");
-        }
-    });
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-    const table = document.querySelector("table tbody");
-
-    // Function to load data from localStorage
-    function loadViolationEntry() {
-        const savedEntry = localStorage.getItem("violationEntry");
-
-        if (savedEntry) {
-            const data = JSON.parse(savedEntry);
-
-            // Create a new row and insert data
-            const newRow = document.createElement("tr");
-            newRow.innerHTML = `
-                <td>${data.studentNumber}</td>
-                <td>${data.fullName}</td>
-                <td>${data.courseYear}</td>
-                <td>${data.violation}</td>
-                <td>${data.date}</td>
-            `;
-
-            table.appendChild(newRow);
-
-            // Clear the saved entry after adding to prevent duplication
-            localStorage.removeItem("violationEntry");
-        }
-    }
-
-    // Load violation entry if available
-    loadViolationEntry();
-});
-*/
-
 // Open modal when "Add Student" button is clicked
 document.getElementById("addStudentBtn").addEventListener("click", function() {
     document.getElementById("modal").style.display = "block";
@@ -171,4 +78,104 @@ document.getElementById("studentTableBody").addEventListener("click", function(e
             document.getElementById("deleteRowBtn").style.display = "none";
         };
     }
+});
+
+//Updated JS 21/05/25 -------------------------------------------------------------------------
+const categorySelect = document.getElementById("violationCategory");
+const typeSelect = document.getElementById("violationType");
+const otherCategoryInput = document.getElementById("otherCategoryInput");
+const otherTypeInput = document.getElementById("otherTypeInput");
+const successMsg = document.createElement("div");
+successMsg.classList.add("success-msg");
+document.body.appendChild(successMsg);
+
+// Violation mapping
+const violationMap = {
+    "ID": ["Not wearing ID", "Loss ID", "Late Validation of ID"],
+    "Registration Card": ["Loss Registration Card", "Late Validation of COR"],
+    "Prohibited Clothes": ["Wearing Croptop", "Wearing Sando", "Wearing Rip Jeans", "Wearing Leggings", "Wearing Crocs", "Wearing Slippers"],
+    "Hair": ["Hair Color"]
+};
+
+// Populate violation type based on category
+categorySelect.addEventListener("change", function () {
+    const selected = this.value;
+    typeSelect.innerHTML = "";
+    otherCategoryInput.style.display = selected === "Others" ? "block" : "none";
+    otherTypeInput.style.display = selected === "Others" ? "block" : "none";
+    typeSelect.style.display = selected === "Others" ? "none" : "block";
+
+    if (violationMap[selected]) {
+        violationMap[selected].forEach(type => {
+            const option = document.createElement("option");
+            option.value = type;
+            option.textContent = type;
+            typeSelect.appendChild(option);
+        });
+    }
+});
+
+// Trigger success message
+function showSuccessMessage(text, isEdit = false) {
+    successMsg.textContent = text;
+    successMsg.classList.toggle("edit", isEdit);
+    successMsg.style.display = "block";
+    setTimeout(() => successMsg.style.display = "none", 2000);
+}
+
+// History Modal
+document.getElementById("historyBtn").addEventListener("click", () => {
+    document.getElementById("historyModal").style.display = "block";
+});
+document.getElementById("closeHistory").addEventListener("click", () => {
+    document.getElementById("historyModal").style.display = "none";
+});
+
+// Close the history modal when clicking outside the modal content
+window.addEventListener("click", function(event) {
+    const historyModal = document.getElementById("historyModal");
+    const historyContent = document.getElementById("historyModalContent");
+
+    if (event.target === historyModal) {
+        historyModal.style.display = "none";
+    }
+});
+
+
+// Updated Form Submission
+document.getElementById("studentForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const table = document.getElementById("studentTableBody");
+    const studentNumber = document.getElementById("studentNumber").value;
+    const lastName = document.getElementById("lastName").value;
+    const firstName = document.getElementById("firstName").value;
+    const middleName = document.getElementById("middleName").value;
+    const program = document.getElementById("program").value;
+    const yearSection = document.getElementById("yearSection").value;
+    const date = document.getElementById("date").value || new Date().toISOString().split("T")[0];
+    const category = categorySelect.value === "Others" ? otherCategoryInput.value : categorySelect.value;
+    const types = categorySelect.value === "Others" ? [otherTypeInput.value] : Array.from(typeSelect.selectedOptions).map(opt => opt.value);
+    const remarks = document.getElementById("remarks").value;
+
+    const row = document.createElement("tr");
+    row.classList.add('row-item');
+    row.innerHTML = `
+        <td>${studentNumber}</td>
+        <td>${lastName}</td>
+        <td>${firstName}</td>
+        <td>${middleName}</td>
+        <td>${program}</td>
+        <td>${yearSection}</td>
+        <td>${category}</td>
+        <td>${types.join(", ")}</td>
+        <td>1st</td>
+        <td>${date}</td>
+        <td>${remarks}</td>
+    `;
+
+    table.appendChild(row);
+    document.getElementById("modal").style.display = "none";
+    this.reset();
+    showSuccessMessage("✔ Successfully added");
 });

@@ -29,118 +29,106 @@
     <!-- Search Bar -->
     <div class="search-bar">
         <input type="text" placeholder="Search">
+        <button id="search-btn" type="submit">Search</button>
     </div>
-    
+
     <!-- Buttons Inside Container -->
     <div class="container">
         <h1>Student Violation Information</h1>
+
+<!-- Filter Dropdowns -->
+<div class="filter-controls">
+    <select id="filterCourse">
+        <option value="">Course</option>
+        <option>BSIT</option>
+        <option>DIT</option>
+        <option>DOMT</option>
+        <option>BSOA</option>
+    </select>
+    <select id="filterYear">
+        <option value="">Year</option>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>Ladderized</option>
+    </select>
+</div>
+
         <!-- Buttons for Add, Edit, Delete aligned to the right -->
         <div class="action-buttons">
-            <button id="addStudentBtn" class="add">Add Student</button>
+            <button id="addStudentBtn" class="add">Add Violation</button>
+            <button class="history" id="historyBtn">History</button>
             <button id="editRowBtn" class="edit">Edit</button>
             <button id="deleteRowBtn" class="delete">Delete</button>
         </div>
-        
+
         <table>
-            <thead>
-                <tr>
-                    <th>Student Number</th>
-                    <th>Last Name</th>
-                    <th>First Name</th>
-                    <th>Middle Name</th>
-                    <th>Program</th>
-                    <th>Year & Section</th>
-                    <th>Violation</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
+        <!-- Updated Table Header -->
+        <thead>
+          <tr>
+            <th>Student Number</th>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Middle Name</th>
+            <th>Program</th>
+            <th>Year Section</th>
+            <th>Violation Category</th>
+            <th>Violation Type</th>
+            <th>Offense Level</th>
+            <th>Date</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+
             <tbody id="studentTableBody">
                 <!-- Table data will be dynamically added here -->
             </tbody>
         </table>
     </div>
-    
-    <!-- Modal for Adding Student --> 
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <div class="head-modal">
-                <h3>Add Student</h3>
-            </div>
-            <form id="studentForm" class="form-container">
-                <div class="row">
-                    <div class="column">
-                        <label>Student Number:</label>
-                        <input type="text" id="studentNumber" required>
-                    </div>
-                    <div class="column">
-                        <label>Last Name:</label>
-                        <input type="text" id="lastName" required>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="column">
-                        <label>First Name:</label>
-                        <input type="text" id="firstName" required>
-                    </div>
-                    <div class="column">
-                        <label>Middle Name:</label>
-                        <input type="text" id="middleName">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="column">
-                        <label>Program:</label>
-                        <select id="program">
-                            <option value="DIT">DIT</option>
-                            <option value="BSIT">BSIT</option>
-                            <option value="DOMT">DOMT</option>
-                            <option value="BSOA">BSOA</option>
-                        </select>
-                    </div>
-                    <div class="column">
-                        <label>Year & Section:</label>
-                        <select id="yearSection">
-                            <option value="" disabled selected>Select</option>
-                            <option value="1st Year">1st Year</option>
-                            <option value="2nd Year">2nd Year</option>
-                            <option value="3rd Year">3rd Year</option>
-                            <option value="4th Year">4th Year</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="column">
-                        <label>Violation:</label>
-                        <select id="violation">
-                            <option value="" disabled selected>Select a Violation</option>
-                            <option value="No ID">No ID</option>
-                            <option value="Late Validation of ID">Late Validation of ID</option>
-                            <!-- More violations will be loaded from DB dynamically -->
-                        </select>
-                    </div>
-                    <div class="column">
-                        <label>Other (please specify violation):</label>
-                        <input type="text" id="otherViolation" placeholder="If not listed above">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="column">
-                        <label>Date:</label>
-                        <input type="date" id="date">
-                    </div>
-                </div>
-
-                <div class="button-row">
-                    <button type="submit">Add</button>
-                    <button type="button" id="closeModal">Cancel</button>
-                </div>
-            </form>
-        </div> 
+<!-- History Modal -->
+<div id="historyModal" class="modal">
+    <div class="modal-content" id="historyModalContent">
+        <div class="head-modal">
+            <h2>Violation History</h2>
+        </div>
+        <!-- Add history content here -->
     </div>
+</div>
+
+    <!-- Modal Structure -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <div class="head-modal">
+            <h2>Add Violation</h2>
+        </div>
+        <form id="studentForm">
+            <div class="row">
+                <select id="violationCategory">
+                    <option value="">Select Violation Category</option>
+                    <option value="ID">ID</option>
+                    <option value="Registration">Registration Card</option>
+                    <option value="Clothes">Prohibited Clothes</option>
+                    <option value="Hair">Hair</option>
+                    <option value="Others">Others</option>
+                </select>
+                <select id="violationType" multiple></select>
+            </div>
+            <div class="row" id="specificCategoryRow" style="display:none">
+                <input type="text" id="specificCategory" placeholder="Specific Category">
+            </div>
+            <div class="row">
+                <input type="text" id="remarks" placeholder="Remarks">
+                <input type="date" id="date">
+            </div>
+            <div class="action-buttons">
+                <button type="submit" id="submitBtn">Add</button>
+                <button type="button" id="closeModal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
  
     <script src="../JS/admin_violation.js" defer></script> 
 </body> 

@@ -31,6 +31,11 @@
              <input type="text" placeholder="Search">
          </div>
     <main>
+        <select class="violation-link" onchange="location = this.value;">
+            <option disabled selected>Violations</option>
+            <option value="../HTML/admin_dashboard_violation.html">Add Violation</option>
+            <option value="../HTML/violation_record.html">Violation Record</option>
+        </select>
         <h1>Violation List</h1>
         <div class="grid-container">
             <a href="../PHP/late_validation.php" class="grid-item"><img src="https://img.icons8.com/ios/50/id-verified.png"/>Late ID Validation</a>
