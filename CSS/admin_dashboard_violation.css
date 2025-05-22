@@ -67,6 +67,10 @@ nav a:hover {
     border-radius: 5px;
 }
 
+.violation-link {
+    margin-left: 85%;
+}
+
 /* Student Sanction List */
 .container {
     width: 90%;
