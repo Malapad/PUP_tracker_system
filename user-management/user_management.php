@@ -128,12 +128,12 @@ include '../PHP/dbcon.php';
 
                 $query = "SELECT u.student_number, u.last_name, u.first_name, u.middle_name, u.email,
                             c.course_name, y.year, s.section_name, st.status_name
-                          FROM users_tbl u
-                          LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                          LEFT JOIN year_tbl y ON u.year_id = y.year_id
-                          LEFT JOIN section_tbl s ON u.section_id = s.section_id
-                          LEFT JOIN status_tbl st ON u.status_id = st.status_id
-                          WHERE 1";
+                        FROM users_tbl u
+                        LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                        LEFT JOIN year_tbl y ON u.year_id = y.year_id
+                        LEFT JOIN section_tbl s ON u.section_id = s.section_id
+                        LEFT JOIN status_tbl st ON u.status_id = st.status_id
+                        WHERE 1";
                 
                 if (!empty($search)) {
                     $query .= " AND u.student_number LIKE '%$search%'";
