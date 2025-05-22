@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
              </div>
              <nav>
                  <a href="../HTML/admin_homepage.html">Home</a>
-                 <a href="../HTML/admin_dashboard_violation.html">Violations</a>
+                 <a href="../admin-violation/admin_violation.php">Violations</a>
                  <a href="../HTML/admin_sanction.html">Student Sanction</a>
                  <a href="../user-management/user_management.php">User Management</a>
              </nav>
