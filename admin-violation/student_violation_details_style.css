@@ -1,0 +1,169 @@
+.details-container {
+    width: 90%;
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 25px 30px;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.page-title-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.page-title-container h2 {
+    font-size: 1.8em;
+    color: #333;
+    font-weight: bold;
+}
+
+.student-info-block {
+    margin-bottom: 15px;
+}
+
+.student-info-block .student-name {
+    font-size: 1.5em;
+    color: #000000;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.student-info-block p {
+    margin: 4px 0;
+    font-size: 0.95em;
+    color: #555;
+}
+
+.student-info-block p strong {
+    color: #333;
+}
+
+.details-divider {
+    border: 0;
+    height: 1px;
+    background-color: #af1414;
+    margin: 20px 0;
+}
+
+.overall-status-block {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #af1414;
+    border-radius: 4px;
+}
+
+.overall-status-block p {
+    margin: 5px 0;
+    font-size: 1em;
+}
+
+.overall-status-block p strong {
+    color: #333;
+}
+
+.offense-status-text {
+    font-weight: bold;
+}
+
+.offense-warning {
+    color: #FFC107;
+}
+
+.offense-sanction {
+    color: #af1414;
+}
+
+.offense-na {
+    color: #6c757d;
+}
+
+.log-title {
+     font-size: 1.3em;
+     color: #333;
+     margin-bottom:10px;
+     margin-top: 0;
+     font-weight:bold;
+}
+
+.table-scroll-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.violations-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.violations-table th, .violations-table td {
+    border-bottom: 1px solid #ddd;
+    border-left: none;
+    border-right: none;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 0.9em;
+}
+
+.violations-table th:first-child, .violations-table td:first-child {
+    padding-left: 12px;
+}
+
+.violations-table th:last-child, .violations-table td:last-child {
+     padding-right: 12px;
+}
+
+.violations-table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #e9ecef;
+    color: #495057;
+    font-weight: bold;
+    z-index: 1;
+    border-top: none;
+}
+
+.violations-table tr:nth-child(even) td {
+    background-color: #f8f9fa;
+}
+
+ .violations-table tr:hover td {
+    background-color: #f1f1f1;
+}
+
+.back-button-container {
+    text-align: left;
+    margin-top: 25px;
+}
+
+.back-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #af1414;
+    color: white !important;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.95em;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: #bd2727;
+    text-decoration: none;
+}
+
+.no-records {
+    color: #777;
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
