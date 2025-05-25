@@ -1,13 +1,14 @@
 <?php
-include '../PHP/dbcon.php';
+include '../PHP/dbcon.php'; // Ensure this path is correct
 
+// Initialize filters and search
 $filterViolation = $_GET['violation_type'] ?? '';
 $filterCourse = $_GET['course_id'] ?? '';
 $filterYear = $_GET['year_id'] ?? '';
 $search = trim($_GET['search'] ?? '');
 
+// Handle form submission for adding a violation
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
-    // PHP code for POST handling
     $studentNumber = trim($_POST['studentNumber'] ?? '');
     $violationTypeId = trim($_POST['violationType'] ?? '');
     
@@ -46,11 +47,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
         $response['message'] = 'Please fill in all required fields.';
     }
 
-    if (isset($_POST['ajax_submit'])) {
+    if (isset($_POST['ajax_submit'])) { 
         header('Content-Type: application/json');
         echo json_encode($response);
         exit;
-    } else {
+    } else { 
         if ($response['success']) {
             echo "<script>alert('" . addslashes($response['message']) . "'); window.location.href = '" . htmlspecialchars($_SERVER['PHP_SELF']) . "';</script>";
         } else {
@@ -67,14 +68,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Student Violation Records</title>
-    <link rel="stylesheet" href="./admin_violation_style.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="./admin_violation_style.css" /> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Only non-toast specific, minimal inline styles if necessary. Ideally, move all to CSS file. */
+        /* Basic styles for offense text (can be moved to admin_violation_style.css) */
+        .offense-text-default { color: grey; } /* Example, ensure these match your external CSS or move them */
+        .offense-text-warning { color: orange; font-weight: bold; }
+        .offense-text-sanction { color: red; font-weight: bold; }
+        
+        /* Spinner styles (can be moved to admin_violation_style.css) */
+        .table-overlay-spinner {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: rgba(255,255,255,0.7); 
+            display: flex; justify-content: center; align-items: center; 
+            z-index: 10;
+        }
+        .spinner { /* This class is for the spinner inside table-overlay-spinner */
+            border: 4px solid #f3f3f3; border-top: 4px solid #3498db; 
+            border-radius: 50%; width: 40px; height: 40px; 
+            animation: spinTableOverlay 1s linear infinite; /* Using the specific animation name from your CSS */
+        }
+        /* @keyframes spinTableOverlay defined in admin_violation_style.css */
+    </style>
 </head>
 <body>
 
-<div id="toast-notification" class="toast"></div>
-
-<header>
+<div id="toast-notification" class="toast"></div> <header>
     <div class="logo">
         <img src="../assets/PUPlogo.png" alt="PUP Logo" />
     </div>
@@ -101,7 +120,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
     if (!empty($filterViolation) || !empty($filterCourse) || !empty($filterYear) || !empty($search)) {
         $baseUrl = strtok($_SERVER["REQUEST_URI"], '?');
         echo '<div class="clear-filters-container">';
-        echo '  <a href="' . htmlspecialchars($baseUrl) . '" class="clear-filters-btn"><i class="fas fa-eraser"></i> Clear Filters</a>';
+        echo '    <a href="' . htmlspecialchars($baseUrl) . '" class="clear-filters-btn"><i class="fas fa-eraser"></i> Clear Filters</a>';
         echo '</div>';
     }
     ?>
@@ -109,7 +128,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
     <div class="table-controls">
         <div class="filters-area">
             <form method="GET" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" id="filter-form">
-                <select name="violation_type" onchange="this.form.submit()" class="filter-select">
+                <select name="violation_type" class="filter-select">
                     <option value="">Filter by Violation Type</option>
                     <?php
                     $vtQueryMain = "SELECT violation_type_id, violation_type FROM violation_type_tbl ORDER BY violation_type ASC";
@@ -122,12 +141,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                     }
                     ?>
                 </select>
-                <select name="course_id" onchange="this.form.submit()" class="filter-select">
+                <select name="course_id" class="filter-select">
                     <option value="">Filter by Course</option>
                     <?php
                     $courseQueryMain = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name ASC";
                     $courseResultMain = $conn->query($courseQueryMain);
-                     if ($courseResultMain) {
+                    if ($courseResultMain) {
                         while ($rowCourse = $courseResultMain->fetch_assoc()) {
                             $selected = ($filterCourse == $rowCourse['course_id']) ? 'selected' : '';
                             echo "<option value='" . htmlspecialchars($rowCourse['course_id']) . "' $selected>" . htmlspecialchars($rowCourse['course_name']) . "</option>";
@@ -135,7 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                     }
                     ?>
                 </select>
-                <select name="year_id" onchange="this.form.submit()" class="filter-select">
+                <select name="year_id" class="filter-select">
                     <option value="">Filter by Year</option>
                     <?php
                     $yearQueryMain = "SELECT year_id, year FROM year_tbl ORDER BY year ASC";
@@ -167,8 +186,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
 
     <div class="main-table-scroll-container">
         <div class="table-overlay-spinner" id="tableSpinner" style="display: none;">
-            <div class="spinner"></div>
-        </div>
+            <div class="spinner"></div> </div>
         <table>
             <thead>
             <tr>
@@ -187,43 +205,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
             </thead>
             <tbody id="violationTableBody">
             <?php
-            // PHP for fetching and displaying table data remains the same
-            $sql = "SELECT 
+            $sql = "SELECT
                         u.student_number, u.first_name, u.middle_name, u.last_name, 
                         c.course_name, y.year, s.section_name,
-                        COUNT(v.violation_id) AS total_violation_count,
-                        GROUP_CONCAT(DISTINCT vt.violation_type ORDER BY vt.violation_type SEPARATOR ', ') AS violations_committed_list
+                        GROUP_CONCAT(DISTINCT vt_main.violation_type ORDER BY vt_main.violation_type SEPARATOR ', ') AS violations_committed_list
                     FROM users_tbl u
                     LEFT JOIN course_tbl c ON u.course_id = c.course_id
                     LEFT JOIN year_tbl y ON u.year_id = y.year_id
                     LEFT JOIN section_tbl s ON u.section_id = s.section_id
-                    LEFT JOIN violation_tbl v ON u.student_number = v.student_number
-                    LEFT JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id";
+                    LEFT JOIN violation_tbl v_main ON u.student_number = v_main.student_number
+                    LEFT JOIN violation_type_tbl vt_main ON v_main.violation_type = vt_main.violation_type_id
+                    ";
 
             $whereConditions = [];
+            $baseWhereConditions = ["v_main.violation_id IS NOT NULL"]; 
+
             if (!empty($search)) {
                 $searchEscaped = $conn->real_escape_string($search);
                 $whereConditions[] = "(u.student_number LIKE '%$searchEscaped%' OR u.last_name LIKE '%$searchEscaped%' OR u.first_name LIKE '%$searchEscaped%')";
             }
             if (!empty($filterCourse)) {
-                $whereConditions[] = "c.course_id = '" . $conn->real_escape_string($filterCourse) . "'";
+                $whereConditions[] = "u.course_id = '" . $conn->real_escape_string($filterCourse) . "'";
             }
             if (!empty($filterYear)) {
-                $whereConditions[] = "y.year_id = '" . $conn->real_escape_string($filterYear) . "'";
+                $whereConditions[] = "u.year_id = '" . $conn->real_escape_string($filterYear) . "'";
             }
+            
             if (!empty($filterViolation)) {
                 $escapedFilterViolation = $conn->real_escape_string($filterViolation);
-                $whereConditions[] = "EXISTS (SELECT 1 FROM violation_tbl v_check 
-                                            WHERE v_check.student_number = u.student_number 
-                                            AND v_check.violation_type = '$escapedFilterViolation')";
+                $whereConditions[] = "EXISTS (SELECT 1 FROM violation_tbl v_filter 
+                                              WHERE v_filter.student_number = u.student_number 
+                                              AND v_filter.violation_type = '$escapedFilterViolation')";
             }
 
-            if (!empty($whereConditions)) {
-                $sql .= " WHERE " . implode(" AND ", $whereConditions);
-            }
+            $finalWhere = array_merge($baseWhereConditions, $whereConditions);
+            $sql .= " WHERE " . implode(" AND ", $finalWhere);
 
             $sql .= " GROUP BY u.student_number, u.first_name, u.middle_name, u.last_name, c.course_name, y.year, s.section_name";
-            $sql .= " HAVING COUNT(v.violation_id) > 0";
             $sql .= " ORDER BY u.last_name ASC, u.first_name ASC";
 
             $result = $conn->query($sql);
@@ -241,19 +259,71 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                     echo "<td>" . htmlspecialchars($row['year'] ?? 'N/A') . "</td>";
                     echo "<td>" . htmlspecialchars($row['section_name'] ?? 'N/A') . "</td>";
                     echo "<td>" . htmlspecialchars($row['violations_committed_list'] ?? 'No Violations') . "</td>";
-                    echo "<td>" . htmlspecialchars($row['total_violation_count']) . "</td>";
+
+                    $student_number_for_detail = $row['student_number'];
+                    $detail_sql = "SELECT vt.violation_type_id
+                                   FROM violation_tbl v_detail
+                                   JOIN violation_type_tbl vt ON v_detail.violation_type = vt.violation_type_id
+                                   WHERE v_detail.student_number = ?";
                     
-                    $offenseText = '-';
-                    $offenseClass = 'offense-text-default';
-                    if ($row['total_violation_count'] == 1) {
-                        $offenseText = 'Warning';
-                        $offenseClass = 'offense-text-warning';
-                    } elseif ($row['total_violation_count'] > 1) {
-                        $offenseText = 'Sanction';
-                        $offenseClass = 'offense-text-sanction';
+                    $violations_by_type_count = [];
+                    $total_individual_violations = 0;
+
+                    $detail_stmt = $conn->prepare($detail_sql);
+                    if ($detail_stmt) {
+                        $detail_stmt->bind_param("s", $student_number_for_detail);
+                        $detail_stmt->execute();
+                        $detail_result = $detail_stmt->get_result();
+
+                        while ($detail_row = $detail_result->fetch_assoc()) {
+                            $type_id_key = $detail_row['violation_type_id']; 
+                            if (!isset($violations_by_type_count[$type_id_key])) {
+                                $violations_by_type_count[$type_id_key] = 0;
+                            }
+                            $violations_by_type_count[$type_id_key]++;
+                            $total_individual_violations++;
+                        }
+                        $detail_stmt->close();
+                    } else {
+                        error_log("Failed to prepare detail statement for student: " . $student_number_for_detail . " - " . $conn->error);
                     }
+
+                    echo "<td>" . htmlspecialchars($total_individual_violations) . "</td>";
+
+                    // Sanction Logic
+                    $offenseText = 'Warning'; 
+                    $offenseClass = 'offense-text-warning'; // Default these based on your external CSS
+                    $hasSanction = false;
+
+                    if ($total_individual_violations > 0) {
+                        foreach ($violations_by_type_count as $violation_id => $count) {
+                            if ($count >= 2) {
+                                $hasSanction = true;
+                                break; 
+                            }
+                        }
+
+                        if ($hasSanction) {
+                            $offenseText = 'Sanction';
+                            // $offenseClass will be set by your external CSS based on .offense-text-sanction
+                        } else {
+                            $offenseText = 'Warning'; 
+                            // $offenseClass will be set by your external CSS
+                        }
+                    } else { 
+                        $offenseText = '-';
+                        // $offenseClass for default should also be in your external CSS
+                    }
+                     // Determine class based on text for styling from external CSS
+                    if ($offenseText === 'Sanction') {
+                        $offenseClass = 'offense-text-sanction';
+                    } elseif ($offenseText === 'Warning') {
+                        $offenseClass = 'offense-text-warning';
+                    } else {
+                        $offenseClass = 'offense-text-default';
+                    }
+
                     echo "<td><span class='" . $offenseClass . "'>" . htmlspecialchars($offenseText) . "</span></td>";
-                    
                     echo "<td><a href='student_violation_details.php?student_number=" . urlencode($row['student_number']) . "' class='more-details-btn'><i class='fas fa-info-circle'></i> More Details</a></td>";
                     echo "</tr>";
                 }
@@ -272,10 +342,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
     <div class="modal-content">
         <div class="head-modal">
             <h3>Add Violation</h3>
+            <span class="close-modal-button" style="float:right; cursor:pointer; font-size: 1.5em;">&times;</span>
         </div>
         <div id="modalMessage" class="modal-message" style="display: none;"></div>
         
         <form id="violationForm" class="form-container" method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+            <input type="hidden" name="ajax_submit" value="1">
             <div class="row">
                 <div class="column">
                     <label for="studentNumber">Student Number:</label>
@@ -291,7 +363,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                         if ($vtResultModal && $vtResultModal->num_rows > 0) {
                             while ($vtRowModal = $vtResultModal->fetch_assoc()) {
                                 echo '<option value="' . htmlspecialchars($vtRowModal['violation_type_id']) . '">' 
-                                     . htmlspecialchars($vtRowModal['violation_type']) . '</option>';
+                                    . htmlspecialchars($vtRowModal['violation_type']) . '</option>';
                             }
                         }
                         ?>
@@ -306,7 +378,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
     </div>
 </div>
 
-<script src="./admin_violation.js"></script>
-</body>
+<script src="./admin_violation.js"></script> </body>
 </html>
 <?php $conn->close(); ?>
