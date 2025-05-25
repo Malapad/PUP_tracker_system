@@ -1,3 +1,4 @@
+// Updated showToast function
 function showToast(message, type = 'success', duration = 3000) {
     const toast = document.getElementById('toast-notification');
     if (!toast) {
@@ -6,13 +7,12 @@ function showToast(message, type = 'success', duration = 3000) {
     }
 
     toast.textContent = message;
-    toast.className = 'toast';
-    toast.classList.add(type); 
+    toast.className = 'toast'; 
+    toast.classList.add(type);
 
-    toast.style.display = 'block'; 
-    toast.offsetHeight; 
-
-    toast.classList.add('show');
+    toast.classList.remove('show'); 
+    void toast.offsetWidth;       
+    toast.classList.add('show');   
 
     setTimeout(() => {
         toast.classList.remove('show');
@@ -26,18 +26,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const violationForm = document.getElementById("violationForm");
     const modalMessageDiv = document.getElementById("modalMessage");
     const refreshTableBtn = document.getElementById('refreshTableBtn');
-    const tableSpinner = document.getElementById('tableSpinner'); 
-    const filterForm = document.getElementById('filter-form'); 
+    const tableSpinner = document.getElementById('tableSpinner');
+    const filterForm = document.getElementById('filter-form');
+    const closeModalInHeader = document.querySelector(".modal .head-modal .close-modal-button");
 
     function showTableSpinner() {
         if (tableSpinner) {
             tableSpinner.style.display = 'flex';
-        }
-    }
-
-    function hideTableSpinner() { 
-        if (tableSpinner) {
-            tableSpinner.style.display = 'none';
         }
     }
 
@@ -65,30 +60,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (violationForm) violationForm.reset();
                 clearModalMessage();
                 const studentNumberInput = document.getElementById("studentNumber");
-                if(studentNumberInput) studentNumberInput.focus();
+                if (studentNumberInput) studentNumberInput.focus();
             }
         });
     }
 
+    function closeModal() {
+        if (modal) modal.style.display = "none";
+        if (violationForm) violationForm.reset();
+        clearModalMessage();
+    }
+
     if (closeModalBtn) {
-        closeModalBtn.addEventListener("click", () => {
-            if (modal) modal.style.display = "none";
-            if (violationForm) violationForm.reset();
-            clearModalMessage();
-        });
+        closeModalBtn.addEventListener("click", closeModal);
+    }
+
+    if (closeModalInHeader) { 
+        closeModalInHeader.addEventListener("click", closeModal);
     }
 
     window.addEventListener("click", (event) => {
         if (event.target === modal) {
-            if (modal) modal.style.display = "none";
-            if (violationForm) violationForm.reset();
-            clearModalMessage();
+            closeModal();
         }
     });
 
     if (violationForm) {
         violationForm.addEventListener("submit", async (e) => {
-            e.preventDefault(); 
+            e.preventDefault();
             clearModalMessage();
 
             const studentNumberInput = document.getElementById("studentNumber");
@@ -104,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const formData = new FormData(violationForm);
-            formData.append('ajax_submit', '1');
+            // Hidden input 'ajax_submit' in the form handles this now.
 
             const submitButton = violationForm.querySelector('button[type="submit"]');
             const originalButtonContent = submitButton ? submitButton.innerHTML : '';
@@ -123,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     let errorMsg = `Server error: ${response.status}`;
                     try {
                         const errorData = await response.json();
-                        if(errorData && errorData.message) errorMsg = errorData.message;
+                        if (errorData && errorData.message) errorMsg = errorData.message;
                     } catch (jsonError) { /* Ignore */ }
                     throw new Error(errorMsg);
                 }
@@ -131,9 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const result = await response.json();
 
                 if (result.success) {
-                    if (modal) modal.style.display = "none"; 
-                    violationForm.reset(); 
-                    showToast(result.message, 'success', 2500); 
+                    closeModal();
+                    showToast(result.message, 'success', 3000); 
                 } else {
                     displayModalErrorMessage(result.message || "An error occurred.");
                 }
@@ -142,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error('Form submission error:', error);
                 displayModalErrorMessage("Submission failed: " + error.message);
             } finally {
-                 if (submitButton) {
+                if (submitButton) {
                     submitButton.disabled = false;
                     submitButton.innerHTML = originalButtonContent;
                 }
@@ -152,14 +150,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (refreshTableBtn) {
         refreshTableBtn.addEventListener('click', () => {
-            showTableSpinner(); 
+            showTableSpinner();
             window.location.reload(true); 
         });
     }
 
     if (filterForm) {
-        filterForm.addEventListener('submit', () => {
-            showTableSpinner(); 
+        const selects = filterForm.querySelectorAll('select');
+        selects.forEach(select => {
+            select.addEventListener('change', () => { // Changed from onchange in HTML to JS event listener
+                showTableSpinner();
+                filterForm.submit();
+            });
+        });
+        filterForm.addEventListener('submit', () => { 
+            showTableSpinner();
         });
     }
 });
