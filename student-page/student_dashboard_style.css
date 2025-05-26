@@ -1,0 +1,252 @@
+:root {
+    --vh: 0.01px; 
+    --header-height: 74px; 
+    --spacing-5: 20px;
+    --spacing-7: 28px;
+    --primary-background-color: #f5f5f5; 
+    --pup-maroon: #800000; 
+    --pup-maroon-darker: #600000;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    position: relative; 
+    font-weight: normal; 
+    font-family: Arial, sans-serif; 
+}
+
+body {
+    background-color: #e9e9e9; 
+    color: #333;
+    line-height: 1.5; 
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    padding: 10px 20px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo img {
+    width: 50px;
+    margin-left: 70px;
+}
+
+nav {
+    display: flex;
+    gap: 20px;
+}
+
+nav a {
+    text-decoration: none;
+    font-weight: bold; 
+    color: black;
+}
+
+nav a:hover,
+nav a.active-nav {
+    color: #800000;
+}
+
+.admin-icons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-right: 55px;
+}
+
+.admin-icons img {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.admin-icons img:hover {
+    opacity: 1;
+}
+
+main {
+    position: relative;
+    min-height: calc( (var(--vh, 1vh) * 100) - var(--header-height) ); 
+    padding: var(--spacing-7) var(--spacing-5); 
+    background-color: var(--primary-background-color); 
+}
+
+.dashboard-page-title {
+    font-size: 22px;
+    text-align: center;
+    margin-top: 10px; 
+    margin-bottom: 25px;
+    color: var(--text-headings);
+    font-weight: bold; 
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+}
+
+.box {
+    margin-top: 0; 
+    width: 45%;
+    min-width: 320px; 
+    max-width: 600px;
+    background: #ffffff; 
+    border-radius: 8px; 
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); 
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; 
+}
+
+.box .header {
+    background-color: var(--pup-maroon);
+    color: white;
+    font-weight: bold; 
+    padding: 12px 15px;
+    font-size: 16px;
+}
+
+.box .content {
+    padding: 15px;
+    flex-grow: 1;
+}
+
+.violation-summary-content p {
+    margin-bottom: 15px;
+    font-size: 0.95em;
+    line-height: 1.6;
+}
+
+.summary-label {
+    color: #444; 
+}
+
+.summary-value {
+    font-weight: bold; 
+    font-size: 1.05em;
+    color: #000;
+    margin-left: 5px;
+}
+
+.offense-status-text {
+    font-weight: bold; 
+}
+
+.summary-message {
+    padding: 10px 15px;
+    margin-top: 15px;
+    font-size: 0.9em;
+    color: #444;
+    line-height: 1.6;
+    background-color: #fdecea;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+}
+
+.summary-message strong {
+    font-weight: bold; 
+    color: var(--pup-maroon);
+}
+
+.summary-message a {
+    color: var(--pup-maroon);
+    text-decoration: none;
+    font-weight: bold; 
+}
+
+.summary-message a:hover {
+    text-decoration: underline;
+}
+
+.no-violations-message {
+    color: #555;
+    font-style: italic;
+    padding-top: 10px;
+    text-align: center;
+    margin-top: 15px;
+}
+
+.handbook-content {
+    overflow-y: auto;
+    flex-grow: 1;
+    padding: 5px;
+    min-height: 200px; 
+}
+
+#handbookSearchForm {
+    margin-bottom: 15px;
+}
+
+.search-wrapper {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.search-wrapper input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px 0 0 5px;
+    outline: none;
+    font-size: 0.95em;
+    border-right: none;
+}
+
+.search-wrapper button {
+    background-color: var(--pup-maroon);
+    color: white;
+    border: 1px solid var(--pup-maroon);
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 0 5px 5px 0;
+    font-weight: bold; 
+    outline: none;
+    font-size: 0.95em;
+    white-space: nowrap;
+}
+
+.search-wrapper button:hover {
+    background-color: var(--pup-maroon-darker);
+    border-color: var(--pup-maroon-darker);
+}
+
+#handbookViolationList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.handbook-item .handbook-link {
+    display: block;
+    padding: 10px 12px;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #e8e8e8;
+    font-size: 0.9em;
+}
+
+.handbook-item:last-child .handbook-link {
+    border-bottom: none;
+}
+
+.handbook-item .handbook-link:hover {
+    background-color: #f5f5f5;
+    color: var(--pup-maroon);
+}
+
+.no-handbook-items-message {
+    color: #555;
+    font-style: italic;
+    padding: 15px 0;
+    text-align: center;
+}

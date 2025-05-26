@@ -14,12 +14,12 @@ if (isset($_GET['student_number'])) {
 
     if (!empty($student_number_from_get)) {
         $stmt_student = $conn->prepare("SELECT u.student_number, u.first_name, u.middle_name, u.last_name,
-                                             c.course_name, y.year, s.section_name
-                                        FROM users_tbl u
-                                        LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                                        LEFT JOIN year_tbl y ON u.year_id = y.year_id
-                                        LEFT JOIN section_tbl s ON u.section_id = s.section_id
-                                        WHERE u.student_number = ?");
+                                            c.course_name, y.year, s.section_name
+                                                FROM users_tbl u
+                                                LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                                                LEFT JOIN year_tbl y ON u.year_id = y.year_id
+                                                LEFT JOIN section_tbl s ON u.section_id = s.section_id
+                                                WHERE u.student_number = ?");
         if ($stmt_student) {
             $stmt_student->bind_param("s", $student_number_from_get);
             $stmt_student->execute();
@@ -33,10 +33,10 @@ if (isset($_GET['student_number'])) {
         }
 
         $sql_violations = "SELECT v.violation_id, vt.violation_type, v.violation_date
-                           FROM violation_tbl v
-                           JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                           WHERE v.student_number = ?
-                           ORDER BY v.violation_date DESC";
+                            FROM violation_tbl v
+                            JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                            WHERE v.student_number = ?
+                            ORDER BY v.violation_date DESC";
         $stmt_violations = $conn->prepare($sql_violations);
 
         if ($stmt_violations) {
@@ -60,27 +60,6 @@ if (isset($_GET['student_number'])) {
 }
 
 $totalViolations = count($violations);
-$offenseStatusText = 'N/A';
-$offenseStatusClass = 'offense-status-text offense-na';
-
-if ($totalViolations > 0) {
-    $hasSanction_details = false;
-    if (!empty($violation_counts_by_type)) {
-        foreach ($violation_counts_by_type as $type => $count) {
-            if ($count >= 2) {
-                $hasSanction_details = true;
-                break;
-            }
-        }
-    }
-    if ($hasSanction_details) {
-        $offenseStatusText = 'Sanction';
-        $offenseStatusClass = 'offense-status-text offense-sanction';
-    } else {
-        $offenseStatusText = 'Warning';
-        $offenseStatusClass = 'offense-status-text offense-warning';
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -90,9 +69,6 @@ if ($totalViolations > 0) {
     <title>Student Violation Details</title>
     <link rel="stylesheet" href="./admin_violation_style.css" /> 
     <link rel="stylesheet" href="./student_violation_details_style.css" /> 
-    <style>
-        /* All page-specific styles are now intended to be in student_violation_details_style.css */
-    </style>
 </head>
 <body>
 
@@ -140,28 +116,43 @@ if ($totalViolations > 0) {
 
         <div class="overall-status-block"> 
             <p><strong>Total Violations Committed:</strong> <?php echo $totalViolations; ?></p>
-            <p><strong>Offense Status:</strong> <span class="<?php echo $offenseStatusClass; ?>"><?php echo htmlspecialchars($offenseStatusText); ?></span></p>
         </div>
 
         <?php if (!empty($violation_counts_by_type)): ?>
             <div class="violation-summary-by-type"> 
-                <h3 class="summary-title">Summary by Violation Type:</h3>
-                <ul class="violation-counts-list">
-                    <?php foreach ($violation_counts_by_type as $type => $count): ?>
-                        <li>
-                            <span class="violation-type-name"><?php echo htmlspecialchars($type); ?></span>
-                            <span class="violation-type-count"><?php echo $count; ?> committed</span>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
+                <h3 class="summary-title">Summary by Violation Type</h3>
+                <table class="violations-summary-table">
+                    <thead>
+                        <tr>
+                            <th>Violation Type</th>
+                            <th>Number of commits</th>
+                            <th>Offense</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($violation_counts_by_type as $type => $count): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($type); ?></td>
+                                <td style="text-align: center;"><?php echo $count; ?></td>
+                                <td style="text-align: center;">
+                                    <?php
+                                    $typeOffenseStatus = ($count >= 2) ? 'Sanction' : 'Warning';
+                                    $typeOffenseClass = ($count >= 2) ? 'offense-status-text offense-sanction' : 'offense-status-text offense-warning';
+                                    echo "<span class='" . $typeOffenseClass . "'>" . htmlspecialchars($typeOffenseStatus) . "</span>";
+                                    ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
-        <?php elseif ($totalViolations > 0): ?>
+        <?php elseif ($totalViolations > 0): ?> 
             <div class="violation-summary-by-type">
-                 <p>Could not generate violation summary by type.</p>
+                <p>Could not generate violation summary by type.</p>
             </div>
         <?php endif; ?>
 
-        <h3 class="log-title">Individual Violations Log:</h3> 
+        <h3 class="log-title">Individual Violations Log</h3> 
         <?php if (!empty($violations)): ?>
             <div class="table-scroll-container"> 
                 <table class="violations-table"> 
@@ -185,11 +176,11 @@ if ($totalViolations > 0) {
             <p class="no-records">No individual violations recorded for this student.</p> 
         <?php endif; ?>
 
-        <?php elseif (!empty($student_number_display)): ?>
+    <?php elseif (!empty($student_number_display)): ?>
         <p class="no-records">Student with number '<?php echo $student_number_display; ?>' not found or has no details.</p>
-        <?php else: ?>
+    <?php else: ?>
         <p class="no-records">No student number provided or invalid request.</p>
-        <?php endif; ?>
+    <?php endif; ?>
 </div>
 
 </body>
