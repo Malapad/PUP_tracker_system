@@ -153,14 +153,7 @@ $conn->close();
         <?php endif; ?>
         <a href="../PHP/logout.php?role=student" id="signOutBtn" class="sign-out-button">Sign Out</a>
     </div>
-    <script>
-        const signOutButton = document.getElementById("signOutBtn");
-        if (signOutButton) {
-            signOutButton.addEventListener("click", function(event) {
-                event.preventDefault(); 
-                window.location.href = this.href;
-            });
-        }
-    </script>
+<script src="./student_account.js"></script>
+
 </body>
 </html>
