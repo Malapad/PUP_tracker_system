@@ -1,37 +1,27 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const tableBody = document.querySelector(".violation-table tbody");
-    const violationRows = tableBody ? tableBody.querySelectorAll("tr").length : 0;
+document.addEventListener("DOMContentLoaded", function() {
+            const requestButton = document.getElementById("requestSanctionButtonWide");
+            const overlay = document.getElementById("confirmationOverlayWide");
+            const closeButton = document.getElementById("closeOverlayButtonWide");
 
-    const requestButton = document.getElementById("requestButton");
-    const offenseCountSpan = document.getElementById("offenseCount");
-    const overlay = document.getElementById("overlay");
-    const closeOverlay = document.getElementById("closeOverlay");
+            if (requestButton) {
+                requestButton.addEventListener("click", function() {
+                    if (!this.disabled) {
+                        if (overlay) overlay.style.display = "flex";
+                    }
+                });
+            }
+            
+            if (closeButton) {
+                closeButton.addEventListener("click", function() {
+                    if (overlay) overlay.style.display = "none";
+                });
+            }
 
-    if (offenseCountSpan) {
-        offenseCountSpan.textContent = violationRows;
-    }
-
-    if (requestButton && violationRows >= 2) {
-        requestButton.disabled = false;
-        requestButton.classList.add("active");
-    }
-
-    if (requestButton) {
-        requestButton.addEventListener("click", () => {
-            if (overlay) overlay.style.display = "flex";
+            if (overlay) {
+                overlay.addEventListener("click", function(event) {
+                    if (event.target === overlay) {
+                        overlay.style.display = "none";
+                    }
+                });
+            }
         });
-    }
-
-    if (closeOverlay) {
-        closeOverlay.addEventListener("click", () => {
-            overlay.style.display = "none";
-        });
-    }
-
-    const backBtn = document.querySelector(".back-button");
-    if (backBtn) {
-        backBtn.addEventListener("click", () => {
-            window.location.href = "student_record.html";
-        });
-    }
-});

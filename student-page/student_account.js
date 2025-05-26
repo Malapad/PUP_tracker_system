@@ -1,3 +1,7 @@
-document.getElementById("signOutBtn").addEventListener("click", function() {
-    window.location.href = "/PHP/index.php";
-});
+const signOutButton = document.getElementById("signOutBtn");
+        if (signOutButton) {
+            signOutButton.addEventListener("click", function(event) {
+                event.preventDefault(); 
+                window.location.href = this.href;
+            });
+        }
