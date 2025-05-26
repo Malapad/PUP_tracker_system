@@ -98,7 +98,7 @@
 
 .log-title {
     font-size: 1.15em;
-    color: #333;
+    color: #800000;
     margin-bottom: 8px;
     margin-top: 15px;
     font-weight: bold;
@@ -160,12 +160,12 @@
 .back-button {
     display: inline-block;
     padding: 6px 12px;
-    background-color: #af1414;
+    background-color: #800000;
     color: white !important;
     text-decoration: none;
     border-radius: 5px;
     font-size: 0.85em;
-    font-weight: normal; /* Adjusted from bold to match other compact buttons if desired */
+    font-weight: normal;
     border: none;
     cursor: pointer;
     transition: background-color 0.3s ease;
@@ -197,7 +197,7 @@
 
 .summary-title {
     font-size: 1.05em;
-    color: #333;
+    color: #800000;
     margin-bottom: 10px;
     border-bottom: 1px solid #d1d1d1;
     padding-bottom: 6px;

@@ -1,13 +1,11 @@
 <?php
-include '../PHP/dbcon.php'; // Ensure this path is correct
+include '../PHP/dbcon.php';
 
-// Initialize filters and search
 $filterViolation = $_GET['violation_type'] ?? '';
 $filterCourse = $_GET['course_id'] ?? '';
 $filterYear = $_GET['year_id'] ?? '';
 $search = trim($_GET['search'] ?? '');
 
-// Handle form submission for adding a violation
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
     $studentNumber = trim($_POST['studentNumber'] ?? '');
     $violationTypeId = trim($_POST['violationType'] ?? '');
@@ -70,25 +68,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
     <title>Student Violation Records</title>
     <link rel="stylesheet" href="./admin_violation_style.css" /> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* Only non-toast specific, minimal inline styles if necessary. Ideally, move all to CSS file. */
-        /* Basic styles for offense text (can be moved to admin_violation_style.css) */
-        .offense-text-default { color: grey; } /* Example, ensure these match your external CSS or move them */
+        .offense-text-default { color: grey; }
         .offense-text-warning { color: orange; font-weight: bold; }
         .offense-text-sanction { color: red; font-weight: bold; }
         
-        /* Spinner styles (can be moved to admin_violation_style.css) */
         .table-overlay-spinner {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             background-color: rgba(255,255,255,0.7); 
             display: flex; justify-content: center; align-items: center; 
             z-index: 10;
         }
-        .spinner { /* This class is for the spinner inside table-overlay-spinner */
+        .spinner {
             border: 4px solid #f3f3f3; border-top: 4px solid #3498db; 
             border-radius: 50%; width: 40px; height: 40px; 
-            animation: spinTableOverlay 1s linear infinite; /* Using the specific animation name from your CSS */
+            animation: spinTableOverlay 1s linear infinite;
         }
-        /* @keyframes spinTableOverlay defined in admin_violation_style.css */
     </style>
 </head>
 <body>
@@ -234,8 +228,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
             if (!empty($filterViolation)) {
                 $escapedFilterViolation = $conn->real_escape_string($filterViolation);
                 $whereConditions[] = "EXISTS (SELECT 1 FROM violation_tbl v_filter 
-                                              WHERE v_filter.student_number = u.student_number 
-                                              AND v_filter.violation_type = '$escapedFilterViolation')";
+                                            WHERE v_filter.student_number = u.student_number 
+                                            AND v_filter.violation_type = '$escapedFilterViolation')";
             }
 
             $finalWhere = array_merge($baseWhereConditions, $whereConditions);
@@ -262,9 +256,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
 
                     $student_number_for_detail = $row['student_number'];
                     $detail_sql = "SELECT vt.violation_type_id
-                                   FROM violation_tbl v_detail
-                                   JOIN violation_type_tbl vt ON v_detail.violation_type = vt.violation_type_id
-                                   WHERE v_detail.student_number = ?";
+                                    FROM violation_tbl v_detail
+                                    JOIN violation_type_tbl vt ON v_detail.violation_type = vt.violation_type_id
+                                    WHERE v_detail.student_number = ?";
                     
                     $violations_by_type_count = [];
                     $total_individual_violations = 0;
@@ -290,9 +284,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
 
                     echo "<td>" . htmlspecialchars($total_individual_violations) . "</td>";
 
-                    // Sanction Logic
                     $offenseText = 'Warning'; 
-                    $offenseClass = 'offense-text-warning'; // Default these based on your external CSS
+                    $offenseClass = 'offense-text-warning';
                     $hasSanction = false;
 
                     if ($total_individual_violations > 0) {
@@ -305,16 +298,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
 
                         if ($hasSanction) {
                             $offenseText = 'Sanction';
-                            // $offenseClass will be set by your external CSS based on .offense-text-sanction
                         } else {
                             $offenseText = 'Warning'; 
-                            // $offenseClass will be set by your external CSS
                         }
                     } else { 
                         $offenseText = '-';
-                        // $offenseClass for default should also be in your external CSS
                     }
-                     // Determine class based on text for styling from external CSS
                     if ($offenseText === 'Sanction') {
                         $offenseClass = 'offense-text-sanction';
                     } elseif ($offenseText === 'Warning') {

@@ -1,0 +1,165 @@
+/* Reset Default Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f4f9;
+    color: #333;
+    padding-top: 70px;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    padding: 10px 20px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    z-index: 1000;
+}
+
+.logo img {
+    width: 50px;
+    margin-left: 70px;
+}
+
+nav {
+    display: flex;
+    gap: 20px;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+nav a {
+    text-decoration: none;
+    font-weight: bold;
+    color: black;
+}
+
+nav a:hover {
+    color: #800000;
+}
+
+nav a.active-nav {
+    color: #AF1414;
+}
+
+.admin-icons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-right: 55px;
+}
+
+.admin-icons img {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0,0,0,0.05); 
+    border: 1px solid #e0e0e0;
+    text-align: center;
+    width: 100%;
+    max-width: 700px;
+    margin: 50px auto;
+}
+
+.container h1 {
+    font-size: 28px;
+    color: #3f3f3f;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #AF1414;
+    font-weight: 600;
+}
+
+.info-box {
+    text-align: left;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    padding: 15px 5px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    flex-basis: 45%;
+    min-width: 220px;
+    font-weight: 600;
+    color: #333;
+}
+
+.info-label strong {
+    font-weight: 600; 
+}
+
+.icon-style {
+    color: #AF1414;
+    font-size: 1.1em;
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
+}
+
+.info-value {
+    flex-grow: 1;
+    color: #555;
+    font-size: 16px;
+    padding-left: 10px;
+}
+
+.sign-out-button {
+    background-color: #AF1414;
+    color: white;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 20px;
+}
+
+.sign-out-button:hover {
+    background-color: #8c1010;
+    transform: translateY(-2px);
+}
+
+.error-message {
+    color: #D8000C;
+    background-color: #FFD2D2;
+    border: 1px solid #D8000C;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+    margin: 20px 0;
+}
