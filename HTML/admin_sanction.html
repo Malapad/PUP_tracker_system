@@ -15,13 +15,14 @@
         <nav>
             <a href="../HTML/admin_homepage.html">Home</a>
             <a href="../admin-violation/admin_violation.php">Violations</a>
-            <a href="../HTML/admin_sanction.html" class="active">Student Sanction</a> <a href="../user-management/user_management.php">User Management</a>
+            <a href="../HTML/admin_sanction.html" class="active">Student Sanction</a>
+            <a href="../user-management/user_management.php">User Management</a>
         </nav>
         <div class="admin-icons">
             <a href="notification.html" class="notification">
-                <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000"/></a>
+                <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/></a>
             <a href="admin_account.html" class="admin">
-                <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000"/></a>
+                <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account"/></a>
         </div>
     </header>
 
@@ -29,21 +30,17 @@
         <h2>Student Sanction List</h2>
 
         <div class="tabs">
-            <button class="tab active" data-tab="sanction-request">
-                <i class="fas fa-user-circle"></i> Sanction Request
-            </button>
-            <button class="tab" data-tab="sanction-configuration">
-                <i class="fas fa-cog"></i> Sanction Configuration
-            </button>
+            <button class="tab active" data-tab="sanction-request"><i class="fas fa-user-graduate"></i> Sanction Request</button>
+            <button class="tab" data-tab="sanction-config"><i class="fas fa-cogs"></i> Sanction Configuration</button>
         </div>
 
-        <div id="sanction-request" class="tab-content active">
+        <div id="sanction-request-content" class="tab-content active">
             <div class="controls">
                 <div class="main-controls-wrapper">
                     <div class="left-control-group">
                         <form id="filter-form" method="GET" action="">
                             <select id="violation-type-filter" name="violation_type">
-                                <option value="">Filter by Violation Type</option>
+                                <option value="">All Violation Types</option>
                                 <option value="Hair Color">Hair Color</option>
                                 <option value="Late ID Validation">Late ID Validation</option>
                                 <option value="Late Registration Card">Late Registration Card</option>
@@ -54,16 +51,12 @@
                             </select>
                             <div class="search-field-group">
                                 <input type="text" placeholder="Search by Student Number" name="search_student_number">
-                                <button type="submit" class="button search-button">
-                                    <i class="fas fa-search"></i> Search
-                                </button>
+                                <button type="submit" class="button search-button"><i class="fas fa-search"></i> Search</button>
                             </div>
                         </form>
                     </div>
                     <div class="right-control-group">
-                        <button type="button" class="button refresh-button">
-                            <i class="fas fa-sync-alt"></i> Refresh List
-                        </button>
+                        <button class="button refresh-button"><i class="fas fa-sync-alt"></i> Refresh List</button>
                     </div>
                 </div>
             </div>
@@ -77,109 +70,83 @@
                         <th>Middle Name</th>
                         <th>Violation Count</th>
                         <th>Offense Status</th>
-                        <th>Actions</th> </tr>
+                    </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>2022-00191-TG-0</td>
                         <td>Donatos</td>
-                        <td>Andrea Maligaya</td>
+                        <td>Andrea</td>
                         <td>Maligaya</td>
                         <td>2</td>
-                        <td class="status-badge pending">Pending</td>
-                        <td class="table-action-buttons">
-                            <button class="edit-btn"><i class="fas fa-edit"></i> Edit</button>
-                            <button class="delete-btn"><i class="fas fa-trash-alt"></i> Delete</button>
-                        </td>
+                        <td class="status-badge status-pending">Pending</td>
                     </tr>
                     <tr>
-                        <td>2022-00192-TG-0</td>
+                        <td>2022-00191-TG-0</td>
                         <td>Norona</td>
-                        <td>Mary Nicole Perillo</td>
+                        <td>Mary Nicole</td>
                         <td>Perillo</td>
                         <td>3</td>
-                        <td class="status-badge completed">Completed</td>
-                        <td class="table-action-buttons">
-                            <button class="edit-btn"><i class="fas fa-edit"></i> Edit</button>
-                            <button class="delete-btn"><i class="fas fa-trash-alt"></i> Delete</button>
-                        </td>
+                        <td class="status-badge status-completed">Completed</td>
                     </tr>
                     <tr>
-                        <td>2022-00193-TG-0</td>
+                        <td>2022-00191-TG-0</td>
                         <td>Tayoto</td>
-                        <td>Mikaella Antonette</td>
+                        <td>Mikaella</td>
                         <td>Antonette</td>
                         <td>1</td>
-                        <td class="status-badge warning">Warning</td>
-                        <td class="table-action-buttons">
-                            <button class="edit-btn"><i class="fas fa-edit"></i> Edit</button>
-                            <button class="delete-btn"><i class="fas fa-trash-alt"></i> Delete</button>
-                        </td>
+                        <td class="status-badge status-warning">Warning</td>
                     </tr>
                     <tr>
-                        <td>2022-00194-TG-0</td>
+                        <td>2022-00191-TG-0</td>
                         <td>Barrantes</td>
-                        <td>Sofia Ann</td>
+                        <td>Sofia</td>
                         <td>Ann</td>
                         <td>1</td>
-                        <td class="status-badge warning">Warning</td>
-                        <td class="table-action-buttons">
-                            <button class="edit-btn"><i class="fas fa-edit"></i> Edit</button>
-                            <button class="delete-btn"><i class="fas fa-trash-alt"></i> Delete</button>
-                        </td>
+                        <td class="status-badge status-warning">Warning</td>
                     </tr>
                     <tr>
-                        <td>2022-00195-TG-0</td>
+                        <td>2022-00191-TG-0</td>
                         <td>Malapad</td>
-                        <td>Melchor James</td>
+                        <td>Melchor</td>
                         <td>James</td>
                         <td>1</td>
-                        <td class="status-badge warning">Warning</td>
-                        <td class="table-action-buttons">
-                            <button class="edit-btn"><i class="fas fa-edit"></i> Edit</button>
-                            <button class="delete-btn"><i class="fas fa-trash-alt"></i> Delete</button>
-                        </td>
+                        <td class="status-badge status-warning">Warning</td>
                     </tr>
                     <tr>
-                        <td>2022-00196-TG-0</td>
+                        <td>2022-00191-TG-0</td>
                         <td>Cerbas</td>
-                        <td>John Green M.</td>
+                        <td>John Green</td>
                         <td>M.</td>
                         <td>1</td>
-                        <td class="status-badge warning">Warning</td>
-                        <td class="table-action-buttons">
-                            <button class="edit-btn"><i class="fas fa-edit"></i> Edit</button>
-                            <button class="delete-btn"><i class="fas fa-trash-alt"></i> Delete</button>
-                        </td>
+                        <td class="status-badge status-warning">Warning</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div id="sanction-configuration" class="tab-content">
+        <div id="sanction-config-content" class="tab-content">
             <p>Content for Sanction Configuration will go here.</p>
             </div>
 
     </div>
-
     <script>
-        // Basic JavaScript for tab switching
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
 
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
-                    // Remove active class from all tabs and tab contents
+                    // Deactivate all tabs and hide all tab contents
                     tabs.forEach(item => item.classList.remove('active'));
                     tabContents.forEach(item => item.classList.remove('active'));
 
-                    // Add active class to clicked tab
+                    // Activate the clicked tab and show its corresponding content
                     tab.classList.add('active');
-
-                    // Show the corresponding tab content
-                    const targetTabContentId = tab.dataset.tab;
-                    document.getElementById(targetTabContentId).classList.add('active');
+                    const targetTabContent = document.getElementById(tab.dataset.tab + '-content');
+                    if (targetTabContent) {
+                        targetTabContent.classList.add('active');
+                    }
                 });
             });
         });

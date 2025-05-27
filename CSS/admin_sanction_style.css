@@ -1,24 +1,23 @@
-/* Reset Default Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-}
-
-/* Root variables from reference CSS */
+/* Reset Default Styles & Root Variables */
 :root {
-    --primary-color: #af1414;
+    --primary-color: #af1414; /* PUP Red */
     --primary-hover-color: #bd2727;
-    --secondary-color: #0056b3;
+    --secondary-color: #0056b3; /* A shade of blue for actions/links */
     --secondary-hover-color: #004085;
     --light-gray-border: #ccc;
     --medium-gray-border: #ddd;
-    --font-family: Arial, sans-serif;
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Slightly more modern font */
     --card-bg-color: #fdfdfd;
     --card-border-color: #eaeaea;
     --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     --table-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-family);
 }
 
 /* Navbar */
@@ -27,18 +26,18 @@ header {
     align-items: center;
     justify-content: space-between;
     background: white;
-    padding: 10px 30px; /* Adjusted padding as per reference */
+    padding: 10px 30px; /* Adjusted padding */
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .logo img {
     width: 50px;
-    margin-left: 40px; /* Adjusted margin as per reference */
+    margin-left: 40px; /* Adjusted margin */
 }
 
 nav {
     display: flex;
-    gap: 25px; /* Adjusted gap as per reference */
+    gap: 25px; /* Adjusted gap */
     flex-grow: 1;
     justify-content: center;
 }
@@ -60,42 +59,43 @@ nav a.active {
     border-bottom: 2px solid var(--primary-color);
 }
 
-/* icon images */
+/* Admin Icons */
 .admin-icons {
     display: flex;
-    gap: 20px; /* Adjusted gap as per reference */
-    margin-right: 40px; /* Adjusted margin as per reference */
+    gap: 20px; /* Adjusted gap */
+    margin-right: 40px; /* Adjusted margin */
 }
 
 .admin-icons img {
-    width: 30px; /* Adjusted size as per reference */
-    height: 30px; /* Adjusted size as per reference */
+    width: 30px; /* Adjusted size */
+    height: 30px;
 }
 
-/* Container for main content */
+/* Main Content Container */
 .container {
     background: white;
-    padding: 25px 30px; /* Adjusted padding as per reference */
+    padding: 25px 30px; /* Adjusted padding */
     border-radius: 8px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    margin: 25px auto; /* Centered with auto margins and fixed top margin */
+    margin: 25px auto; /* Centered with auto margins and adjusted top/bottom */
     width: 95%;
-    max-width: 1600px; /* Added max-width for better control on large screens */
+    max-width: 1600px; /* Added max-width */
 }
 
 .container h2 {
-    font-size: 1.8em;
+    font-size: 1.8em; /* Adjusted font size */
     font-weight: bold;
     margin-bottom: 20px;
     color: #333;
     text-align: left;
 }
 
-/* Tabs Styling */
+/* Tabs for Sanction Request/Configuration */
 .tabs {
     margin-bottom: 20px;
     border-bottom: 1px solid var(--medium-gray-border);
-    display: flex; /* Ensure tabs are in a row */
+    display: flex;
+    gap: 0;
 }
 
 .tab {
@@ -106,15 +106,11 @@ nav a.active {
     font-weight: bold;
     font-size: 1em;
     color: #555;
-    margin-bottom: -1px; /* To prevent double border with parent */
+    margin-bottom: -1px; /* Overlap border */
     transition: color 0.3s ease, border-color 0.3s ease;
-    display: flex;
+    display: inline-flex; /* To align icon and text */
     align-items: center;
     gap: 8px; /* Space between icon and text */
-}
-
-.tab i {
-    font-size: 1.2em; /* Adjust icon size */
 }
 
 .tab.active {
@@ -122,19 +118,25 @@ nav a.active {
     border-bottom: 3px solid var(--primary-color);
 }
 
+.tab:hover {
+    color: var(--primary-color);
+}
+
+/* Tab content for dynamic switching */
 .tab-content {
-    display: none; /* Hidden by default */
+    display: none; /* Hide by default */
+    padding-top: 20px; /* Space after tabs */
 }
 
 .tab-content.active {
-    display: block; /* Shown when active */
+    display: block; /* Show active tab content */
 }
 
-/* Controls (Filters and Buttons) */
+/* Controls (Filters and Search) */
 .controls {
     display: flex;
-    flex-direction: column; /* Stack clear-filters and main-controls-wrapper */
-    gap: 15px; /* Gap between clear-filters-row (if present) and main-controls-wrapper */
+    flex-direction: column;
+    gap: 15px;
     margin-bottom: 25px;
     padding: 20px;
     background-color: var(--card-bg-color);
@@ -145,7 +147,7 @@ nav a.active {
 
 .main-controls-wrapper {
     display: flex;
-    flex-wrap: wrap; /* Allows wrapping for smaller screens */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
     justify-content: space-between;
     align-items: center;
     gap: 20px;
@@ -176,6 +178,7 @@ nav a.active {
     flex-grow: 0;
     transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
+
 #filter-form select:focus {
     outline: none;
     border-color: var(--secondary-color);
@@ -185,8 +188,9 @@ nav a.active {
 .search-field-group {
     display: flex;
     align-items: center;
-    flex-grow: 1; /* Allow search to take remaining space */
-    min-width: 280px; /* Ensure a minimum width */
+    flex-grow: 1; /* Allow search to grow */
+    flex-basis: 400px; /* Suggested base width */
+    min-width: 280px; /* Minimum width before wrapping */
 }
 
 .search-field-group input[type="text"] {
@@ -197,8 +201,14 @@ nav a.active {
     border-radius: 5px 0 0 5px;
     height: 36px;
     flex-grow: 1;
-    min-width: 150px; /* Adjusted min-width */
+    min-width: 200px; /* Minimum width for input field */
     transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.search-field-group input[type="text"]:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.1rem rgba(0, 86, 179, 0.25);
 }
 
 .search-field-group input::placeholder {
@@ -206,19 +216,7 @@ nav a.active {
     opacity: 0.7;
 }
 
-.search-button {
-    background-color: var(--primary-color);
-    color: white;
-    border-radius: 0 5px 5px 0;
-    flex-shrink: 0;
-}
-.search-button:hover {
-    background-color: var(--primary-hover-color);
-}
-
-/* General Button Styling */
-button,
-.button-link {
+.button { /* General button style, applied via class now */
     padding: 0 15px;
     font-size: 0.9em;
     border: none;
@@ -233,13 +231,22 @@ button,
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     font-weight: normal;
 }
-button i,
-.button-link i {
+
+.button i {
     margin-right: 8px;
 }
 
-.right-control-group,
-.table-actions-group {
+.search-button {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 0 5px 5px 0;
+    flex-shrink: 0;
+}
+.search-button:hover {
+    background-color: var(--primary-hover-color);
+}
+
+.right-control-group {
     display: flex;
     gap: 10px;
     align-items: center;
@@ -257,15 +264,15 @@ button i,
     border-color: var(--secondary-hover-color);
 }
 
-/* Table Styling */
+/* Table */
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 25px;
-    table-layout: fixed; /* Ensures columns respect width percentages */
+    table-layout: fixed;
     box-shadow: var(--table-shadow);
     border-radius: 8px;
-    overflow: hidden; /* Ensures rounded corners are applied to table content */
+    overflow: hidden; /* Ensures rounded corners clip table content */
 }
 
 table th,
@@ -273,382 +280,158 @@ table td {
     border-bottom: 1px solid var(--medium-gray-border);
     text-align: left;
     font-size: 0.82em;
-    word-wrap: break-word; /* Prevents long words from breaking layout */
-    overflow-wrap: break-word; /* Modern equivalent */
+    word-wrap: break-word; /* Ensure text wraps */
+    overflow-wrap: break-word;
 }
 
-table thead tr {
-    background-color: var(--primary-color); /* Applied directly to thead tr for consistency */
+table thead th {
+    background-color: var(--primary-color);
     color: white;
-}
-
-table th {
     font-weight: bold;
     padding: 12px 10px;
 }
 
-table td {
+table tbody td {
     padding: 10px 10px;
 }
 
-tbody tr {
-    transition: background-color 0.2s ease-in-out, border-left-color 0.2s ease-in-out;
-    border-left: 3px solid transparent;
+table tbody tr {
+    transition: background-color 0.2s ease-in-out,
+                border-left-color 0.2s ease-in-out;
+    border-left: 3px solid transparent; /* For hover effect */
 }
 
-tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
+table tbody tr:nth-child(even) {
+    background-color: #f8f9fa; /* Zebra striping */
 }
 
-tbody tr:hover {
-    background-color: #e6eefc;
-    border-left-color: var(--secondary-color);
+table tbody tr:hover {
+    background-color: #e6eefc; /* Light blue on hover */
+    border-left-color: var(--secondary-color); /* Highlight with secondary color on hover */
 }
 
 /* Column Widths (Adjusted for new columns) */
-table th:nth-child(1) { width: 12%; } /* Student Number */
-table th:nth-child(2) { width: 12%; } /* Last Name */
-table th:nth-child(3) { width: 12%; } /* First Name */
-table th:nth-child(4) { width: 12%; } /* Middle Name */
-table th:nth-child(5) { width: 10%; text-align: center;} /* Violation Count */
-table th:nth-child(6) { width: 12%; text-align: center;} /* Offense Status */
-table th:nth-child(7) { width: 18%; text-align: center;} /* Actions */
+table th:nth-child(1) { /* Student Number */
+    width: 15%;
+}
+table th:nth-child(2) { /* Last Name */
+    width: 15%;
+}
+table th:nth-child(3) { /* First Name */
+    width: 15%;
+}
+table th:nth-child(4) { /* Middle Name */
+    width: 15%;
+}
+table th:nth-child(5) { /* Violation Count */
+    width: 10%;
+    text-align: center;
+}
+table th:nth-child(6) { /* Offense Status */
+    width: 15%;
+    text-align: center;
+}
 
 table td:nth-child(5), /* Violation Count */
 table td:nth-child(6) { /* Offense Status */
     text-align: center;
 }
 
-.table-action-buttons {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-}
-
-.table-action-buttons .edit-btn,
-.table-action-buttons .delete-btn {
-    font-size: 0.8em;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-    padding: 6px 10px;
-    height: auto;
-    line-height: 1.3;
-    transition: background-color 0.3s ease, box-shadow 0.2s ease, border-color 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    font-weight: normal;
-}
-
-.edit-btn i,
-.delete-btn i {
-    margin-right: 6px;
-}
-
-.edit-btn {
-    background-color: var(--secondary-color);
-    color: white;
-}
-.edit-btn:hover {
-    background-color: var(--secondary-hover-color);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-}
-
-.delete-btn {
-    background-color: var(--primary-color);
-    color: white;
-}
-.delete-btn:hover {
-    background-color: var(--primary-hover-color);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-}
-
-/* Status Badges - Renamed from generic 'pending', 'completed', 'warning' to be more specific and match reference CSS patterns */
+/* Status Styling (now using status-badge base) */
 .status-badge {
     padding: 3px 7px;
-    border-radius: 12px;
+    border-radius: 12px; /* Pill shape */
     font-size: 0.75em;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    display: inline-block;
+    display: inline-block; /* Allows padding and alignment */
+    color: white; /* Default text color */
+}
+
+/* Specific status colors */
+.status-pending {
+    background-color: #ffc107; /* Bootstrap 'warning' yellow/orange */
+    color: #343a40; /* Dark text for contrast */
+}
+
+.status-completed {
+    background-color: #28a745; /* Bootstrap 'success' green */
     color: white;
 }
 
-.status-badge.pending { /* Changed from .pending to .status-badge.pending */
-    background-color: #ffc107; /* Yellow for pending */
-    color: #343a40; /* Darker text for yellow background */
-}
-
-.status-badge.completed { /* Changed from .completed to .status-badge.completed */
-    background-color: #28a745; /* Green for completed */
+.status-warning { /* Re-using existing warning color */
+    background-color: #dc3545; /* Bootstrap 'danger' red */
     color: white;
 }
 
-.status-badge.warning { /* Changed from .warning to .status-badge.warning */
-    background-color: #dc3545; /* Red for warning/serious */
-    color: white;
+/* Responsive considerations */
+@media (max-width: 992px) {
+    .main-controls-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .left-control-group,
+    .right-control-group {
+        width: 100%;
+        justify-content: center; /* Center buttons/filters in column layout */
+    }
+    #filter-form {
+        justify-content: center;
+    }
+    .search-field-group {
+        width: 100%;
+        min-width: unset; /* Allow full width */
+    }
+    #filter-form select {
+        width: 100%;
+        min-width: unset;
+        flex-basis: auto;
+    }
 }
 
-/* You had these in your reference CSS, keep them for consistency */
-.status-active { /* Example status from reference, adjust if needed */
-    background-color: #28a745;
-    color: white;
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        padding: 10px 15px;
+    }
+    .logo, .admin-icons {
+        margin: 0;
+        width: 100%;
+        justify-content: center;
+    }
+    nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 10px;
+        gap: 10px;
+    }
+    .container {
+        margin: 15px auto;
+        padding: 15px;
+    }
+    .tabs {
+        flex-wrap: wrap;
+    }
+    .tab {
+        flex: 1 1 auto;
+        justify-content: center;
+        padding: 10px 12px;
+    }
+    table th, table td {
+        font-size: 0.75em;
+        padding: 8px 5px;
+    }
+    /* Hide some columns on very small screens if necessary for readability */
+    table th:nth-child(4), /* Middle Name */
+    table td:nth-child(4) {
+        display: none;
+    }
 }
 
-.status-inactive { /* Example status from reference, adjust if needed */
-    background-color: #6c757d;
-    color: white;
-}
-
-.status-default { /* Example status from reference, adjust if needed */
-    background-color: #17a2b8;
-    color: white;
-}
-
-/* The rest of the CSS (modals, toast, etc.) remains as provided in your reference CSS,
-   as it wasn't specified for change in this instruction set.
-   I've included the modal styles from your reference CSS to ensure consistency
-   if you decide to use them later. */
-
-/* Modals and Toast Notifications (from reference CSS, included for completeness) */
-.modal {
-    display: none;
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    padding: 20px;
-}
-
-.modal.show {
-    display: flex;
-}
-
-.modal-content {
-    background: white;
-    padding: 25px 30px;
-    border-radius: 8px;
-    width: 100%;
-    max-width: 700px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
-    position: relative;
-    max-height: 90vh;
-    overflow-y: auto;
-    opacity: 0;
-    transform: scale(0.95);
-    transition: opacity 0.25s ease-out, transform 0.25s ease-out;
-}
-
-.modal.show .modal-content {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.modal-content h3 {
-    font-size: 1.5em;
-    color: #333;
-    margin-bottom: 25px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-content h3 i {
-    margin-right: 10px;
-    color: var(--primary-color);
-}
-
-.modal-content .close-edit,
-.modal-content .close-add,
-.modal-content .close-delete-confirm {
-    font-size: 2em;
-    font-weight: bold;
-    color: #888;
-    cursor: pointer;
-    position: absolute;
-    top: 12px;
-    right: 18px;
-    line-height: 1;
-}
-.modal-content .close-edit:hover,
-.modal-content .close-add:hover,
-.modal-content .close-delete-confirm:hover {
-    color: #333;
-}
-
-#edit-student-form,
-#add-student-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-#edit-student-form div,
-#add-student-form div {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-#edit-student-form label,
-#add-student-form label {
-    font-weight: bold;
-    font-size: 0.88em;
-    color: #444;
-}
-
-#edit-student-form input[type="text"],
-#edit-student-form input[type="email"],
-#edit-student-form select,
-#add-student-form input[type="text"],
-#add-student-form input[type="email"],
-#add-student-form select {
-    width: 100%;
-    padding: 0 12px;
-    font-size: 0.9em;
-    border: 1px solid var(--light-gray-border);
-    border-radius: 4px;
-    height: 38px;
-    line-height: 38px;
-}
-
-#edit-student-form input:focus,
-#edit-student-form select:focus,
-#add-student-form input:focus,
-#add-student-form select:focus {
-    outline: none;
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 0.1rem rgba(0, 86, 179, 0.25);
-}
-
-#edit-student-form button[type="submit"],
-#add-student-form button[type="submit"] {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 0 18px;
-    font-size: 0.95em;
-    margin-top: 15px;
-    height: 40px;
-    align-self: flex-end;
-}
-#edit-student-form button[type="submit"]:hover,
-#add-student-form button[type="submit"]:hover {
-    background-color: var(--primary-hover-color);
-}
-
-.toast-notification {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    padding: 15px 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    font-family: var(--font-family);
-    font-size: 16px;
-    z-index: 10000;
-    opacity: 0;
-    transform: translate(-50%, -150%);
-    visibility: hidden;
-    transition: opacity 0.5s ease, transform 0.5s ease, visibility 0s linear 0.5s;
-    min-width: 300px;
-    text-align: center;
-}
-
-.toast-notification.show {
-    opacity: 1;
-    transform: translate(-50%, 0);
-    visibility: visible;
-    transition: opacity 0.5s ease, transform 0.5s ease, visibility 0s linear 0s;
-}
-
-.toast-notification.success {
-    background-color: #28a745;
-    color: white;
-    border-left: 6px solid #1e7e34;
-}
-
-.toast-notification.error {
-    background-color: #dc3545;
-    color: white;
-    border-left: 6px solid #b02a37;
-}
-
-#delete-confirm-modal .modal-content {
-    border-top: 4px solid var(--primary-color);
-    max-width: 550px;
-    opacity: 0;
-    transform: scale(0.95);
-    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-}
-
-#delete-confirm-modal.show .modal-content {
-    opacity: 1;
-    transform: scale(1);
-}
-
-#delete-confirm-modal .modal-content p#delete-confirm-text {
-    font-size: 1em;
-    margin-bottom: 25px;
-    text-align: center;
-    color: #333;
-    line-height: 1.5;
-}
-
-#delete-confirm-modal .modal-content p#delete-confirm-text strong {
-    color: var(--primary-color);
-    font-weight: 600;
-}
-
-#delete-confirm-modal .modal-content h3 {
-    margin-bottom: 20px;
-    font-size: 1.6em;
-}
-
-.delete-confirm-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    margin-top: 25px;
-}
-
-.delete-confirm-actions button {
-    padding: 10px 20px;
-    font-size: 0.9em;
-    font-weight: 500;
-    height: auto;
-    border-radius: 5px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.delete-confirm-actions button i {
-    margin-right: 8px;
-}
-
-#confirm-delete-action-btn {
-    background-color: var(--primary-color);
-    color: white;
-}
-#confirm-delete-action-btn:hover {
-    background-color: var(--primary-hover-color);
-}
-
-#cancel-delete-action-btn {
-    background-color: #6c757d;
-    border: 1px solid #6c757d;
-    color: white;
-}
-#cancel-delete-action-btn:hover {
-    background-color: #5a6268;
-    border-color: #545b62;
+@media (max-width: 480px) {
+    table th:nth-child(1), /* Student Number */
+    table td:nth-child(1) {
+        display: none;
+    }
 }
