@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener('DOMContentLoaded', function() {
     const notificationLinkToggle = document.getElementById('notificationLinkToggle');
     const notificationsDropdownContent = document.getElementById('notificationsDropdownContent');
 
@@ -17,28 +17,15 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    const requestButton = document.getElementById("requestSanctionButtonWide");
-    const overlay = document.getElementById("confirmationOverlayWide");
-    const closeButton = document.getElementById("closeOverlayButtonWide");
-
-    if (requestButton) {
-        requestButton.addEventListener("click", function() {
-            if (!this.disabled) {
-                if (overlay) overlay.style.display = "flex";
-            }
-        });
-    }
-
-    if (closeButton) {
-        closeButton.addEventListener("click", function() {
-            if (overlay) overlay.style.display = "none";
-        });
-    }
-
-    if (overlay) {
-        overlay.addEventListener("click", function(event) {
-            if (event.target === overlay) {
-                overlay.style.display = "none";
+    const markAllReadButton = document.getElementById('markAllReadBtn');
+    if (markAllReadButton) {
+        markAllReadButton.addEventListener('click', function() {
+            if (confirm('Are you sure you want to mark all notifications as read?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'mark_all_notifications_read.php';
+                document.body.appendChild(form);
+                form.submit();
             }
         });
     }
