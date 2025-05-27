@@ -27,6 +27,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                     if ($stmt->execute()) {
                         $response['success'] = true;
                         $response['message'] = 'Violation added successfully.';
+
+                        $violationTypeName = "Unknown Violation";
+                        $sql_get_vt_name = "SELECT violation_type FROM violation_type_tbl WHERE violation_type_id = ? LIMIT 1";
+                        if ($stmt_vt_name = $conn->prepare($sql_get_vt_name)) {
+                            $stmt_vt_name->bind_param("i", $violationTypeId);
+                            $stmt_vt_name->execute();
+                            $result_vt_name = $stmt_vt_name->get_result();
+                            if ($row_vt_name = $result_vt_name->fetch_assoc()) {
+                                $violationTypeName = $row_vt_name['violation_type'];
+                            }
+                            $stmt_vt_name->close();
+                        } else {
+                                error_log("Error preparing statement to get violation type name: " . $conn->error);
+                        }
+
+                        $notification_message = "You have a new violation: " . htmlspecialchars($violationTypeName);
+                        $notification_link = "./student_record.php";
+
+                        $sql_notify = "INSERT INTO notifications_tbl (student_number, message, link) VALUES (?, ?, ?)";
+                        if ($stmt_notify = $conn->prepare($sql_notify)) {
+                            $stmt_notify->bind_param("sss", $studentNumber, $notification_message, $notification_link);
+                            if (!$stmt_notify->execute()) {
+                                error_log("Error creating notification for student " . $studentNumber . ": " . $stmt_notify->error);
+                            }
+                            $stmt_notify->close();
+                        } else {
+                            error_log("Error preparing notification query for student " . $studentNumber . ": " . $conn->error);
+                        }
+
                     } else {
                         $response['message'] = 'Error adding violation: ' . htmlspecialchars($stmt->error);
                     }
@@ -45,11 +74,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
         $response['message'] = 'Please fill in all required fields.';
     }
 
-    if (isset($_POST['ajax_submit'])) { 
+    if (isset($_POST['ajax_submit'])) {
         header('Content-Type: application/json');
         echo json_encode($response);
         exit;
-    } else { 
+    } else {
         if ($response['success']) {
             echo "<script>alert('" . addslashes($response['message']) . "'); window.location.href = '" . htmlspecialchars($_SERVER['PHP_SELF']) . "';</script>";
         } else {
@@ -59,35 +88,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Student Violation Records</title>
-    <link rel="stylesheet" href="./admin_violation_style.css" /> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        .offense-text-default { color: grey; }
-        .offense-text-warning { color: orange; font-weight: bold; }
-        .offense-text-sanction { color: red; font-weight: bold; }
-        
-        .table-overlay-spinner {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background-color: rgba(255,255,255,0.7); 
-            display: flex; justify-content: center; align-items: center; 
-            z-index: 10;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3; border-top: 4px solid #3498db; 
-            border-radius: 50%; width: 40px; height: 40px; 
-            animation: spinTableOverlay 1s linear infinite;
-        }
-    </style>
-</head>
+    <link rel="stylesheet" href="./admin_violation_style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    </head>
 <body>
 
-<div id="toast-notification" class="toast"></div> <header>
+<div id="toast-notification" class="toast"></div>
+<header>
     <div class="logo">
         <img src="../assets/PUPlogo.png" alt="PUP Logo" />
     </div>
@@ -180,7 +193,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
 
     <div class="main-table-scroll-container">
         <div class="table-overlay-spinner" id="tableSpinner" style="display: none;">
-            <div class="spinner"></div> </div>
+            <div class="spinner"></div>
+        </div>
         <table>
             <thead>
             <tr>
@@ -212,7 +226,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                     ";
 
             $whereConditions = [];
-            $baseWhereConditions = ["v_main.violation_id IS NOT NULL"]; 
+            $baseWhereConditions = ["v_main.violation_id IS NOT NULL"];
 
             if (!empty($search)) {
                 $searchEscaped = $conn->real_escape_string($search);
@@ -232,8 +246,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                                             AND v_filter.violation_type = '$escapedFilterViolation')";
             }
 
-            $finalWhere = array_merge($baseWhereConditions, $whereConditions);
-            $sql .= " WHERE " . implode(" AND ", $finalWhere);
+            if (!empty($whereConditions)) {
+                    $finalWhere = array_merge($baseWhereConditions, $whereConditions);
+                    $sql .= " WHERE " . implode(" AND ", $finalWhere);
+            } else {
+                    $sql .= " WHERE " . implode(" AND ", $baseWhereConditions);
+            }
 
             $sql .= " GROUP BY u.student_number, u.first_name, u.middle_name, u.last_name, c.course_name, y.year, s.section_name";
             $sql .= " ORDER BY u.last_name ASC, u.first_name ASC";
@@ -270,7 +288,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                         $detail_result = $detail_stmt->get_result();
 
                         while ($detail_row = $detail_result->fetch_assoc()) {
-                            $type_id_key = $detail_row['violation_type_id']; 
+                            $type_id_key = $detail_row['violation_type_id'];
                             if (!isset($violations_by_type_count[$type_id_key])) {
                                 $violations_by_type_count[$type_id_key] = 0;
                             }
@@ -284,26 +302,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
 
                     echo "<td>" . htmlspecialchars($total_individual_violations) . "</td>";
 
-                    $offenseText = 'Warning'; 
+                    $offenseText = 'Warning';
                     $offenseClass = 'offense-text-warning';
                     $hasSanction = false;
 
                     if ($total_individual_violations > 0) {
-                        foreach ($violations_by_type_count as $violation_id => $count) {
+                        foreach ($violations_by_type_count as $violation_id_key => $count) {
                             if ($count >= 2) {
                                 $hasSanction = true;
-                                break; 
+                                break;
                             }
                         }
 
                         if ($hasSanction) {
                             $offenseText = 'Sanction';
-                        } else {
-                            $offenseText = 'Warning'; 
                         }
-                    } else { 
+                    } else {
                         $offenseText = '-';
                     }
+                    
                     if ($offenseText === 'Sanction') {
                         $offenseClass = 'offense-text-sanction';
                     } elseif ($offenseText === 'Warning') {
@@ -367,6 +384,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
     </div>
 </div>
 
-<script src="./admin_violation.js"></script> </body>
+<script src="./admin_violation.js"></script>
+</body>
 </html>
 <?php $conn->close(); ?>

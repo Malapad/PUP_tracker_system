@@ -135,7 +135,7 @@ h1 {
     border: 1px solid #ccc;
     border-radius: 5px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    font-size: 0.9em; /* Optionally reduce font size for inputs slightly */
+    font-size: 0.9em;
 }
 
 .search-input::placeholder { color: #757575; opacity: 1; }
@@ -175,27 +175,25 @@ button {
     text-decoration: none;
 }
 
-button i, .more-details-btn i, .clear-filters-btn i { /* .more-details-btn might need specific icon adjustment if font size changes too much */
-    margin-right: 5px; /* Slightly reduced margin for icons */
+button i, .more-details-btn i, .clear-filters-btn i {
+    margin-right: 5px;
 }
 
 .search-button {
     background-color: #af1414;
     color: white;
-    /* Padding and font-size inherited from 'button' */
 }
 .search-button:hover { background-color: #bd2727; }
 
 .add-violation-button {
     background-color: #af1414;
     color: white;
-    /* Padding and font-size inherited from 'button' */
 }
 .add-violation-button:hover { background-color: #bd2727; }
 
 .refresh-button {
-    padding: 6px 12px; /* Overriding to match new compact 'button' style */
-    font-size: 0.85em; /* Overriding to match new compact 'button' style */
+    padding: 6px 12px;
+    font-size: 0.85em;
     border-radius: 5px;
     background-color: #fff;
     border: 1px solid #0056b3;
@@ -214,12 +212,12 @@ button i, .more-details-btn i, .clear-filters-btn i { /* .more-details-btn might
 }
 
 .more-details-btn {
-    padding: 5px 10px; /* Specifically smaller */
-    font-size: 0.8em;  /* Specifically smaller */
+    padding: 5px 10px;
+    font-size: 0.8em;
     background-color: #ffffff;
     border: 1px solid #af1414;
     color: #af1414;
-    border-radius: 5px; /* Ensure consistency if not inherited perfectly */
+    border-radius: 5px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -228,7 +226,7 @@ button i, .more-details-btn i, .clear-filters-btn i { /* .more-details-btn might
 }
 .more-details-btn i {
     color: #af1414;
-    margin-right: 4px; /* Adjusted for smaller button */
+    margin-right: 4px;
 }
 .more-details-btn:hover {
     background-color: #af1414;
@@ -337,7 +335,7 @@ tbody td {
     text-align: left;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    font-size: 0.9em; /* Optionally reduce font size in table body slightly */
+    font-size: 0.9em;
 }
 
 thead th:nth-child(1) { width: 13%; }
@@ -502,8 +500,7 @@ tbody td:nth-child(11) { text-align: center; }
 
 .modal-button-add,
 .modal-button-cancel {
-    padding: 10px 20px; /* Modal buttons might retain slightly larger padding for emphasis */
-    /* Font size will be inherited from general 'button' style if not overridden */
+    padding: 10px 20px;
 }
 
 .modal-button-add {
