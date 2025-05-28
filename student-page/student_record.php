@@ -238,7 +238,7 @@ if ($individual_violation_instance_count > 0) {
             <hr class="divider-red-wide">
 
             <div class="highlight-panel-wide">
-                <p>Total Violations Committed (Summary): <strong><?php echo $total_commits_for_summary; ?></strong></p>
+                <p>Total Violations Committed: <strong><?php echo $total_commits_for_summary; ?></strong></p>
             </div>
 
             <h3 class="section-title-styled">Summary by Violation Type</h3>

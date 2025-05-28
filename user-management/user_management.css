@@ -112,7 +112,6 @@ nav a.active {
   width: 100%;
   display: flex;
   justify-content: flex-start;
-  /* margin-bottom: 15px; /* Removed, parent .controls gap handles it */
 }
 
 .clear-filters-container {
@@ -146,8 +145,8 @@ nav a.active {
 
 .controls {
   display: flex;
-  flex-direction: column; /* Stack clear-filters and main-controls-wrapper */
-  gap: 15px; /* Gap between clear-filters-row (if present) and main-controls-wrapper */
+  flex-direction: column;
+  gap: 15px;
   margin-bottom: 25px;
   padding: 20px;
   background-color: var(--card-bg-color);
@@ -156,27 +155,26 @@ nav a.active {
   box-shadow: var(--card-shadow);
 }
 
-/* NEW STYLES for the wrapper of main control groups */
 .main-controls-wrapper {
   display: flex;
-  flex-wrap: nowrap; /* Attempt to keep left and right groups on one line */
-  justify-content: space-between; /* Pushes left (filters/search) and right (actions) groups apart */
-  align-items: center; /* Vertically aligns the groups if their heights differ */
-  gap: 20px; /* Space between the left-control-group and right-control-group */
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
 }
 
 .left-control-group {
   display: flex;
-  flex: 1 1 auto; /* Allows this group to grow and shrink */
-  min-width: 0;   /* Important: Allows shrinking below its content's natural min-width, enabling internal form wrapping */
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 #filter-form {
   display: flex;
-  flex-wrap: wrap; /* Allows filter elements and search to wrap within the form */
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  width: 100%; /* Makes the form take the full width of left-control-group */
+  width: 100%;
 }
 
 #filter-form select {
@@ -196,7 +194,6 @@ nav a.active {
   align-items: center;
   flex-grow: 0; 
   flex-basis: 400px;
-  /* margin-top: 10px; */ /* REMOVED for better baseline alignment */
   min-width: 280px;
 }
 
@@ -253,7 +250,7 @@ button i,
   display: flex;
   gap: 10px;
   align-items: center;
-  flex-shrink: 0; /* Prevents this group from shrinking */
+  flex-shrink: 0;
 }
 
 .add-student-button {
