@@ -22,6 +22,8 @@ header {
 nav {
     display: flex;
     gap: 20px;
+    flex-grow: 1;
+    justify-content: center;
 }
 
 nav a {
@@ -30,21 +32,17 @@ nav a {
     color: black;
     padding: 8px 10px;
     border-radius: 3px;
-    transition: color 0.3s ease;
+    transition: color 0.3s ease, background-color 0.3s ease;
 }
 
-nav a:hover {
-    color: #AF1414;
-}
-
+nav a:hover,
 nav a:focus {
     color: #AF1414;
-    outline: 2px solid #AF1414;
-    outline-offset: 2px;
 }
 
 nav a.active {
     color: #AF1414;
+    border-bottom: 2px solid #AF1414;
 }
 
 .admin-icons {

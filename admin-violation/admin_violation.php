@@ -141,7 +141,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
         <div class="filters-area">
             <form method="GET" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" id="filter-form">
                 <select name="violation_type" class="filter-select">
-                    <option value="">Filter by Violation Type</option>
+                    <option value="">Select Violation Type</option>
                     <?php
                     $vtQueryMain = "SELECT violation_type_id, violation_type FROM violation_type_tbl ORDER BY violation_type ASC";
                     $vtResultMain = $conn->query($vtQueryMain);
@@ -154,7 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                     ?>
                 </select>
                 <select name="course_id" class="filter-select">
-                    <option value="">Filter by Course</option>
+                    <option value="">Select Course</option>
                     <?php
                     $courseQueryMain = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name ASC";
                     $courseResultMain = $conn->query($courseQueryMain);
@@ -167,7 +167,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                     ?>
                 </select>
                 <select name="year_id" class="filter-select">
-                    <option value="">Filter by Year</option>
+                    <option value="">Select Year</option>
                     <?php
                     $yearQueryMain = "SELECT year_id, year FROM year_tbl ORDER BY year ASC";
                     $yearResultMain = $conn->query($yearQueryMain);
@@ -183,7 +183,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                     type="text"
                     id="searchInput"
                     name="search"
-                    placeholder="Search by Student Number, Name"
+                    placeholder="Search by Student Number or Last Name"
                     value="<?php echo htmlspecialchars($search); ?>"
                     class="search-input"
                 />

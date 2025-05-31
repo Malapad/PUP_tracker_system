@@ -131,7 +131,7 @@ main.all-notifications-main {
     padding-top: 15px;
     padding-bottom: 15px;
     padding-right: 5px;
-    padding-left: 30px;
+    padding-left: 10px;
     gap: 12px;
     transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
 }
@@ -161,21 +161,6 @@ main.all-notifications-main {
     color: #555;
 }
 
-.notification-list > .notification-item::before {
-    content: "•";
-    font-size: 28px;
-    line-height: 1;
-    color: var(--read-dot-color);
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.notification-list > .notification-item.status-unread::before {
-    color: var(--unread-dot-color);
-}
-
 .notification-content {
     flex-grow: 1;
 }
@@ -203,7 +188,7 @@ main.all-notifications-main {
     color: #888;
 }
 .notification-list .notification-timestamp {
-     display: block;
+    display: block;
 }
 
 .notification-actions {

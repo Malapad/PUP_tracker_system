@@ -20,7 +20,6 @@
     font-family: var(--font-family);
 }
 
-/* Navbar */
 header {
     display: flex;
     align-items: center;

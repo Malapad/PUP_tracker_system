@@ -15,9 +15,9 @@ $unread_notification_count_for_header = 0;
 
 if (isset($conn) && $conn instanceof mysqli) {
     $sql_notifications_list = "SELECT notification_id, message, created_at, link
-                                FROM notifications_tbl
-                                WHERE student_number = ? AND is_read = FALSE
-                                ORDER BY created_at DESC LIMIT 5";
+                                 FROM notifications_tbl
+                                 WHERE student_number = ? AND is_read = FALSE
+                                 ORDER BY created_at DESC LIMIT 5";
     if ($stmt_notifications_list = $conn->prepare($sql_notifications_list)) {
         $stmt_notifications_list->bind_param("s", $student_stud_number_from_session);
         $stmt_notifications_list->execute();
@@ -106,7 +106,7 @@ if (isset($conn) && $conn instanceof mysqli) {
                                         <?php echo htmlspecialchars(strip_tags($notification['message'])); ?>
                                         <small class="notification-timestamp"><?php echo date("M d, h:i A", strtotime($notification['created_at'])); ?></small>
                                     </a>
-                                        <a href="./mark_notification_read.php?id=<?php echo $notification['notification_id']; ?>&page=dashboard" class="mark-as-read-link">Mark read</a>
+                                    <a href="./mark_notification_read.php?id=<?php echo $notification['notification_id']; ?>&page=dashboard" class="mark-as-read-link">Mark read</a>
                                 </li>
                             <?php endforeach; ?>
                         <?php else: ?>
@@ -185,56 +185,7 @@ if (isset($conn) && $conn instanceof mysqli) {
     </div>
     </main>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const notificationLinkToggle = document.getElementById('notificationLinkToggle');
-    const notificationsDropdownContent = document.getElementById('notificationsDropdownContent');
-    if(notificationLinkToggle && notificationsDropdownContent) {
-        notificationLinkToggle.addEventListener('click', function(event) {
-            event.preventDefault();
-            notificationsDropdownContent.classList.toggle('show');
-        });
-    }
-    document.addEventListener('click', function(event) {
-        if (notificationsDropdownContent && notificationLinkToggle) {
-            if (!notificationLinkToggle.contains(event.target) && !notificationsDropdownContent.contains(event.target)) {
-                notificationsDropdownContent.classList.remove('show');
-            }
-        }
-    });
-});
-function handbookSearch() {
-    const searchTerm = document.getElementById('handbookSearchInput').value.toLowerCase();
-    const list = document.getElementById('handbookViolationList');
-    const listItems = list.querySelectorAll('li.handbook-item');
-    let foundItems = 0;
-    listItems.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        if (text.includes(searchTerm)) {
-            item.style.display = '';
-            foundItems++;
-        } else {
-            item.style.display = 'none';
-        }
-    });
-    let noResultsMessage = list.querySelector('.no-handbook-items-message.search-specific');
-    if (foundItems === 0 && searchTerm) {
-        if (!noResultsMessage) {
-            noResultsMessage = document.createElement('li');
-            noResultsMessage.className = 'no-handbook-items-message search-specific';
-            list.appendChild(noResultsMessage);
-        }
-        noResultsMessage.textContent = 'No violation types match your search.';
-        noResultsMessage.style.display = '';
-    } else if (noResultsMessage) {
-            noResultsMessage.style.display = 'none';
-    }
-}
-const handbookSearchInputElem = document.getElementById('handbookSearchInput');
-if (handbookSearchInputElem) {
-    handbookSearchInputElem.addEventListener('input', handbookSearch);
-}
-</script>
+    <script src="./student_dashboard.js" defer></script>
 </body>
 </html>
 <?php

@@ -25,9 +25,9 @@ $header_unread_notifications = [];
 $header_unread_count = 0;
 if (isset($conn) && $conn instanceof mysqli) {
     $sql_header_list = "SELECT notification_id, message, created_at, link
-                        FROM notifications_tbl
-                        WHERE student_number = ? AND is_read = FALSE
-                        ORDER BY created_at DESC LIMIT 5";
+                            FROM notifications_tbl
+                            WHERE student_number = ? AND is_read = FALSE
+                            ORDER BY created_at DESC LIMIT 5";
     if ($stmt_header_list = $conn->prepare($sql_header_list)) {
         $stmt_header_list->bind_param("s", $student_stud_number_from_session);
         $stmt_header_list->execute();
@@ -238,8 +238,8 @@ if (!empty($all_notifications_list)) {
                 <?php endforeach; ?>
             <?php elseif (empty($page_error_message)): ?>
                     <div class="no-notifications-message">
-                    <i class="fas fa-bell-slash"></i> <p>You have no notifications<?php echo !empty($search_term) ? ' matching your search "' . htmlspecialchars($search_term) . '"' : ' in your history'; ?>.</p>
-                </div>
+                        <p>You have no notifications<?php echo !empty($search_term) ? ' matching your search "' . htmlspecialchars($search_term) . '"' : ' in your history'; ?>.</p>
+                    </div>
             <?php endif; ?>
 
             <?php if ($total_pages > 1): ?>
