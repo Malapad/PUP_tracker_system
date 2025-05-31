@@ -1,0 +1,1099 @@
+/* Existing CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    padding: 10px 20px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo img {
+    width: 50px;
+    margin-left: 70px;
+}
+
+nav {
+    display: flex;
+    gap: 20px;
+}
+
+nav a {
+    text-decoration: none;
+    font-weight: bold;
+    color: black;
+    padding: 8px 10px;
+    border-radius: 3px;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: #AF1414;
+}
+
+nav a:focus {
+    color: #AF1414;
+    outline: 2px solid #AF1414;
+    outline-offset: 2px;
+}
+
+nav a.active {
+    color: #AF1414;
+}
+
+.admin-icons {
+    display: flex;
+    gap: 15px;
+    font-size: 15px;
+    margin-right: 55px;
+}
+
+.admin-icons img {
+    width: 35px;
+}
+
+.notification {
+    width: 34px;
+}
+
+.container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 1600px;
+    margin: 20px auto;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+
+.clear-filters-container {
+    margin-bottom: 15px;
+}
+
+.clear-filters-btn {
+    padding: 6px 12px;
+    font-size: 0.85em;
+    color: #0056b3;
+    text-decoration: none;
+    border: 1px solid #0056b3;
+    border-radius: 4px;
+    background-color: #fff;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    opacity: 1;
+    visibility: visible;
+}
+
+.clear-filters-btn:hover,
+.clear-filters-btn:focus {
+    background-color: #e6f0ff;
+    color: #004085;
+    text-decoration: none;
+    outline: none;
+    box-shadow: 0 0 0 0.15rem rgba(0, 86, 179, 0.25);
+}
+
+.table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* NEW: Styles for the Configuration Tab controls (for global add category button) */
+.category-config-controls {
+    display: flex;
+    justify-content: flex-start; /* Align to left for Add Category button */
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.add-violation-category-btn {
+    background-color: #af1414; /* Red theme */
+    color: white;
+    padding: 8px 15px;
+    font-size: 0.9em;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+.add-violation-category-btn:hover {
+    background-color: #bd2727;
+}
+.add-violation-category-btn:focus {
+    background-color: #bd2727;
+    box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.35);
+    outline: none;
+}
+
+
+/* NEW: Button inside accordion */
+.accordion-controls {
+    text-align: right; /* Align add type button to right */
+    margin-bottom: 15px;
+}
+
+.add-type-to-category-btn { /* Renamed for clarity from add-violation-type-in-category-btn */
+    background-color: #17a2b8; /* Info blue */
+    color: white;
+    padding: 8px 15px;
+    font-size: 0.9em;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+.add-type-to-category-btn:hover {
+    background-color: #138496;
+}
+.add-type-to-category-btn:focus {
+    background-color: #138496;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.35);
+    outline: none;
+}
+
+
+.filters-area {
+    display: flex;
+    align-items: center;
+}
+
+.filters-area form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.search-input,
+.filter-select {
+    padding: 7px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-size: 0.9em;
+}
+
+.search-input::placeholder { color: #757575; opacity: 1; }
+.search-input::-webkit-input-placeholder { color: #757575; opacity: 1; }
+.search-input::-moz-placeholder { color: #757575; opacity: 1; }
+.search-input:-ms-input-placeholder { color: #757575; opacity: 1; }
+.search-input::-ms-input-placeholder { color: #757575; opacity: 1; }
+
+.search-input {
+    width: 250px;
+}
+
+.search-input:focus,
+.filter-select:focus {
+    border-color: #af1414;
+    box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.25);
+    outline: none;
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+button {
+    padding: 6px 12px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 0.85em;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+button i, .more-details-btn i, .clear-filters-btn i {
+    margin-right: 5px;
+}
+
+.search-button {
+    background-color: #af1414;
+    color: white;
+}
+.search-button:hover { background-color: #bd2727; }
+
+.add-violation-button {
+    background-color: #af1414;
+    color: white;
+}
+.add-violation-button:hover { background-color: #bd2727; }
+
+
+.refresh-button {
+    padding: 6px 12px;
+    font-size: 0.85em;
+    border-radius: 5px;
+    background-color: #fff;
+    border: 1px solid #0056b3;
+    color: #0056b3;
+}
+.refresh-button i {
+    color: #0056b3;
+}
+.refresh-button:hover {
+    background-color: #e6f0ff;
+    color: #004085;
+    border-color: #004085;
+}
+.refresh-button:hover i {
+    color: #004085;
+}
+
+.more-details-btn {
+    padding: 5px 10px;
+    font-size: 0.8em;
+    background-color: #ffffff;
+    border: 1px solid #af1414;
+    color: #af1414;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+.more-details-btn i {
+    color: #af1414;
+    margin-right: 4px;
+}
+.more-details-btn:hover {
+    background-color: #af1414;
+    color: #ffffff;
+    border-color: #af1414;
+}
+.more-details-btn:hover i {
+    color: #ffffff;
+}
+
+/* NEW: Styles for the edit and delete buttons in config table */
+.edit-violation-type-btn {
+    background-color: #007bff; /* Example color for edit */
+    color: white;
+    padding: 5px 10px;
+    font-size: 0.8em;
+    margin-right: 5px; /* Space between buttons */
+}
+.edit-violation-type-btn:hover {
+    background-color: #0056b3;
+}
+
+.delete-violation-type-btn {
+    background-color: #dc3545; /* Red for delete */
+    color: white;
+    padding: 5px 10px;
+    font-size: 0.8em;
+}
+.delete-violation-type-btn:hover {
+    background-color: #c82333;
+}
+
+/* NEW: Confirmation button for delete modal */
+.btn-confirm-delete {
+    background-color: #28a745; /* Green for confirm delete */
+    color: white;
+    padding: 10px 20px;
+}
+.btn-confirm-delete:hover {
+    background-color: #218838;
+}
+
+
+.search-button:focus,
+.add-violation-button:focus {
+    background-color: #bd2727;
+    box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.35);
+    outline: none;
+}
+
+.more-details-btn:focus {
+    border-color: #9d1212;
+    box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.25);
+    outline: none;
+    color: #9d1212;
+}
+.more-details-btn:focus i {
+    color: #9d1212;
+}
+
+.refresh-button:focus {
+    background-color: #e6f0ff;
+    border-color: #00376b;
+    color: #00376b;
+    box-shadow: 0 0 0 0.2rem rgba(0, 86, 179, 0.35);
+    outline: none;
+}
+.refresh-button:focus i {
+    color: #00376b;
+}
+
+.main-table-scroll-container {
+    max-height: 600px;
+    overflow-y: auto;
+    margin-top: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    position: relative;
+}
+
+/* NEW: Specific style for the config table's scroll container if needed, inheriting from main */
+.config-table-scroll-container {
+    /* You can override max-height or other properties here if the config table needs different scroll behavior */
+}
+
+
+.table-overlay-spinner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.75);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table-overlay-spinner .spinner {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #0056b3;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spinTableOverlay 1s linear infinite;
+}
+
+@keyframes spinTableOverlay {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.main-table-scroll-container thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: darkred;
+    color: white;
+    text-align: left;
+    vertical-align: middle;
+    padding: 8px 6px;
+}
+
+/* NEW: Styles for the Configuration Table */
+.config-table thead th {
+    background-color: #e9ecef; /* Lighter header for config table */
+    color: #495057;
+}
+
+
+tbody tr {
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+}
+tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+tbody tr:hover {
+    background-color: #e6e6e6;
+}
+
+tbody td {
+    padding: 7px 6px;
+    vertical-align: middle;
+    text-align: left;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    font-size: 0.9em;
+}
+
+/* Specific column widths for the main table (Student tab) */
+.tab-content#Violation table thead th:nth-child(1) { width: 13%; }
+.tab-content#Violation table thead th:nth-child(2) { width: 10%; }
+.tab-content#Violation table thead th:nth-child(3) { width: 8%; }
+.tab-content#Violation table thead th:nth-child(4) { width: 10%; }
+.tab-content#Violation table thead th:nth-child(5) { width: 7%; text-align: center; }
+.tab-content#Violation table tbody td:nth-child(5) { text-align: center; }
+.tab-content#Violation table thead th:nth-child(6) { width: 4%; text-align: center; }
+.tab-content#Violation table tbody td:nth-child(6) { text-align: center; }
+.tab-content#Violation table thead th:nth-child(7) { width: 5%; text-align: center; }
+.tab-content#Violation table tbody td:nth-child(7) { text-align: center; }
+.tab-content#Violation table thead th:nth-child(8) { width: 20%; }
+.tab-content#Violation table thead th:nth-child(9) { width: 7%; text-align: center; white-space: normal; }
+.tab-content#Violation table tbody td:nth-child(9) { text-align: center; }
+.tab-content#Violation table thead th:nth-child(10) { width: 7%; text-align: center; }
+.tab-content#Violation table tbody td:nth-child(10) { text-align: center; }
+.tab-content#Violation table thead th:nth-child(11) { width: 9%; text-align: center; }
+.tab-content#Violation table tbody td:nth-child(11) { text-align: center; }
+
+
+/* NEW: Specific column widths for the config table (inside accordions) */
+.tab-content#Configuration .config-table thead th:nth-child(1) { width: 15%; } /* Resolution */
+.tab-content#Configuration .config-table thead th:nth-child(2) { width: 20%; } /* Type of Violation */
+.tab-content#Configuration .config-table thead th:nth-child(3) { width: 40%; } /* Violation Description */
+.tab-content#Configuration .config-table thead th:nth-child(4) { width: 15%; } /* Date Published */
+.tab-content#Configuration .config-table thead th:nth-child(5) { width: 10%; text-align: center; } /* Actions */
+.tab-content#Configuration .config-table tbody td:nth-child(5) { text-align: center; }
+
+
+.offense-text-warning {
+    color: #B8860B;
+    font-weight: bold;
+}
+
+.offense-text-sanction {
+    color: #af1414;
+    font-weight: bold;
+}
+
+.offense-text-default {
+    color: #6c757d;
+}
+
+.no-records-cell {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 1.1em;
+    color: #6c757d;
+    line-height: 1.6;
+}
+.no-records-cell br {
+    display: block;
+    margin-bottom: 8px;
+    content: "";
+}
+
+/* NEW: Styles for the Tabs */
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    gap: 5px;
+}
+
+.tabs .tab {
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    color: #555;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.tabs .tab:hover {
+    background-color: #e2e2e2;
+    color: #333;
+}
+
+.tabs .tab.active {
+    background-color: #af1414;
+    color: white;
+    border-color: #af1414;
+    cursor: default;
+}
+
+.tabs .tab.active:hover {
+    background-color: #af1414; /* No change on hover when active */
+    color: white;
+}
+
+.tabs .tab i {
+    margin-right: 8px;
+}
+
+/* NEW: Tab Content Styling */
+.tab-content {
+    padding-top: 15px; /* Space between tabs and content */
+}
+
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto; /* Allow scrolling for modal content if it overflows */
+}
+
+.modal-content {
+    margin: 5% auto; /* Adjusted margin to allow more space on smaller screens */
+    width: 90%; /* Increased width for responsiveness */
+    max-width: 600px;
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 10px;
+    text-align: left;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.head-modal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.head-modal h3 {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #333;
+}
+
+.close-modal-button, .close-modal-category-button, .close-modal-add-type-button, .close-modal-edit-button, .close-modal-delete-button { /* Added new close button classes */
+    float: right;
+    cursor: pointer;
+    font-size: 1.5em;
+    line-height: 1;
+    color: #777;
+    transition: color 0.2s ease;
+}
+.close-modal-button:hover, .close-modal-category-button:hover, .close-modal-add-type-button:hover, .close-modal-edit-button:hover, .close-modal-delete-button:hover { /* Added new close button classes */
+    color: #333;
+}
+
+.modal-message {
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    text-align: center;
+    border: 1px solid transparent;
+}
+
+.modal-message.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.modal-message.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.modal .form-container .row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 20px;
+    gap: 20px;
+    flex-wrap: wrap; /* Allow columns to wrap on smaller screens */
+}
+
+.modal .form-container .column {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 250px; /* Ensure columns don't get too small before wrapping */
+}
+
+.modal .form-container .column.full-width { /* For single column in a row */
+    flex: 1 1 100%;
+    min-width: auto;
+}
+
+.modal .form-container label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.modal .form-container input[type="text"],
+.modal .form-container select,
+.modal .form-container textarea { /* Added textarea */
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modal .form-container input[type="text"]:focus,
+.modal .form-container select:focus,
+.modal .form-container textarea:focus { /* Added textarea */
+    border-color: #af1414;
+    box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.25);
+    outline: none;
+}
+
+.modal .button-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+/* NEW: Multi-step form buttons */
+.modal-button-next, .modal-button-back {
+    padding: 10px 20px;
+    background-color: #007bff; /* Blue for navigation */
+    color: white;
+}
+.modal-button-next:hover, .modal-button-back:hover {
+    background-color: #0056b3;
+}
+
+
+/* Specific button for publish */
+.modal-button-publish {
+    background-color: #28a745; /* Green for publish */
+    color: white;
+    padding: 10px 20px;
+}
+.modal-button-publish:hover {
+    background-color: #218838;
+}
+
+
+.modal-button-add,
+.modal-button-cancel {
+    padding: 10px 20px;
+}
+
+.modal-button-add {
+    background-color: #af1414;
+    color: white;
+}
+.modal-button-add:hover {
+    background-color: #bd2727;
+}
+
+.modal-button-cancel {
+    background-color: #6c757d;
+    color: white;
+}
+.modal-button-cancel:hover {
+    background-color: #5a6268;
+}
+
+/* REVISED: Focus styles for main action buttons now that multi-step is gone */
+.modal-button-add:focus,
+.modal-button-publish:focus,
+.modal-button-next:focus,
+.modal-button-back:focus {
+    box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.35); /* Base red shadow */
+    outline: none;
+}
+.modal-button-publish:focus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.35); /* Green shadow for publish */
+}
+.modal-button-next:focus, .modal-button-back:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.35); /* Blue shadow for navigation */
+}
+
+
+.modal-button-cancel:focus,
+.btn-confirm-delete:focus {
+    background-color: #5a6268;
+    box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.35);
+    outline: none;
+}
+
+.toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 280px;
+    max-width: 500px;
+    width: auto;
+    padding: 12px 25px;
+    border-radius: 30px;
+    color: white;
+    font-size: 0.95em;
+    line-height: 1.5;
+    text-align: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: opacity 0.4s ease-in-out, top 0.4s ease-in-out, bottom 0.4s ease-in-out, visibility 0s linear 0.4s;
+}
+
+/* NEW: Toast positioning */
+.toast.top-center {
+    top: 70px;
+    bottom: auto;
+}
+
+.toast.bottom-center {
+    top: auto;
+    bottom: 30px;
+}
+
+.toast.show {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.4s ease-in-out, top 0.4s ease-in-out, bottom 0.4s ease-in-out, visibility 0s linear 0s;
+}
+
+.toast.success {
+    background-color: #28a745;
+}
+
+.toast.error {
+    background-color: #dc3545;
+}
+
+/* NEW: Accordion Styles */
+.accordion-container-wrapper { /* New wrapper for scrollability */
+    max-height: 70vh; /* Adjust as needed */
+    overflow-y: auto;
+    padding-right: 5px; /* Space for scrollbar */
+}
+
+.accordion-container {
+    margin-top: 20px;
+}
+
+.accordion-item {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.accordion-header {
+    background-color: #800000; /* Dark red background for header, similar to your image */
+    color: white;
+    padding: 12px 20px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
+
+.accordion-header:hover {
+    background-color: #af1414; /* Slightly lighter on hover */
+}
+
+.accordion-icon {
+    transition: transform 0.3s ease-in-out;
+}
+
+.accordion-item.active .accordion-icon {
+    transform: rotate(180deg);
+}
+
+.accordion-content {
+    padding: 0 20px;
+    background-color: white;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.accordion-item.active .accordion-content {
+    padding-top: 15px; /* Add padding when open */
+    padding-bottom: 15px; /* Add padding when open */
+    /* max-height will be set dynamically by JS */
+}
+
+/* Ensure tables inside accordions also get proper scrolling */
+.accordion-content .config-table-scroll-container {
+    max-height: 300px; /* Limit height for tables inside accordions */
+    overflow-y: auto; /* Ensure inner table is scrollable */
+    margin-top: 0; /* Remove default margin from .main-table-scroll-container */
+    border: 1px solid #ddd; /* Add border back for inner tables */
+    border-radius: 4px;
+}
+
+/* NEW: Action buttons container on table rows */
+.action-buttons-cell {
+    position: relative; /* For positioning the action buttons */
+    /* Ensure there's enough space for the buttons */
+    min-width: 120px; /* Adjust based on button size */
+}
+
+.action-buttons-container {
+    display: flex; /* Initially hidden, shown on row click by JS */
+    align-items: center;
+    justify-content: center;
+    gap: 5px; /* Space between edit/delete buttons */
+}
+
+/* NEW: Confirmation content styling for delete modal */
+.confirmation-content p {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #333;
+}
+.confirmation-content p strong {
+    color: #000;
+}
+.confirmation-content span {
+    font-weight: normal;
+    color: #555;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 900px) {
+    .table-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filters-area form {
+        width: 100%;
+        justify-content: center; /* Center filter elements */
+    }
+
+    .search-input {
+        width: 100%; /* Full width for search input on smaller screens */
+        margin-bottom: 10px;
+    }
+
+    .filter-select {
+        flex: 1 1 auto; /* Allow selects to grow/shrink */
+        min-width: unset; /* Remove min-width inherited from .column */
+    }
+
+    .table-actions {
+        width: 100%;
+        justify-content: center;
+        margin-top: 10px;
+    }
+
+    /* NEW: category-config-controls responsiveness */
+    .category-config-controls {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+    .add-violation-category-btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    /* NEW: accordion-controls for responsive add button */
+    .accordion-controls {
+        text-align: center;
+    }
+    .add-type-to-category-btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .modal-content {
+        width: 95%; /* Wider modal on smaller screens */
+        margin: 2% auto; /* Adjust margin */
+        padding: 20px 25px; /* Adjust padding */
+    }
+
+    .modal .form-container .column {
+        min-width: unset; /* Remove min-width to allow shrinking */
+        flex: 1 1 100%; /* Stack columns on small screens */
+    }
+
+    .modal .button-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .modal-button-add,
+    .modal-button-cancel,
+    .modal-button-publish,
+    .modal-button-next,
+    .modal-button-back,
+    .btn-confirm-delete {
+        width: 100%;
+    }
+
+    .tabs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tabs .tab {
+        border-radius: 0;
+        border-bottom: 1px solid #ccc; /* Add back border for stacked tabs */
+    }
+    .tabs .tab:first-child {
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+    .tabs .tab:last-child {
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        border-bottom: none; /* No bottom border for the last tab */
+    }
+
+    /* Adjust accordion content padding for smaller screens */
+    .accordion-content {
+        padding: 0 10px;
+    }
+    .accordion-item.active .accordion-content {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .logo img {
+        margin-left: 0;
+        margin-bottom: 10px;
+    }
+
+    nav {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+
+    .admin-icons {
+        margin-right: 0;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .container {
+        padding: 15px;
+        width: 95%;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    .main-table-scroll-container {
+        border: none; /* Remove border for better mobile table display */
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    tbody tr {
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    tbody td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+        font-size: 0.9em;
+    }
+
+    tbody td:before {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+        color: #555;
+    }
+
+    /* Data labels for Student Table */
+    .tab-content#Violation table tbody td:nth-of-type(1):before { content: "Student Number:"; }
+    .tab-content#Violation table tbody td:nth-of-type(2):before { content: "First Name:"; }
+    .tab-content#Violation table tbody td:nth-of-type(3):before { content: "Middle Name:"; }
+    .tab-content#Violation table tbody td:nth-of-type(4):before { content: "Last Name:"; }
+    .tab-content#Violation table tbody td:nth-of-type(5):before { content: "Course:"; }
+    .tab-content#Violation table tbody td:nth-of-type(6):before { content: "Year:"; }
+    .tab-content#Violation table tbody td:nth-of-type(7):before { content: "Section:"; }
+    .tab-content#Violation table tbody td:nth-of-type(8):before { content: "Violations:"; }
+    .tab-content#Violation table tbody td:nth-of-type(9):before { content: "Count:"; }
+    .tab-content#Violation table tbody td:nth-of-type(10):before { content: "Offense:"; }
+    .tab-content#Violation table tbody td:nth-of-type(11):before { content: "Action:"; }
+
+    /* Data labels for Configuration Table (inside accordions) */
+    .tab-content#Configuration .config-table tbody td:nth-of-type(1):before { content: "Resolution:"; }
+    .tab-content#Configuration .config-table tbody td:nth-of-type(2):before { content: "Violation Type:"; }
+    .tab-content#Configuration .config-table tbody td:nth-of-type(3):before { content: "Description:"; }
+    .tab-content#Configuration .config-table tbody td:nth-of-type(4):before { content: "Date Published:"; }
+    .tab-content#Configuration .config-table tbody td:nth-of-type(5):before { content: "Actions:"; }
+
+    .no-records-cell {
+        padding: 20px 10px;
+        font-size: 1em;
+    }
+
+    /* Adjust position of action buttons inside responsive table cells */
+    .action-buttons-cell {
+        display: flex;
+        justify-content: flex-end; /* Align to right */
+        align-items: center;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .action-buttons-cell:before { /* Hide pseudo-element for action cell */
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .toast {
+        min-width: unset;
+        width: 90%;
+        left: 5%;
+        transform: translateX(0);
+    }
+}

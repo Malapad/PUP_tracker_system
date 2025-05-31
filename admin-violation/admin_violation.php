@@ -123,6 +123,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
 <div class="container">
     <h1>Student Violation Records</h1>
 
+        <div class="tabs">
+            <button class="tab active" data-tab="Violation"><i class="fas fa-user-graduate"></i>Student</button>
+            <button class="tab" data-tab="sanction-config"><i class="fas fa-cogs"></i>Violation Configuration</button>
+        </div>
+
     <?php
     if (!empty($filterViolation) || !empty($filterCourse) || !empty($filterYear) || !empty($search)) {
         $baseUrl = strtok($_SERVER["REQUEST_URI"], '?');
