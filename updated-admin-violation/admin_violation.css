@@ -6,6 +6,10 @@
     font-family: Arial, sans-serif;
 }
 
+body {
+    background-color: #f4f7f6; /* Light background for the page */
+}
+
 header {
     display: flex;
     align-items: center;
@@ -359,12 +363,6 @@ button i, .more-details-btn i, .clear-filters-btn i {
     border-radius: 4px;
     position: relative;
 }
-
-/* NEW: Specific style for the config table's scroll container if needed, inheriting from main */
-.config-table-scroll-container {
-    /* You can override max-height or other properties here if the config table needs different scroll behavior */
-}
-
 
 .table-overlay-spinner {
     position: absolute;

@@ -17,8 +17,8 @@ include '../PHP/dbcon.php';
         </div>
         <nav>
             <a href="../HTML/admin_homepage.html">Home</a>
-            <a href="../admin-violation/admin_violation.php">Violations</a>
-            <a href="../HTML/admin_sanction.html">Student Sanction</a>
+            <a href="../updated-admin-violation/admin-violationpage.php">Violations</a>
+            <a href="../updated-admin-sanction/admin_sanction.php">Student Sanction</a>
             <a href="../user-management/user_management.php" class="active">User Management</a>
         </nav>
         <div class="admin-icons">
@@ -32,7 +32,7 @@ include '../PHP/dbcon.php';
     </header>
 
     <div class="container">
-        <h2>User Management</h2>
+        <h1>User Management</h1>
         <div class="tabs">
             <button class="tab active">Students</button>
         </div>
