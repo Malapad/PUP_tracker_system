@@ -234,6 +234,7 @@ main {
     text-align: left;
     font-size: 0.9em; 
     color: var(--text-secondary);
+    vertical-align: top;
 }
 
 .data-table-wide thead th {
@@ -242,22 +243,57 @@ main {
     font-weight: bold; 
     border-bottom-width: 2px;
     border-bottom-color: var(--border-color-medium);
-    text-align: center;
     font-size: 0.92em; 
     padding-top: 12px;
     padding-bottom: 12px;
-}
-.data-table-wide td:first-child,
-.data-table-wide th:first-child {
     text-align: left;
 }
-.data-table-wide td:nth-child(2),
-.data-table-wide th:nth-child(2) {
+
+#summaryViolationTable th:nth-child(1),
+#summaryViolationTable td:nth-child(1) {
+    width: 20%;
+    text-align: left;
+}
+#summaryViolationTable th:nth-child(2),
+#summaryViolationTable td:nth-child(2) {
+    width: 30%;
+    text-align: left;
+}
+#summaryViolationTable th:nth-child(3),
+#summaryViolationTable td:nth-child(3) {
+    width: 15%;
     text-align: center;
 }
-.data-table-wide td:nth-child(3),
-.data-table-wide th:nth-child(3) {
+#summaryViolationTable th:nth-child(4),
+#summaryViolationTable td:nth-child(4) {
+    width: 15%;
     text-align: center;
+}
+#summaryViolationTable th:nth-child(5),
+#summaryViolationTable td:nth-child(5) {
+    width: 20%;
+    text-align: left;
+}
+
+#individualViolationsTable th:nth-child(1),
+#individualViolationsTable td:nth-child(1) {
+    width: 20%;
+    text-align: left;
+}
+#individualViolationsTable th:nth-child(2),
+#individualViolationsTable td:nth-child(2) {
+    width: 30%;
+    text-align: left;
+}
+#individualViolationsTable th:nth-child(3),
+#individualViolationsTable td:nth-child(3) {
+    width: 25%;
+    text-align: left; 
+}
+#individualViolationsTable th:nth-child(4),
+#individualViolationsTable td:nth-child(4) {
+    width: 25%;
+    text-align: left;
 }
 
 .data-table-wide tbody tr:hover td {
@@ -267,13 +303,14 @@ main {
 
 .offense-tag-look {
     font-weight: bold; 
-    padding: 2px 7px; 
+    padding: 3px 8px; 
     border-radius: 4px;
     display: inline-block;
     font-size: 0.85em; 
     border: 1px solid transparent;
     min-width: auto;
     line-height: normal;
+    text-align: center;
 }
 
 .offense-tag-look-warning {
