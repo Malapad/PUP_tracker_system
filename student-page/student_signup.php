@@ -11,16 +11,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $confirmPassword = $_POST['confirm_password'];
 
-    // Check if passwords match
     if ($password !== $confirmPassword) {
         echo "<script>alert('Passwords do not match!'); window.history.back();</script>";
         exit;
     }
 
-    // Hash the password
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    // Check if student number or email already exists
     $checkQuery = "SELECT * FROM student_info_tbl WHERE Stud_number = ? OR Email = ?";
     $stmt = $conn->prepare($checkQuery);
     $stmt->bind_param("ss", $studentNumber, $email);
@@ -54,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Sign-Up</title>
-    <link rel="stylesheet" href="../CSS/student_signup_style.css">
+    <link rel="stylesheet" href="./student_signup_style.css">
 </head>
 <body>
 

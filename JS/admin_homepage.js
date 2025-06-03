@@ -72,93 +72,56 @@
 
 */
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Course data (hardcoded)
-    const courses = {
-        "DIT": 15,
-        "BSIT": 20,
-        "BSOA": 8,
-        "DOMT": 5,
-        "BS-EDEN": 6,
-        "BS-EDMT": 7,
-        "BSA": 10,
-        "BSPSYCH": 4,
-        "BSME": 3,
-        "BSECE": 2
-    };
+document.addEventListener("DOMContentLoaded", async () => {
+    let courses = await fetch("../PHP/admin_homepage.php");
+    courses = await courses.json();
 
-    const courseCtx = document.getElementById('coursePieChart').getContext('2d');
+    const courseCtx = document.getElementById("coursePieChart").getContext("2d");
     new Chart(courseCtx, {
-        type: 'pie',
+        type: "pie",
         data: {
-            labels: Object.keys(courses),
-            datasets: [{
-                data: Object.values(courses),
-                backgroundColor: [
-                    '#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#ffa600',
-                    '#4bc0c0', '#9966ff', '#c9cbcf', '#ff9f40', '#8bc34a'
-                ]
-            }]
+            labels: courses.courses.labels,
+            datasets: [
+                {
+                    data: courses.courses.data,
+                },
+            ],
         },
         options: {
             plugins: {
                 legend: {
-                    position: 'right'
-                }
-            }
-        }
+                    position: "right",
+                },
+            },
+        },
     });
 
-    // Violation data
-    const violations = {
-        "Late ID Validation": 10,
-        "Lost ID": 8,
-        "No ID": 12,
-        "Late Registration Card": 5,
-        "Lost Registration Card": 4,
-        "Hair Color": 6,
-        "Prohibited Clothes": 7,
-        "Other Violation": 3
-    };
-
-    const totalViolations = Object.values(violations).reduce((a, b) => a + b, 0);
-    const labels = Object.keys(violations);
-    const data = Object.values(violations);
-    const violationCtx = document.getElementById('violationChart').getContext('2d');
-
+    const violationCtx = document
+        .getElementById("violationChart")
+        .getContext("2d");
     new Chart(violationCtx, {
-        type: 'bar',
+        type: "bar",
         data: {
-            labels: labels,
-            datasets: [{
-                label: '% of Violations',
-                data: data.map(v => ((v / totalViolations) * 100).toFixed(2)),
-                backgroundColor: [
-                    '#ff6384', '#36a2eb', '#cc65fe', '#ffce56',
-                    '#ffa600', '#4bc0c0', '#9966ff', '#c9cbcf'
-                ]
-            }]
+            labels: courses.violation.labels,
+            datasets: [
+                {
+                    data: courses.violation.data,
+                    backgroundColor: [
+                        "#ff6384",
+                        "#36a2eb",
+                        "#ffcd56",
+                        "#4bc0c0",
+                        "#9966ff",
+                    ], // optional colors
+                },
+            ],
         },
         options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Percentage (%)'
-                    }
-                }
-            },
             plugins: {
                 legend: {
-                    display: false
+                    position: "right",
                 },
-                tooltip: {
-                    callbacks: {
-                        label: ctx => `${ctx.raw}%`
-                    }
-                }
-            }
-        }
+            },
+        },
     });
 });

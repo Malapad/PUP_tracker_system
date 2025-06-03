@@ -1,86 +1,63 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 include '../PHP/dbcon.php';
 
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 header('Content-Type: application/json');
+$response = ['success' => false, 'error' => 'An unknown error occurred.'];
 
-if (mysqli_connect_errno()) {
-    echo json_encode(["success" => false, "error" => "Failed to connect to database: " . mysqli_connect_error()]);
-    exit;
-}
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $student_number = isset($_POST['student_number']) ? mysqli_real_escape_string($conn, trim($_POST['student_number'])) : '';
+    $first_name = isset($_POST['first_name']) ? mysqli_real_escape_string($conn, trim($_POST['first_name'])) : '';
+    $middle_name = isset($_POST['middle_name']) ? mysqli_real_escape_string($conn, trim($_POST['middle_name'])) : '';
+    $last_name = isset($_POST['last_name']) ? mysqli_real_escape_string($conn, trim($_POST['last_name'])) : '';
+    $email = isset($_POST['email']) ? mysqli_real_escape_string($conn, trim($_POST['email'])) : '';
+    $course_id = isset($_POST['course_id']) ? (int)$_POST['course_id'] : 0;
+    $year_id = isset($_POST['year_id']) ? (int)$_POST['year_id'] : 0;
+    $section_id = isset($_POST['section_id']) ? (int)$_POST['section_id'] : 0;
+    $status_id = isset($_POST['status_id']) ? (int)$_POST['status_id'] : 0;
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $student_number = $_POST["student_number"] ?? '';
-    $first_name = $_POST["first_name"] ?? '';
-    $middle_name = $_POST["middle_name"] ?? '';
-    $last_name = $_POST["last_name"] ?? '';
-    $email = $_POST["email"] ?? '';
-    $course_name = $_POST["course"] ?? '';
-    $year_name = $_POST["year"] ?? '';
-    $section_name = $_POST["section"] ?? '';
-    $gender_name = $_POST["gender"] ?? '';
-    $status = "Active";
+    $password = 'default_password';
+    $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-    if (empty($student_number) || empty($first_name) || empty($last_name) || empty($email) || empty($course_name) || empty($year_name) || empty($section_name) || empty($gender_name)) {
-        echo json_encode(["success" => false, "error" => "Missing required fields"]);
-        exit;
-    }
+    if (!empty($student_number) && !empty($first_name) && !empty($last_name) && !empty($email) && $course_id > 0 && $year_id > 0 && $section_id > 0 && $status_id > 0) {
+        
+        $checkQuery = "SELECT student_number FROM users_tbl WHERE student_number = ?";
+        $stmt_check = $conn->prepare($checkQuery);
+        $stmt_check->bind_param("s", $student_number);
+        $stmt_check->execute();
+        $stmt_check->store_result();
 
-    $course_id = getIdFromTable($conn, 'course_tbl', 'course_name', 'course_id', $course_name);
-    $year_id = getIdFromTable($conn, 'year_tbl', 'year', 'year_id', $year_name);
-    $section_id = getIdFromTable($conn, 'section_tbl', 'section_name', 'section_id', $section_name);
-    $gender_id = getIdFromTable($conn, 'gender_tbl', 'gender_name', 'gender_id', $gender_name);
-    $status_id = getIdFromTable($conn, 'status_tbl', 'status_name', 'status_id', $status);
-
-    if (!$course_id || !$year_id || !$section_id || !$gender_id || !$status_id) {
-        echo json_encode([
-            "success" => false, 
-            "error" => "Invalid data provided",
-            "debug" => [
-                "course_name" => $course_name,
-                "course_id" => $course_id,
-                "year_name" => $year_name,
-                "year_id" => $year_id,
-                "section_name" => $section_name,
-                "section_id" => $section_id,
-                "gender_name" => $gender_name,
-                "gender_id" => $gender_id,
-                "status_name" => $status,
-                "status_id" => $status_id
-            ]
-        ]);
-        exit;
-    }
-
-    $query = "INSERT INTO users_tbl (student_number, last_name, first_name, middle_name, email, course_id, year_id, section, gender, status_id) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($query);
-    
-    if (!$stmt) {
-        echo json_encode(["success" => false, "error" => "Error preparing query: " . $conn->error]);
-        exit;
-    }
-
-    $stmt->bind_param("ssssssssss", $student_number, $last_name, $first_name, $middle_name, $email, $course_id, $year_id, $section_id, $gender_id, $status_id);
-
-    if ($stmt->execute()) {
-        echo json_encode(["success" => true]);
+        if ($stmt_check->num_rows > 0) {
+            $response['error'] = 'Student number already exists.';
+            $stmt_check->close();
+        } else {
+            $stmt_check->close();
+            $query = "INSERT INTO users_tbl (student_number, first_name, middle_name, last_name, email, course_id, year_id, section_id, status_id, password_hash) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            $stmt_insert = $conn->prepare($query);
+            if ($stmt_insert) {
+                $stmt_insert->bind_param("sssssiiiis", $student_number, $first_name, $middle_name, $last_name, $email, $course_id, $year_id, $section_id, $status_id, $password_hash);
+                if ($stmt_insert->execute()) {
+                    $response['success'] = true;
+                    unset($response['error']);
+                } else {
+                    $response['error'] = 'Failed to add student: ' . $stmt_insert->error;
+                }
+                $stmt_insert->close();
+            } else {
+                 $response['error'] = 'Failed to prepare insert statement: ' . $conn->error;
+            }
+        }
     } else {
-        echo json_encode(["success" => false, "error" => $stmt->error]);
+        $response['error'] = 'Missing or invalid required fields. Please check all inputs.';
     }
-
-    $stmt->close();
+} else {
+    $response['error'] = 'Invalid request method.';
 }
 
-function getIdFromTable($conn, $table, $columnName, $idName, $value) {
-    $query = "SELECT $idName FROM $table WHERE $columnName = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("s", $value);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
-    return $row[$idName] ?? null;
-}
+mysqli_close($conn);
+echo json_encode($response);
 ?>

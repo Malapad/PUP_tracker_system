@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $date = mysqli_real_escape_string($conn, $_POST['date']);
 
     // Insert data into the database
-    $sql = "INSERT INTO violation_tbl (student_number, last_name, first_name, middle_name, course, year, violation_type, date)
+    $sql = "INSERT INTO no_id (student_number, last_name, first_name, middle_name, course, year, violation_type, date)
             VALUES ('$studentNumber', '$lastName', '$firstName', '$middleName', '$course', '$year', '$violationType', '$date')";
 
     if (mysqli_query($conn, $sql)) {
