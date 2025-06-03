@@ -32,7 +32,7 @@ include '../PHP/dbcon.php';
     </header>
 
     <div class="container">
-        <h2>User Management</h2>
+        <h1>User Management</h1>
         <div class="tabs">
             <button class="tab active" data-tab="students">Students</button>
             <button class="tab" data-tab="admins">Admins</button>

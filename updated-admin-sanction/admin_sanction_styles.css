@@ -1,0 +1,1113 @@
+/* Reset Default Styles & Root Variables */
+:root {
+    --primary-color: #af1414; /* PUP Red */
+    --primary-hover-color: #bd2727;
+    --secondary-color: #0056b3; /* A shade of blue for actions/links */
+    --secondary-hover-color: #004085;
+    --light-gray-border: #ccc;
+    --medium-gray-border: #ddd;
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Slightly more modern font */
+    --card-bg-color: #fdfdfd;
+    --card-border-color: #eaeaea;
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --table-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f7f6; /* Light background for the page */
+}
+
+/* Header */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    padding: 10px 30px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo img {
+    width: 50px;
+    margin-left: 70px; /* Adjusted to match violation page */
+}
+
+nav {
+    display: flex;
+    gap: 20px; /* Adjusted to match violation page */
+}
+
+nav a {
+    text-decoration: none;
+    font-weight: bold;
+    color: black;
+    padding: 8px 10px; /* Adjusted to match violation page */
+    border-radius: 3px; /* Adjusted to match violation page */
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: var(--primary-color);
+}
+
+nav a.active {
+    color: var(--primary-color);
+    /* Removed underline to match violation page's active state */
+    /* You had: outline: 2px solid #AF1414; outline-offset: 2px; */
+}
+
+.admin-icons {
+    display: flex;
+    gap: 15px; /* Adjusted to match violation page */
+    font-size: 15px;
+    margin-right: 55px; /* Adjusted to match violation page */
+}
+
+.admin-icons img {
+    width: 35px; /* Adjusted to match violation page */
+}
+
+/* Main Container */
+.container {
+    background: white;
+    padding: 20px; /* Adjusted to match violation page */
+    border-radius: 8px;
+    width: 90%; /* Adjusted to match violation page */
+    max-width: 1600px;
+    margin: 20px auto; /* Adjusted to match violation page */
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-size: 1.8em; /* Adjusted to match violation page */
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+
+/* Clear Filters Button */
+.clear-filters-container {
+    margin-bottom: 15px;
+    text-align: right; /* Aligned to right like violation page */
+}
+
+.clear-filters-btn {
+    padding: 6px 12px;
+    font-size: 0.85em;
+    color: var(--secondary-color);
+    text-decoration: none;
+    border: 1px solid var(--secondary-color);
+    border-radius: 4px;
+    background-color: #fff;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    opacity: 1;
+    visibility: visible;
+}
+
+.clear-filters-btn i {
+    margin-right: 5px;
+}
+
+.clear-filters-btn:hover,
+.clear-filters-btn:focus {
+    background-color: #e6f0ff;
+    color: var(--secondary-hover-color);
+    text-decoration: none;
+    outline: none;
+    box-shadow: 0 0 0 0.15rem rgba(0, 86, 179, 0.25);
+}
+
+/* --- UPDATED & NEW STYLES FOR FILTER AND SEARCH BAR DESIGN (from image) --- */
+
+/* Parent container for filters and search bar (now also the form itself) */
+.table-controls {
+    /* Removed the previous flex container styles, as the form itself is now the flex container */
+    margin-bottom: 20px; /* Space below the controls */
+    /* Remove padding, background-color, border-radius, box-shadow from here if the form itself handles it */
+}
+
+.table-controls form { /* Target the form directly as the main flex container */
+    display: flex;
+    justify-content: space-between; /* Distribute space between filter group and search group */
+    align-items: center;
+    gap: 15px; /* Space between filter group and search group */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    padding: 10px; /* Add some padding around the controls for better visual separation */
+    background-color: #f8f8f8; /* Light background for the controls area */
+    border-radius: 8px; /* Slightly rounded corners for the controls area */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); /* Subtle shadow for depth */
+    width: 100%; /* Ensure form takes full width of its parent */
+}
+
+/* Container for filter dropdowns AND the search bar (now this wraps them horizontally) */
+.filter-group-and-search { /* Renamed from filter-and-search-container */
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* Allows this container to take up available space */
+    flex-wrap: wrap; /* Allow filters and search to wrap within this container */
+    gap: 10px; /* Space between filter groups and search group */
+    justify-content: flex-start; /* Align filters to the left */
+}
+
+/* Group for the individual filter dropdowns */
+.filters-group {
+    display: flex;
+    gap: 10px; /* Space between individual select filters */
+    flex-wrap: wrap; /* Allow filters to wrap */
+    flex-grow: 1; /* Allow filters group to grow */
+}
+
+/* Wrapper for individual custom select dropdowns */
+.custom-select-wrapper {
+    position: relative;
+    display: inline-block;
+    background-color: #fff; /* White background for the select box */
+    border: 1px solid var(--light-gray-border); /* Light grey border */
+    border-radius: 4px; /* Slightly rounded corners */
+    overflow: hidden; /* Hide default arrow */
+    min-width: 140px; /* Ensure a decent minimum width for dropdowns */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Subtle shadow for depth */
+}
+
+.custom-select {
+    appearance: none; /* Remove default browser styling for select */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: transparent; /* Make background transparent so wrapper background shows */
+    border: none;
+    padding: 8px 10px;
+    padding-right: 30px; /* Space for the custom arrow */
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    width: 100%; /* Take full width of its wrapper */
+    height: 38px; /* Ensure consistent height with search input */
+}
+
+.custom-select-wrapper:focus-within { /* Apply focus style when an element inside gets focus */
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.25);
+}
+
+.select-arrow {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #555; /* Darker arrow */
+    pointer-events: none; /* Make arrow unclickable */
+}
+
+/* Group for the search input and button */
+.search-group {
+    /* flex-grow: 1; Removed flex-grow to make it align right without expanding */
+    min-width: 250px; /* Ensure search bar has a minimum width */
+    max-width: 350px; /* Limit max width for aesthetic */
+    margin-left: auto; /* Pushes the search group to the right */
+}
+
+/* Wrapper for the search input and its button */
+.search-input-wrapper {
+    display: flex;
+    border: 1px solid var(--light-gray-border);
+    border-radius: 4px;
+    overflow: hidden; /* Ensures button and input edges are rounded together */
+    background-color: #fff;
+    width: 100%; /* Takes full width of its parent (.search-group) */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Subtle shadow for depth */
+}
+
+.search-input-wrapper:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.25);
+}
+
+.search-input-field {
+    border: none;
+    padding: 8px 10px;
+    font-size: 14px;
+    flex-grow: 1; /* Allows input to take up most space */
+    outline: none; /* Remove outline on focus */
+    height: 38px; /* Match height of select and buttons */
+}
+
+.search-input-field::placeholder {
+    color: #888;
+}
+
+.search-button-new {
+    background-color: var(--primary-color); /* PUP Red */
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0; /* Prevent the button from shrinking */
+}
+
+.search-button-new:hover {
+    background-color: var(--primary-hover-color); /* Darker red on hover */
+}
+
+.search-button-new i {
+    margin-right: 5px; /* Space between icon and text */
+}
+
+/* --- END OF NEW STYLES for search/filters --- */
+
+/* Removed the .action-buttons-right and its child button styles */
+/* .action-buttons-right { display: none; } */
+/* .refresh-list-button, .add-student-button { display: none; } */
+
+
+/* Original .filters-area and its form/inputs are now completely replaced */
+.filters-area {
+    display: none; /* Hide the old form structure completely */
+}
+
+.filters-area form {
+    display: none; /* Hide the old form structure completely */
+}
+
+.search-input,
+.filter-select {
+    display: none; /* Hide the old search input and filter select elements */
+}
+
+.search-input::placeholder { color: #757575; opacity: 1; } /* Keep if .search-input is still used elsewhere */
+
+.search-input:focus,
+.filter-select:focus {
+    /* These focus styles are for the old design, they will no longer apply to new elements */
+    outline: none;
+}
+
+/* Buttons (Existing styles, kept for other buttons in the page) */
+.button, .search-button, .add-sanction-type-btn,
+.modal-button-next, .modal-button-back, .modal-button-publish,
+.modal-button-cancel, .btn-confirm-delete, .status-completed-btn, .status-pending-btn,
+.view-sanction-details-btn { /* Added new button class */
+    padding: 6px 12px; /* Standard button padding */
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 0.85em;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.button i {
+    margin-right: 5px;
+}
+
+/* This .search-button is for the old search button, now completely hidden */
+.search-button {
+    display: none;
+}
+
+
+/* Sanction Configuration Tab Controls */
+.config-controls {
+    display: flex;
+    justify-content: flex-end; /* Moved add button to right */
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.add-sanction-type-btn {
+    background-color: var(--primary-color); /* Red theme */
+    color: white;
+    padding: 8px 15px; /* Slightly larger for main action button */
+    font-size: 0.9em;
+    border-radius: 5px;
+}
+.add-sanction-type-btn:hover {
+    background-color: var(--primary-hover-color);
+}
+.add-sanction-type-btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.35);
+    outline: none;
+}
+
+/* Main Table Styling */
+.main-table-scroll-container {
+    max-height: 600px; /* Max height for scrollability */
+    overflow-y: auto;
+    margin-top: 15px;
+    border: 1px solid var(--medium-gray-border);
+    border-radius: 4px;
+    position: relative;
+    box-shadow: var(--table-shadow); /* Added table shadow */
+}
+
+/* Spinner Overlay for tables */
+.table-overlay-spinner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.75);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table-overlay-spinner .spinner {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid var(--secondary-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spinTableOverlay 1s linear infinite;
+}
+
+@keyframes spinTableOverlay {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.main-table-scroll-container thead th,
+.config-table-scroll-container thead th { /* Applied to both tables */
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: darkred; /* Matched violation page header */
+    color: white;
+    text-align: left;
+    vertical-align: middle;
+    padding: 8px 6px;
+}
+
+tbody tr {
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+}
+tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+tbody tr:hover {
+    background-color: #e6e6e6;
+}
+
+tbody td {
+    padding: 7px 6px;
+    vertical-align: middle;
+    text-align: left;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    font-size: 0.9em;
+}
+
+/* Column Widths for Sanction Request Table */
+#sanction-request.tab-content table thead th:nth-child(1) { width: 10%; } /* Student Number */
+#sanction-request.tab-content table thead th:nth-child(2) { width: 14%; } /* Student Name */
+#sanction-request.tab-content table thead th:nth-child(3) { width: 7%; text-align: center; } /* Course */
+#sanction-request.tab-content table tbody td:nth-child(3) { text-align: center; }
+#sanction-request.tab-content table thead th:nth-child(4) { width: 5%; text-align: center; } /* Year */
+#sanction-request.tab-content table tbody td:nth-child(4) { text-align: center; }
+#sanction-request.tab-content table thead th:nth-child(5) { width: 11%; } /* Date Submitted */
+#sanction-request.tab-content table thead th:nth-child(6) { width: 13%; } /* Violation Type */
+#sanction-request.tab-content table thead th:nth-child(7) { width: 7%; text-align: center; } /* Offense */
+#sanction-request.tab-content table tbody td:nth-child(7) { text-align: center; }
+#sanction-request.tab-content table thead th:nth-child(8) { width: 12%; } /* Sanction */
+#sanction-request.tab-content table thead th:nth-child(9) { width: 11%; } /* Date of Deadline */
+#sanction-request.tab-content table thead th:nth-child(10) { width: 8%; text-align: center; } /* Status */
+#sanction-request.tab-content table tbody td:nth-child(10) { text-align: center; }
+#sanction-request.tab-content table thead th:nth-child(11) { width: 12%; text-align: center; } /* Actions */
+#sanction-request.tab-content table tbody td:nth-child(11) { text-align: center; }
+
+
+/* Sanction Configuration Table */
+.config-table-scroll-container {
+    max-height: 500px; /* Limit height for tables inside config */
+    overflow-y: auto;
+    margin-top: 15px;
+    border: 1px solid var(--medium-gray-border);
+    border-radius: 4px;
+    box-shadow: var(--table-shadow);
+}
+.config-table thead th {
+    background-color: darkred; /* Changed to darkred for consistency */
+    color: white;
+}
+
+/* Column Widths for Sanction Configuration Table */
+.config-table th:nth-child(1) { width: 50%; } /* Sanction Type */
+.config-table td:nth-child(1) { text-align: left; }
+.config-table th:nth-child(2) { width: 15%; text-align: center; } /* Hours */
+.config-table td:nth-child(2) { text-align: center; }
+.config-table th:nth-child(3) { width: 35%; text-align: center;} /* Actions */
+.config-table td:nth-child(3) { text-align: center; }
+
+
+/* Status Badges */
+.status-badge {
+    padding: 3px 7px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    color: white;
+    white-space: nowrap; /* Prevent badge text from wrapping */
+}
+
+.status-pending {
+    background-color: #ffc107; /* Orange for pending */
+    color: #343a40; /* Dark text for contrast */
+}
+
+.status-completed {
+    background-color: #28a745; /* Green for completed */
+    color: white;
+}
+
+.status-warning {
+    background-color: #ff9800; /* Yellow-orange for general warning */
+    color: #333;
+}
+.status-default {
+    background-color: #6c757d; /* Grey for N/A or default */
+    color: white;
+}
+
+.no-records-cell {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 1.1em;
+    color: #6c757d;
+    line-height: 1.6;
+}
+.no-records-cell br {
+    display: block;
+    margin-bottom: 8px;
+    content: "";
+}
+
+/* Tabs Styling (from violation page) */
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--medium-gray-border);
+    gap: 5px;
+}
+
+.tabs .tab {
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    color: #555;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.tabs .tab:hover {
+    background-color: #e2e2e2;
+    color: #333;
+}
+
+.tabs .tab.active {
+    background-color: var(--primary-color); /* PUP Red */
+    color: white;
+    border-color: var(--primary-color);
+    cursor: default;
+}
+
+.tabs .tab.active:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.tabs .tab i {
+    margin-right: 8px;
+}
+
+.tab-content {
+    padding-top: 15px; /* Space between tabs and content */
+}
+
+/* Modals (from violation page) */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.modal-content {
+    margin: 5% auto;
+    width: 90%;
+    max-width: 600px;
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 10px;
+    text-align: left;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.head-modal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.head-modal h3 {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #333;
+}
+
+.close-modal-button {
+    float: right;
+    cursor: pointer;
+    font-size: 1.5em;
+    line-height: 1;
+    color: #777;
+    transition: color 0.2s ease;
+}
+.close-modal-button:hover {
+    color: #333;
+}
+
+.modal-message {
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    text-align: center;
+    border: 1px solid transparent;
+}
+
+.modal-message.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.modal-message.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.modal .form-container .row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 20px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.modal .form-container .column {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 250px;
+}
+
+.modal .form-container .column.full-width {
+    flex: 1 1 100%;
+    min-width: auto;
+}
+
+.modal .form-container label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.modal .form-container input[type="text"],
+.modal .form-container input[type="number"], /* Added for hours input */
+.modal .form-container textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--light-gray-border);
+    border-radius: 5px;
+    font-size: 1em;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modal .form-container input[type="text"]:focus,
+.modal .form-container input[type="number"]:focus, /* Added for hours input */
+.modal .form-container textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.25);
+    outline: none;
+}
+
+.modal .button-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.modal-button-next, .modal-button-back {
+    background-color: #007bff; /* Blue for navigation */
+    color: white;
+    padding: 10px 20px;
+}
+.modal-button-next:hover, .modal-button-back:hover {
+    background-color: #0056b3;
+}
+.modal-button-next:focus, .modal-button-back:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.35);
+    outline: none;
+}
+
+.modal-button-publish {
+    background-color: #28a745; /* Green for publish */
+    color: white;
+    padding: 10px 20px;
+}
+.modal-button-publish:hover {
+    background-color: #218838;
+}
+.modal-button-publish:focus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.35);
+    outline: none;
+}
+
+.modal-button-cancel {
+    background-color: #6c757d;
+    color: white;
+    padding: 10px 20px;
+}
+.modal-button-cancel:hover {
+    background-color: #5a6268;
+}
+.modal-button-cancel:focus {
+    background-color: #5a6268;
+    box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.35);
+    outline: none;
+}
+
+.btn-confirm-delete {
+    background-color: #dc3545; /* Red for confirm delete */
+    color: white;
+    padding: 10px 20px;
+}
+.btn-confirm-delete:hover {
+    background-color: #c82333;
+}
+.btn-confirm-delete:focus {
+    background-color: #c82333;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.35);
+    outline: none;
+}
+
+/* Special buttons for details modal (Mark as Completed/Pending) */
+.details-content .button {
+    margin-top: 15px;
+    padding: 8px 15px;
+    font-size: 0.9em;
+}
+.status-completed-btn {
+    background-color: #28a745; /* Green */
+}
+.status-completed-btn:hover {
+    background-color: #218838;
+}
+.status-pending-btn {
+    background-color: #ffc107; /* Orange */
+    color: #343a40;
+}
+.status-pending-btn:hover {
+    background-color: #e0a800;
+}
+
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 280px;
+    max-width: 500px;
+    width: auto;
+    padding: 12px 25px;
+    border-radius: 30px;
+    color: white;
+    font-size: 0.95em;
+    line-height: 1.5;
+    text-align: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: opacity 0.4s ease-in-out, top 0.4s ease-in-out, bottom 0.4s ease-in-out, visibility 0s linear 0.4s;
+}
+
+.toast.top-center {
+    top: 70px;
+    bottom: auto;
+}
+
+.toast.bottom-center {
+    top: auto;
+    bottom: 30px;
+}
+
+.toast.show {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.4s ease-in-out, top 0.4s ease-in-out, bottom 0.4s ease-in-out, visibility 0s linear 0s;
+}
+
+.toast.success {
+    background-color: #28a745;
+}
+
+.toast.error {
+    background-color: #dc3545;
+}
+
+/* Action buttons on table rows */
+.action-buttons-cell {
+    position: relative;
+    /* min-width and flex properties will be handled by media queries */
+}
+
+.action-buttons-container {
+    display: flex; /* Always visible for config table */
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap; /* Allows buttons to wrap if space is tight */
+}
+
+/* New button style for View/Manage in Sanction Request table */
+.view-sanction-details-btn {
+    background-color: var(--secondary-color); /* Blue color */
+    color: white;
+    padding: 5px 10px;
+    font-size: 0.8em;
+}
+.view-sanction-details-btn:hover {
+    background-color: var(--secondary-hover-color);
+}
+
+
+.edit-sanction-type-btn {
+    background-color: #007bff; /* Example color for edit */
+    color: white;
+    padding: 5px 10px;
+    font-size: 0.8em;
+}
+.edit-sanction-type-btn:hover {
+    background-color: #0056b3;
+}
+
+.delete-sanction-type-btn {
+    background-color: #dc3545; /* Red for delete */
+    color: white;
+    padding: 5px 10px;
+    font-size: 0.8em;
+}
+.delete-sanction-type-btn:hover {
+    background-color: #c82333;
+}
+
+/* Summary content for modals */
+.summary-content {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px dashed #ccc;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+.summary-content p {
+    margin-bottom: 8px;
+    font-size: 1em;
+    color: #333;
+}
+.summary-content p strong {
+    color: #000;
+}
+
+.details-content p {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #333;
+}
+.details-content p strong {
+    color: #000;
+}
+.details-content span {
+    font-weight: normal;
+    color: #555;
+}
+
+
+/* Media Queries for Responsiveness (Adopted/Adapted from violation page) */
+@media (max-width: 900px) {
+    /* Adjust table-controls to stack vertically and stretch */
+    .table-controls form { /* Target the form directly */
+        flex-direction: column;
+        align-items: stretch;
+        padding: 10px;
+    }
+
+    .filter-group-and-search { /* Renamed from filter-and-search-container */
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 10px; /* Space between filter groups and search group */
+    }
+
+    .filters-group {
+        flex-direction: column; /* Stack filters vertically */
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .custom-select-wrapper {
+        min-width: unset; /* Remove min-width */
+        width: 100%; /* Make dropdowns full width */
+    }
+
+    .search-group {
+        min-width: unset; /* Remove min-width on small screens */
+        max-width: unset; /* Remove max-width on small screens */
+        width: 100%; /* Make search bar full width */
+        margin-left: 0; /* Remove auto-margin on small screens */
+    }
+
+    /* config-controls responsiveness */
+    .config-controls {
+        flex-direction: column;
+        align-items: stretch; /* Stretch add button */
+        width: 100%;
+    }
+    .add-sanction-type-btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 2% auto;
+        padding: 20px 25px;
+    }
+
+    .modal .form-container .column {
+        min-width: unset;
+        flex: 1 1 100%;
+    }
+
+    .modal .button-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .modal .button-row button {
+        width: 100%;
+    }
+
+    .tabs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tabs .tab {
+        border-radius: 0;
+        border-bottom: 1px solid #ccc;
+    }
+    .tabs .tab:first-child {
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+    .tabs .tab:last-child {
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        border-bottom: none;
+    }
+
+    .details-content .button {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    /* Hide old filter/search elements if they exist and conflict */
+    /* These should already be gone from the HTML or not used */
+    .filters-area, .filters-area form, .search-input, .filter-select {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .logo img {
+        margin-left: 0;
+        margin-bottom: 10px;
+    }
+
+    nav {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+
+    .admin-icons {
+        margin-right: 0;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .container {
+        padding: 15px;
+        width: 95%;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    .main-table-scroll-container,
+    .config-table-scroll-container { /* Apply to both tables */
+        border: none;
+        box-shadow: none; /* Remove shadow for better mobile table display */
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    tbody tr {
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    tbody td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+        font-size: 0.9em;
+    }
+
+    tbody td:before {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+        color: #555;
+    }
+
+    /* Data labels for Sanction Request Table */
+    #sanction-request.tab-content table tbody td:nth-of-type(1):before { content: "Student Number:"; }
+    #sanction-request.tab-content table tbody td:nth-of-type(2):before { content: "Student Name:"; }
+    #sanction-request.tab-content table tbody td:nth-of-type(3):before { content: "Course:"; }
+    #sanction-request.tab-content table tbody td:nth-of-type(4):before { content: "Year:"; }
+    #sanction-request.tab-content table tbody td:nth-of-type(5):before { content: "Date Submitted:"; }
+    #sanction-request.tab-content table tbody td:nth-of-type(6):before { content: "Violation Type:"; }
+    #sanction-request.tab-content table tbody td:nth-of-type(7):before { content: "Offense:"; }
+    #sanction-request.tab-content table tbody td:nth-of-type(8):before { content: "Sanction:"; }
+    #sanction-request.tab-content table tbody td:nth-of-type(9):before { content: "Deadline:"; }
+    #sanction-request.tab-content table tbody td:nth-of-type(10):before { content: "Status:"; }
+    #sanction-request.tab-content table tbody td:nth-of-type(11):before { content: "Actions:"; } /* New label */
+
+
+    /* Data labels for Sanction Configuration Table */
+    .config-table tbody td:nth-of-type(1):before { content: "Sanction:"; }
+    .config-table tbody td:nth-of-type(2):before { content: "Hours:"; } /* New label for hours */
+    .config-table tbody td:nth-of-type(3):before { content: "Actions:"; }
+
+    .no-records-cell {
+        padding: 20px 10px;
+        font-size: 1em;
+    }
+
+    /* Adjust position of action buttons inside responsive table cells */
+    .action-buttons-cell {
+        display: flex;
+        justify-content: flex-end; /* Align to right */
+        align-items: center;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .action-buttons-cell:before { /* Hide pseudo-element for action cell */
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .toast {
+        min-width: unset;
+        width: 90%;
+        left: 5%;
+        transform: translateX(0);
+    }
+    .custom-select,
+    .search-input-field,
+    .view-sanction-details-btn, /* Added new button class */
+    .edit-sanction-type-btn,
+    .delete-sanction-type-btn {
+        font-size: 13px; /* Slightly smaller font for very small screens */
+        padding: 7px 10px;
+    }
+}
