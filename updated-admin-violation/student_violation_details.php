@@ -3,10 +3,10 @@ include '../PHP/dbcon.php';
 
 $student_number_display = '';
 $student_details = null;
-$violations = [];
-$violation_counts_by_type = [];
+$violations = []; 
+$violation_summary_details = []; 
 
-$back_link_target = 'admin_violation.php';
+$back_link_target = '../updated-admin-violation/admin_violation_page.php';
 
 if (isset($_GET['student_number'])) {
     $student_number_from_get = trim($_GET['student_number']);
@@ -14,12 +14,12 @@ if (isset($_GET['student_number'])) {
 
     if (!empty($student_number_from_get)) {
         $stmt_student = $conn->prepare("SELECT u.student_number, u.first_name, u.middle_name, u.last_name,
-                                            c.course_name, y.year, s.section_name
-                                                FROM users_tbl u
-                                                LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                                                LEFT JOIN year_tbl y ON u.year_id = y.year_id
-                                                LEFT JOIN section_tbl s ON u.section_id = s.section_id
-                                                WHERE u.student_number = ?");
+                                              c.course_name, y.year, s.section_name
+                                       FROM users_tbl u
+                                       LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                                       LEFT JOIN year_tbl y ON u.year_id = y.year_id
+                                       LEFT JOIN section_tbl s ON u.section_id = s.section_id
+                                       WHERE u.student_number = ?");
         if ($stmt_student) {
             $stmt_student->bind_param("s", $student_number_from_get);
             $stmt_student->execute();
@@ -32,27 +32,57 @@ if (isset($_GET['student_number'])) {
             error_log("Prepare failed for student details: " . $conn->error);
         }
 
-        $sql_violations = "SELECT v.violation_id, vt.violation_type, v.violation_date
-                            FROM violation_tbl v
-                            JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                            WHERE v.student_number = ?
-                            ORDER BY v.violation_date DESC";
+        $sql_violations = "SELECT v.violation_id, vc.category_name, vt.violation_type, v.violation_date, v.description AS remarks
+                           FROM violation_tbl v
+                           JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                           LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id
+                           WHERE v.student_number = ?
+                           ORDER BY v.violation_date DESC, vc.category_name ASC, vt.violation_type ASC"; // Corrected ORDER BY
         $stmt_violations = $conn->prepare($sql_violations);
 
         if ($stmt_violations) {
             $stmt_violations->bind_param("s", $student_number_from_get);
             $stmt_violations->execute();
             $result_violations = $stmt_violations->get_result();
+            $temp_summary_data = [];
+
             while ($row = $result_violations->fetch_assoc()) {
-                $violations[] = $row;
+                $violations[] = $row; 
+
                 $typeName = $row['violation_type'];
-                if (!isset($violation_counts_by_type[$typeName])) {
-                    $violation_counts_by_type[$typeName] = 0;
+                $categoryName = $row['category_name'] ?? 'Uncategorized';
+                $remark_from_db = trim($row['remarks'] ?? '');
+
+                $key = $categoryName . "||" . $typeName; 
+
+                if (!isset($temp_summary_data[$key])) {
+                    $temp_summary_data[$key] = [
+                        'category' => $categoryName,
+                        'type' => $typeName,
+                        'count' => 0,
+                        'remark_display' => empty($remark_from_db) ? 'No remarks' : $remark_from_db 
+                    ];
                 }
-                $violation_counts_by_type[$typeName]++;
+                $temp_summary_data[$key]['count']++;
+                
+                if ($temp_summary_data[$key]['count'] > 1) {
+                    $temp_summary_data[$key]['remark_display'] = '(Multiple instances - see log)'; 
+                }
             }
             $stmt_violations->close();
-            ksort($violation_counts_by_type);
+            
+            foreach($temp_summary_data as $data_item){
+                $violation_summary_details[] = $data_item;
+            }
+            usort($violation_summary_details, function($a, $b) {
+                $catComp = strcmp($a['category'], $b['category']);
+                if ($catComp == 0) {
+                    return strcmp($a['type'], $b['type']);
+                }
+                return $catComp;
+            });
+
+
         } else {
             error_log("Prepare failed for violations list: " . $conn->error);
         }
@@ -67,7 +97,7 @@ $totalViolations = count($violations);
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Student Violation Details</title>
-    <link rel="stylesheet" href="./admin_violation_style.css" /> 
+    <link rel="stylesheet" href="./admin_violation.css" /> 
     <link rel="stylesheet" href="./student_violation_details_style.css" /> 
 </head>
 <body>
@@ -86,7 +116,7 @@ $totalViolations = count($violations);
         <a href="../HTML/notification.html" class="notification">
             <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/>
         </a>
-        <a href="../HTML/admin_account.html" class="admin">
+        <a href="../PHP/admin_account.php" class="admin">
             <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account"/>
         </a>
     </div>
@@ -118,29 +148,33 @@ $totalViolations = count($violations);
             <p><strong>Total Violations Committed:</strong> <?php echo $totalViolations; ?></p>
         </div>
 
-        <?php if (!empty($violation_counts_by_type)): ?>
+        <?php if (!empty($violation_summary_details)): ?>
             <div class="violation-summary-by-type"> 
-                <h3 class="summary-title">Summary by Violation Type</h3>
+                <h3 class="summary-title">Summary by Violation</h3>
                 <table class="violations-summary-table">
                     <thead>
                         <tr>
+                            <th>Category</th>
                             <th>Violation Type</th>
                             <th>Number of commits</th>
                             <th>Offense</th>
+                            <th>Remarks (for single instance)</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($violation_counts_by_type as $type => $count): ?>
+                        <?php foreach ($violation_summary_details as $summary_item): ?>
                             <tr>
-                                <td><?php echo htmlspecialchars($type); ?></td>
-                                <td style="text-align: center;"><?php echo $count; ?></td>
+                                <td><?php echo htmlspecialchars($summary_item['category']); ?></td>
+                                <td><?php echo htmlspecialchars($summary_item['type']); ?></td>
+                                <td style="text-align: center;"><?php echo $summary_item['count']; ?></td>
                                 <td style="text-align: center;">
                                     <?php
-                                    $typeOffenseStatus = ($count >= 2) ? 'Sanction' : 'Warning';
-                                    $typeOffenseClass = ($count >= 2) ? 'offense-status-text offense-sanction' : 'offense-status-text offense-warning';
+                                    $typeOffenseStatus = ($summary_item['count'] >= 2) ? 'Sanction' : 'Warning';
+                                    $typeOffenseClass = ($summary_item['count'] >= 2) ? 'offense-status-text offense-sanction' : 'offense-status-text offense-warning';
                                     echo "<span class='" . $typeOffenseClass . "'>" . htmlspecialchars($typeOffenseStatus) . "</span>";
                                     ?>
                                 </td>
+                                 <td><?php echo nl2br(htmlspecialchars($summary_item['remark_display'])); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -148,7 +182,7 @@ $totalViolations = count($violations);
             </div>
         <?php elseif ($totalViolations > 0): ?> 
             <div class="violation-summary-by-type">
-                <p>Could not generate violation summary by type.</p>
+                <p>Could not generate violation summary.</p>
             </div>
         <?php endif; ?>
 
@@ -158,15 +192,19 @@ $totalViolations = count($violations);
                 <table class="violations-table"> 
                     <thead>
                         <tr>
+                            <th>Category</th>
                             <th>Violation Type</th>
                             <th>Date of Violation</th>
+                            <th>Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($violations as $violation): ?>
                             <tr>
+                                <td><?php echo htmlspecialchars($violation['category_name'] ?? 'N/A'); ?></td>
                                 <td><?php echo htmlspecialchars($violation['violation_type']); ?></td>
                                 <td><?php echo htmlspecialchars(date("F j, Y, g:i a", strtotime($violation['violation_date']))); ?></td>
+                                <td><?php echo nl2br(htmlspecialchars(trim($violation['remarks'] ?? '') === '' ? 'No remarks' : $violation['remarks'])); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

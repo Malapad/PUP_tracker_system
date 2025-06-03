@@ -1,4 +1,3 @@
-/* Existing CSS */
 * {
     margin: 0;
     padding: 0;
@@ -122,17 +121,16 @@ h1 {
     gap: 10px;
 }
 
-/* NEW: Styles for the Configuration Tab controls (for global add category button) */
 .category-config-controls {
     display: flex;
-    justify-content: flex-start; /* Align to left for Add Category button */
+    justify-content: flex-start;
     margin-bottom: 15px;
     flex-wrap: wrap;
     gap: 10px;
 }
 
 .add-violation-category-btn {
-    background-color: #af1414; /* Red theme */
+    background-color: #af1414;
     color: white;
     padding: 8px 15px;
     font-size: 0.9em;
@@ -148,15 +146,13 @@ h1 {
     outline: none;
 }
 
-
-/* NEW: Button inside accordion */
 .accordion-controls {
-    text-align: right; /* Align add type button to right */
+    text-align: right;
     margin-bottom: 15px;
 }
 
-.add-type-to-category-btn { /* Renamed for clarity from add-violation-type-in-category-btn */
-    background-color: #17a2b8; /* Info blue */
+.add-type-to-category-btn {
+    background-color: #17a2b8;
     color: white;
     padding: 8px 15px;
     font-size: 0.9em;
@@ -171,7 +167,6 @@ h1 {
     box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.35);
     outline: none;
 }
-
 
 .filters-area {
     display: flex;
@@ -247,7 +242,6 @@ button i, .more-details-btn i, .clear-filters-btn i {
 }
 .add-violation-button:hover { background-color: #bd2727; }
 
-
 .refresh-button {
     padding: 6px 12px;
     font-size: 0.85em;
@@ -294,20 +288,19 @@ button i, .more-details-btn i, .clear-filters-btn i {
     color: #ffffff;
 }
 
-/* NEW: Styles for the edit and delete buttons in config table */
 .edit-violation-type-btn {
-    background-color: #007bff; /* Example color for edit */
+    background-color: #007bff;
     color: white;
     padding: 5px 10px;
     font-size: 0.8em;
-    margin-right: 5px; /* Space between buttons */
+    margin-right: 5px;
 }
 .edit-violation-type-btn:hover {
     background-color: #0056b3;
 }
 
 .delete-violation-type-btn {
-    background-color: #dc3545; /* Red for delete */
+    background-color: #dc3545;
     color: white;
     padding: 5px 10px;
     font-size: 0.8em;
@@ -316,16 +309,14 @@ button i, .more-details-btn i, .clear-filters-btn i {
     background-color: #c82333;
 }
 
-/* NEW: Confirmation button for delete modal */
 .btn-confirm-delete {
-    background-color: #28a745; /* Green for confirm delete */
+    background-color: #28a745;
     color: white;
     padding: 10px 20px;
 }
 .btn-confirm-delete:hover {
     background-color: #218838;
 }
-
 
 .search-button:focus,
 .add-violation-button:focus {
@@ -362,6 +353,9 @@ button i, .more-details-btn i, .clear-filters-btn i {
     border: 1px solid #ddd;
     border-radius: 4px;
     position: relative;
+}
+
+.config-table-scroll-container {
 }
 
 .table-overlay-spinner {
@@ -408,12 +402,10 @@ table {
     padding: 8px 6px;
 }
 
-/* NEW: Styles for the Configuration Table */
 .config-table thead th {
-    background-color: #e9ecef; /* Lighter header for config table */
+    background-color: #e9ecef;
     color: #495057;
 }
-
 
 tbody tr {
     background: #f9f9f9;
@@ -435,7 +427,6 @@ tbody td {
     font-size: 0.9em;
 }
 
-/* Specific column widths for the main table (Student tab) */
 .tab-content#Violation table thead th:nth-child(1) { width: 13%; }
 .tab-content#Violation table thead th:nth-child(2) { width: 10%; }
 .tab-content#Violation table thead th:nth-child(3) { width: 8%; }
@@ -454,15 +445,12 @@ tbody td {
 .tab-content#Violation table thead th:nth-child(11) { width: 9%; text-align: center; }
 .tab-content#Violation table tbody td:nth-child(11) { text-align: center; }
 
-
-/* NEW: Specific column widths for the config table (inside accordions) */
-.tab-content#Configuration .config-table thead th:nth-child(1) { width: 15%; } /* Resolution */
-.tab-content#Configuration .config-table thead th:nth-child(2) { width: 20%; } /* Type of Violation */
-.tab-content#Configuration .config-table thead th:nth-child(3) { width: 40%; } /* Violation Description */
-.tab-content#Configuration .config-table thead th:nth-child(4) { width: 15%; } /* Date Published */
-.tab-content#Configuration .config-table thead th:nth-child(5) { width: 10%; text-align: center; } /* Actions */
+.tab-content#Configuration .config-table thead th:nth-child(1) { width: 15%; }
+.tab-content#Configuration .config-table thead th:nth-child(2) { width: 20%; }
+.tab-content#Configuration .config-table thead th:nth-child(3) { width: 40%; }
+.tab-content#Configuration .config-table thead th:nth-child(4) { width: 15%; }
+.tab-content#Configuration .config-table thead th:nth-child(5) { width: 10%; text-align: center; }
 .tab-content#Configuration .config-table tbody td:nth-child(5) { text-align: center; }
-
 
 .offense-text-warning {
     color: #B8860B;
@@ -491,7 +479,6 @@ tbody td {
     content: "";
 }
 
-/* NEW: Styles for the Tabs */
 .tabs {
     display: flex;
     margin-bottom: 20px;
@@ -526,7 +513,7 @@ tbody td {
 }
 
 .tabs .tab.active:hover {
-    background-color: #af1414; /* No change on hover when active */
+    background-color: #af1414;
     color: white;
 }
 
@@ -534,11 +521,9 @@ tbody td {
     margin-right: 8px;
 }
 
-/* NEW: Tab Content Styling */
 .tab-content {
-    padding-top: 15px; /* Space between tabs and content */
+    padding-top: 15px;
 }
-
 
 .modal {
     display: none;
@@ -549,12 +534,12 @@ tbody td {
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     z-index: 1000;
-    overflow-y: auto; /* Allow scrolling for modal content if it overflows */
+    overflow-y: auto;
 }
 
 .modal-content {
-    margin: 5% auto; /* Adjusted margin to allow more space on smaller screens */
-    width: 90%; /* Increased width for responsiveness */
+    margin: 5% auto;
+    width: 90%;
     max-width: 600px;
     background-color: white;
     padding: 30px 40px;
@@ -579,7 +564,7 @@ tbody td {
     color: #333;
 }
 
-.close-modal-button, .close-modal-category-button, .close-modal-add-type-button, .close-modal-edit-button, .close-modal-delete-button { /* Added new close button classes */
+.close-modal-button, .close-modal-category-button, .close-modal-add-type-button, .close-modal-edit-button, .close-modal-delete-button {
     float: right;
     cursor: pointer;
     font-size: 1.5em;
@@ -587,7 +572,7 @@ tbody td {
     color: #777;
     transition: color 0.2s ease;
 }
-.close-modal-button:hover, .close-modal-category-button:hover, .close-modal-add-type-button:hover, .close-modal-edit-button:hover, .close-modal-delete-button:hover { /* Added new close button classes */
+.close-modal-button:hover, .close-modal-category-button:hover, .close-modal-add-type-button:hover, .close-modal-edit-button:hover, .close-modal-delete-button:hover {
     color: #333;
 }
 
@@ -618,17 +603,17 @@ tbody td {
     width: 100%;
     margin-bottom: 20px;
     gap: 20px;
-    flex-wrap: wrap; /* Allow columns to wrap on smaller screens */
+    flex-wrap: wrap;
 }
 
 .modal .form-container .column {
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-width: 250px; /* Ensure columns don't get too small before wrapping */
+    min-width: 250px;
 }
 
-.modal .form-container .column.full-width { /* For single column in a row */
+.modal .form-container .column.full-width {
     flex: 1 1 100%;
     min-width: auto;
 }
@@ -641,7 +626,7 @@ tbody td {
 
 .modal .form-container input[type="text"],
 .modal .form-container select,
-.modal .form-container textarea { /* Added textarea */
+.modal .form-container textarea {
     width: 100%;
     padding: 12px;
     border: 1px solid #ccc;
@@ -652,7 +637,7 @@ tbody td {
 
 .modal .form-container input[type="text"]:focus,
 .modal .form-container select:focus,
-.modal .form-container textarea:focus { /* Added textarea */
+.modal .form-container textarea:focus {
     border-color: #af1414;
     box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.25);
     outline: none;
@@ -665,27 +650,23 @@ tbody td {
     margin-top: 25px;
 }
 
-/* NEW: Multi-step form buttons */
 .modal-button-next, .modal-button-back {
     padding: 10px 20px;
-    background-color: #007bff; /* Blue for navigation */
+    background-color: #007bff;
     color: white;
 }
 .modal-button-next:hover, .modal-button-back:hover {
     background-color: #0056b3;
 }
 
-
-/* Specific button for publish */
 .modal-button-publish {
-    background-color: #28a745; /* Green for publish */
+    background-color: #28a745;
     color: white;
     padding: 10px 20px;
 }
 .modal-button-publish:hover {
     background-color: #218838;
 }
-
 
 .modal-button-add,
 .modal-button-cancel {
@@ -708,21 +689,19 @@ tbody td {
     background-color: #5a6268;
 }
 
-/* REVISED: Focus styles for main action buttons now that multi-step is gone */
 .modal-button-add:focus,
 .modal-button-publish:focus,
 .modal-button-next:focus,
 .modal-button-back:focus {
-    box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.35); /* Base red shadow */
+    box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.35);
     outline: none;
 }
 .modal-button-publish:focus {
-    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.35); /* Green shadow for publish */
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.35);
 }
 .modal-button-next:focus, .modal-button-back:focus {
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.35); /* Blue shadow for navigation */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.35);
 }
-
 
 .modal-button-cancel:focus,
 .btn-confirm-delete:focus {
@@ -751,7 +730,6 @@ tbody td {
     transition: opacity 0.4s ease-in-out, top 0.4s ease-in-out, bottom 0.4s ease-in-out, visibility 0s linear 0.4s;
 }
 
-/* NEW: Toast positioning */
 .toast.top-center {
     top: 70px;
     bottom: auto;
@@ -776,11 +754,10 @@ tbody td {
     background-color: #dc3545;
 }
 
-/* NEW: Accordion Styles */
-.accordion-container-wrapper { /* New wrapper for scrollability */
-    max-height: 70vh; /* Adjust as needed */
+.accordion-container-wrapper {
+    max-height: 70vh;
     overflow-y: auto;
-    padding-right: 5px; /* Space for scrollbar */
+    padding-right: 5px;
 }
 
 .accordion-container {
@@ -795,7 +772,7 @@ tbody td {
 }
 
 .accordion-header {
-    background-color: #800000; /* Dark red background for header, similar to your image */
+    background-color: #800000;
     color: white;
     padding: 12px 20px;
     width: 100%;
@@ -811,7 +788,7 @@ tbody td {
 }
 
 .accordion-header:hover {
-    background-color: #af1414; /* Slightly lighter on hover */
+    background-color: #af1414;
 }
 
 .accordion-icon {
@@ -831,35 +808,30 @@ tbody td {
 }
 
 .accordion-item.active .accordion-content {
-    padding-top: 15px; /* Add padding when open */
-    padding-bottom: 15px; /* Add padding when open */
-    /* max-height will be set dynamically by JS */
+    padding-top: 15px;
+    padding-bottom: 15px;
 }
 
-/* Ensure tables inside accordions also get proper scrolling */
 .accordion-content .config-table-scroll-container {
-    max-height: 300px; /* Limit height for tables inside accordions */
-    overflow-y: auto; /* Ensure inner table is scrollable */
-    margin-top: 0; /* Remove default margin from .main-table-scroll-container */
-    border: 1px solid #ddd; /* Add border back for inner tables */
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 0;
+    border: 1px solid #ddd;
     border-radius: 4px;
 }
 
-/* NEW: Action buttons container on table rows */
 .action-buttons-cell {
-    position: relative; /* For positioning the action buttons */
-    /* Ensure there's enough space for the buttons */
-    min-width: 120px; /* Adjust based on button size */
+    position: relative;
+    min-width: 120px;
 }
 
 .action-buttons-container {
-    display: flex; /* Initially hidden, shown on row click by JS */
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px; /* Space between edit/delete buttons */
+    gap: 5px;
 }
 
-/* NEW: Confirmation content styling for delete modal */
 .confirmation-content p {
     margin-bottom: 10px;
     font-size: 1.1em;
@@ -873,7 +845,74 @@ tbody td {
     color: #555;
 }
 
-/* Media Queries for Responsiveness */
+.modal .form-container .column.full-width .modal-button-search {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    min-width: 100px;
+}
+.modal .form-container .column.full-width .modal-button-search:hover {
+    background-color: #0056b3;
+}
+.modal .form-container .column.full-width .modal-button-search:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.35);
+    outline: none;
+}
+
+#studentSearchResultArea h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 1.1em;
+}
+#studentSearchResultArea p {
+    margin-bottom: 5px;
+    font-size: 0.95em;
+    color: #555;
+}
+#studentSearchResultArea p strong {
+    color: #000;
+}
+
+.modal-button-confirm {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 15px;
+    font-size: 0.9em;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+.modal-button-confirm:hover {
+    background-color: #218838;
+}
+.modal-button-confirm:focus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.35);
+    outline: none;
+}
+
+#confirmedStudentInfo {
+    border: 1px dashed #ccc;
+    background-color: #f9f9f9;
+}
+#confirmedStudentInfo p {
+    margin-bottom: 5px;
+    font-size: 0.95em;
+}
+
+.modal-button-change-student {
+    background-color: #ffc107;
+    color: #212529;
+    padding: 10px 20px;
+}
+.modal-button-change-student:hover {
+    background-color: #e0a800;
+}
+.modal-button-change-student:focus {
+     box-shadow: 0 0 0 0.2rem rgba(224, 168, 0, 0.35);
+     outline: none;
+}
+
+
 @media (max-width: 900px) {
     .table-controls {
         flex-direction: column;
@@ -882,17 +921,17 @@ tbody td {
 
     .filters-area form {
         width: 100%;
-        justify-content: center; /* Center filter elements */
+        justify-content: center;
     }
 
     .search-input {
-        width: 100%; /* Full width for search input on smaller screens */
+        width: 100%;
         margin-bottom: 10px;
     }
 
     .filter-select {
-        flex: 1 1 auto; /* Allow selects to grow/shrink */
-        min-width: unset; /* Remove min-width inherited from .column */
+        flex: 1 1 auto;
+        min-width: unset;
     }
 
     .table-actions {
@@ -901,7 +940,6 @@ tbody td {
         margin-top: 10px;
     }
 
-    /* NEW: category-config-controls responsiveness */
     .category-config-controls {
         flex-direction: column;
         align-items: center;
@@ -912,7 +950,6 @@ tbody td {
         margin-bottom: 10px;
     }
 
-    /* NEW: accordion-controls for responsive add button */
     .accordion-controls {
         text-align: center;
     }
@@ -922,14 +959,26 @@ tbody td {
     }
 
     .modal-content {
-        width: 95%; /* Wider modal on smaller screens */
-        margin: 2% auto; /* Adjust margin */
-        padding: 20px 25px; /* Adjust padding */
+        width: 95%;
+        margin: 2% auto;
+        padding: 20px 25px;
     }
 
     .modal .form-container .column {
-        min-width: unset; /* Remove min-width to allow shrinking */
-        flex: 1 1 100%; /* Stack columns on small screens */
+        min-width: unset;
+        flex: 1 1 100%;
+    }
+    
+    .modal .form-container .column.full-width div[style*="display: flex"] {
+        flex-direction: column; 
+    }
+    .modal .form-container .column.full-width div[style*="display: flex"] input,
+    .modal .form-container .column.full-width div[style*="display: flex"] button {
+        width: 100%;
+    }
+     .modal .form-container .column.full-width .modal-button-search {
+        min-width: auto; 
+        padding: 10px;
     }
 
     .modal .button-row {
@@ -942,7 +991,9 @@ tbody td {
     .modal-button-publish,
     .modal-button-next,
     .modal-button-back,
-    .btn-confirm-delete {
+    .btn-confirm-delete,
+    .modal-button-change-student,
+    .modal-button-confirm {
         width: 100%;
     }
 
@@ -953,7 +1004,7 @@ tbody td {
 
     .tabs .tab {
         border-radius: 0;
-        border-bottom: 1px solid #ccc; /* Add back border for stacked tabs */
+        border-bottom: 1px solid #ccc;
     }
     .tabs .tab:first-child {
         border-top-left-radius: 8px;
@@ -962,10 +1013,9 @@ tbody td {
     .tabs .tab:last-child {
         border-bottom-left-radius: 8px;
         border-bottom-right-radius: 8px;
-        border-bottom: none; /* No bottom border for the last tab */
+        border-bottom: none;
     }
 
-    /* Adjust accordion content padding for smaller screens */
     .accordion-content {
         padding: 0 10px;
     }
@@ -1009,7 +1059,7 @@ tbody td {
     }
 
     .main-table-scroll-container {
-        border: none; /* Remove border for better mobile table display */
+        border: none;
     }
 
     table, thead, tbody, th, td, tr {
@@ -1049,7 +1099,6 @@ tbody td {
         color: #555;
     }
 
-    /* Data labels for Student Table */
     .tab-content#Violation table tbody td:nth-of-type(1):before { content: "Student Number:"; }
     .tab-content#Violation table tbody td:nth-of-type(2):before { content: "First Name:"; }
     .tab-content#Violation table tbody td:nth-of-type(3):before { content: "Middle Name:"; }
@@ -1062,7 +1111,6 @@ tbody td {
     .tab-content#Violation table tbody td:nth-of-type(10):before { content: "Offense:"; }
     .tab-content#Violation table tbody td:nth-of-type(11):before { content: "Action:"; }
 
-    /* Data labels for Configuration Table (inside accordions) */
     .tab-content#Configuration .config-table tbody td:nth-of-type(1):before { content: "Resolution:"; }
     .tab-content#Configuration .config-table tbody td:nth-of-type(2):before { content: "Violation Type:"; }
     .tab-content#Configuration .config-table tbody td:nth-of-type(3):before { content: "Description:"; }
@@ -1074,15 +1122,14 @@ tbody td {
         font-size: 1em;
     }
 
-    /* Adjust position of action buttons inside responsive table cells */
     .action-buttons-cell {
         display: flex;
-        justify-content: flex-end; /* Align to right */
+        justify-content: flex-end;
         align-items: center;
         padding-top: 10px;
         padding-bottom: 10px;
     }
-    .action-buttons-cell:before { /* Hide pseudo-element for action cell */
+    .action-buttons-cell:before {
         display: none;
     }
 }

@@ -30,9 +30,9 @@ $unread_notification_count_header = 0;
 
 if (isset($conn)) {
     $sql_notifications_list_header = "SELECT notification_id, message, created_at, link 
-                                    FROM notifications_tbl 
-                                    WHERE student_number = ? AND is_read = FALSE 
-                                    ORDER BY created_at DESC LIMIT 5";
+                                      FROM notifications_tbl 
+                                      WHERE student_number = ? AND is_read = FALSE 
+                                      ORDER BY created_at DESC LIMIT 5";
     if ($stmt_notifications_list_header = $conn->prepare($sql_notifications_list_header)) {
         $stmt_notifications_list_header->bind_param("s", $student_stud_number_from_session);
         $stmt_notifications_list_header->execute();
@@ -46,8 +46,8 @@ if (isset($conn)) {
     }
 
     $sql_notifications_count_header = "SELECT COUNT(*) as total_unread 
-                                    FROM notifications_tbl 
-                                    WHERE student_number = ? AND is_read = FALSE";
+                                       FROM notifications_tbl 
+                                       WHERE student_number = ? AND is_read = FALSE";
     if ($stmt_notifications_count_header = $conn->prepare($sql_notifications_count_header)) {
         $stmt_notifications_count_header->bind_param("s", $student_stud_number_from_session);
         $stmt_notifications_count_header->execute();
@@ -62,19 +62,18 @@ if (isset($conn)) {
 }
 
 $student_details = null;
-$violation_records = [];
+$violations_log = [];
+$violation_summary = [];
 $student_stud_number_for_page_violations = '';
 $year_display = "N/A";
-$type_commit_counts = [];
-$total_commits_for_summary = 0;
-$page_error = null; // Initialize page error
+$page_error = null;
 
 $sql_student_info = "SELECT u.first_name, u.middle_name, u.last_name, u.student_number, u.year_id,
                             c.course_name, s.section_name
-                        FROM users_tbl u
-                        LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                        LEFT JOIN section_tbl s ON u.section_id = s.section_id
-                        WHERE u.user_id = ?";
+                     FROM users_tbl u
+                     LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                     LEFT JOIN section_tbl s ON u.section_id = s.section_id
+                     WHERE u.user_id = ?";
 
 if (isset($conn) && $stmt_info = $conn->prepare($sql_student_info)) {
     $stmt_info->bind_param("i", $session_user_id);
@@ -96,13 +95,10 @@ if (isset($conn) && $stmt_info = $conn->prepare($sql_student_info)) {
                 $year_res = $stmt_year->get_result();
                 if($year_row = $year_res->fetch_assoc()){
                     $year_display = $year_row['year'];
-                } else {
-                    $year_display = $student_details['year_id']; 
                 }
                 $stmt_year->close();
             } else {
                 error_log("Error preparing year details query: " . $conn->error);
-                $year_display = $student_details['year_id']; 
             }
         }
         $student_details['FirstNameDisplay'] = htmlspecialchars($student_details['first_name'] ?? '');
@@ -120,41 +116,63 @@ if (isset($conn) && $stmt_info = $conn->prepare($sql_student_info)) {
 }
 
 if (isset($conn) && !empty($student_stud_number_for_page_violations)) {
-    $sql_violations = "SELECT
-                            v.description AS ViolationDescription,
-                            v.violation_date AS ViolationDate,
-                            vt.violation_type AS ViolationName
-                        FROM violation_tbl v
-                        LEFT JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                        WHERE v.student_number = ?
-                        ORDER BY v.violation_date DESC";
+    $sql_violations_updated = "SELECT v.violation_id, vc.category_name, vt.violation_type, v.violation_date, v.description AS remarks
+                               FROM violation_tbl v
+                               JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                               LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id
+                               WHERE v.student_number = ?
+                               ORDER BY v.violation_date DESC, vc.category_name ASC, vt.violation_type ASC";
 
-    if ($stmt_violations = $conn->prepare($sql_violations)) {
-        $stmt_violations->bind_param("s", $student_stud_number_for_page_violations);
-        $stmt_violations->execute();
-        $result_violations = $stmt_violations->get_result();
-        while ($row = $result_violations->fetch_assoc()) {
-            $violation_records[] = $row;
-            $typeName = $row['ViolationName'] ?? 'Detailed Violation';
-            if (!isset($type_commit_counts[$typeName])) {
-                $type_commit_counts[$typeName] = 0;
+    if ($stmt_violations_updated = $conn->prepare($sql_violations_updated)) {
+        $stmt_violations_updated->bind_param("s", $student_stud_number_for_page_violations);
+        $stmt_violations_updated->execute();
+        $result_violations_updated = $stmt_violations_updated->get_result();
+        
+        $temp_summary_data = [];
+        while ($row = $result_violations_updated->fetch_assoc()) {
+            $violations_log[] = $row; 
+
+            $typeName = $row['violation_type'];
+            $categoryName = $row['category_name'] ?? 'Uncategorized';
+            $remark_from_db = trim($row['remarks'] ?? '');
+
+            $key = $categoryName . "||" . $typeName; 
+
+            if (!isset($temp_summary_data[$key])) {
+                $temp_summary_data[$key] = [
+                    'category' => $categoryName,
+                    'type' => $typeName,
+                    'count' => 0,
+                    'remark_display' => empty($remark_from_db) ? 'No remarks' : $remark_from_db 
+                ];
             }
-            $type_commit_counts[$typeName]++;
+            $temp_summary_data[$key]['count']++;
+            
+            if ($temp_summary_data[$key]['count'] > 1) {
+                $temp_summary_data[$key]['remark_display'] = '(Multiple instances - see log)'; 
+            }
         }
-        $stmt_violations->close();
+        $stmt_violations_updated->close();
+        
+        foreach($temp_summary_data as $data_item){
+            $violation_summary[] = $data_item;
+        }
+        usort($violation_summary, function($a, $b) {
+            $catComp = strcmp($a['category'], $b['category']);
+            if ($catComp == 0) {
+                return strcmp($a['type'], $b['type']);
+            }
+            return $catComp;
+        });
+
     } else {
         error_log("Error preparing violation records query: " . $conn->error);
-        if (!isset($page_error)) $page_error = "Could not load violation records.";
+        if (!$page_error) $page_error = "Could not load violation records.";
     }
 }
 
-$individual_violation_instance_count = count($violation_records);
-$total_commits_for_summary = $individual_violation_instance_count;
-
-$button_disabled = true;
-if ($individual_violation_instance_count > 0) {
-    $button_disabled = false;
-}
+$total_individual_violations = count($violations_log);
+$button_disabled = $total_individual_violations === 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -238,39 +256,41 @@ if ($individual_violation_instance_count > 0) {
             <hr class="divider-red-wide">
 
             <div class="highlight-panel-wide">
-                <p>Total Violations Committed: <strong><?php echo $total_commits_for_summary; ?></strong></p>
+                <p>Total Violations Committed: <strong><?php echo $total_individual_violations; ?></strong></p>
             </div>
 
-            <h3 class="section-title-styled">Summary by Violation Type</h3>
+            <h3 class="section-title-styled">Summary by Violation</h3>
             <div class="table-container-wide">
                 <table class="data-table-wide" id="summaryViolationTable">
                     <thead>
                         <tr>
+                            <th>Category</th>
                             <th>Violation Type</th>
                             <th>Number of commits</th>
                             <th>Offense</th>
+                            <th>Remarks (for single instance)</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (!empty($type_commit_counts)): ?>
-                            <?php foreach ($type_commit_counts as $violationName => $commitCount): ?>
-                                <?php
-                                    $offense_status_for_type = "Warning";
-                                    $offense_tag_class = "offense-tag-look-warning";
-                                    if ($commitCount >= 2) { 
-                                        $offense_status_for_type = "Sanction";
-                                        $offense_tag_class = "offense-tag-look-sanction";
-                                    }
-                                ?>
+                        <?php if (!empty($violation_summary)): ?>
+                            <?php foreach ($violation_summary as $summary_item): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($violationName); ?></td>
-                                    <td><?php echo $commitCount; ?></td>
-                                    <td><span class="offense-tag-look <?php echo $offense_tag_class; ?>"><?php echo $offense_status_for_type; ?></span></td>
+                                    <td><?php echo htmlspecialchars($summary_item['category']); ?></td>
+                                    <td><?php echo htmlspecialchars($summary_item['type']); ?></td>
+                                    <td style="text-align: center;"><?php echo $summary_item['count']; ?></td>
+                                    <td style="text-align: center;">
+                                        <?php
+                                        $typeOffenseStatus = ($summary_item['count'] >= 2) ? 'Sanction' : 'Warning';
+                                        $typeOffenseClass = ($summary_item['count'] >= 2) ? 'offense-tag-look offense-tag-look-sanction' : 'offense-tag-look offense-tag-look-warning';
+                                        echo "<span class='" . $typeOffenseClass . "'>" . htmlspecialchars($typeOffenseStatus) . "</span>";
+                                        ?>
+                                    </td>
+                                    <td><?php echo nl2br(htmlspecialchars($summary_item['remark_display'])); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="3" class="no-records-message">No violation records found to summarize.</td>
+                                <td colspan="5" class="no-records-message">No violation records found to summarize.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -282,24 +302,25 @@ if ($individual_violation_instance_count > 0) {
                 <table class="data-table-wide" id="individualViolationsTable">
                     <thead>
                         <tr>
+                            <th>Category</th>
                             <th>Violation Type</th>
                             <th>Date of Violation</th>
+                            <th>Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (!empty($violation_records)): ?>
-                            <?php foreach ($violation_records as $record): ?>
-                                <?php
-                                    $violation_name_display = $record['ViolationName'] ?? ($record['ViolationDescription'] ?? 'Unknown Type');
-                                ?>
+                        <?php if (!empty($violations_log)): ?>
+                            <?php foreach ($violations_log as $record): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($violation_name_display); ?></td>
-                                    <td><?php echo htmlspecialchars(date("M d, Y, h:i a", strtotime($record['ViolationDate']))); ?></td>
+                                    <td><?php echo htmlspecialchars($record['category_name'] ?? 'N/A'); ?></td>
+                                    <td><?php echo htmlspecialchars($record['violation_type']); ?></td>
+                                    <td><?php echo htmlspecialchars(date("M d, Y, h:i a", strtotime($record['violation_date']))); ?></td>
+                                    <td><?php echo nl2br(htmlspecialchars(trim($record['remarks'] ?? '') === '' ? 'No remarks' : $record['remarks'])); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="2" class="no-records-message">No individual violation records found.</td>
+                                <td colspan="4" class="no-records-message">No individual violation records found.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -312,7 +333,7 @@ if ($individual_violation_instance_count > 0) {
                     ‘Request Sanction’ button to directly request to the Head of Office of Student Services (OSS) or go to the Building B Office.
                 </p>
                 <div class="sanction-request-bar-wide">
-                    <p class="instance-count-display-wide">Total Individual Violation Instances: <strong><?php echo $individual_violation_instance_count; ?></strong></p>
+                    <p class="instance-count-display-wide">Total Individual Violation Instances: <strong><?php echo $total_individual_violations; ?></strong></p>
                     <button id="requestSanctionButtonWide" class="button-green-wide" <?php if ($button_disabled) echo 'disabled'; ?>>
                         Request Sanction
                     </button>
