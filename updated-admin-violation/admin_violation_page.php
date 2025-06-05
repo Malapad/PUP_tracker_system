@@ -11,14 +11,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'search_student_for_violation' 
         exit;
     }
     $sql_search_student = "SELECT u.student_number, u.first_name, u.middle_name, u.last_name,
-                                  COALESCE(c.course_name, 'N/A') as course_name, 
-                                  COALESCE(y.year, 'N/A') as year, 
-                                  COALESCE(s.section_name, 'N/A') as section_name
-                           FROM users_tbl u
-                           LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                           LEFT JOIN year_tbl y ON u.year_id = y.year_id
-                           LEFT JOIN section_tbl s ON u.section_id = s.section_id
-                           WHERE u.student_number = ? LIMIT 1";
+                                   COALESCE(c.course_name, 'N/A') as course_name, 
+                                   COALESCE(y.year, 'N/A') as year, 
+                                   COALESCE(s.section_name, 'N/A') as section_name
+                             FROM users_tbl u
+                             LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                             LEFT JOIN year_tbl y ON u.year_id = y.year_id
+                             LEFT JOIN section_tbl s ON u.section_id = s.section_id
+                             WHERE u.student_number = ? LIMIT 1";
     $stmt_search_student = $conn->prepare($sql_search_student);
     if ($stmt_search_student) {
         $stmt_search_student->bind_param("s", $studentNumberInput);
@@ -129,7 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                     if(!empty($violationRemarks)){
                         $notification_message .= " (Remarks: " . htmlspecialchars($violationRemarks) . ")";
                     }
-                    $notification_link = "./student_record.php";
+                    $notification_link = "./student_record.php"; 
                     $sql_notify = "INSERT INTO notifications_tbl (student_number, message, link) VALUES (?, ?, ?)";
                     if ($stmt_notify = $conn->prepare($sql_notify)) {
                         $stmt_notify->bind_param("sss", $studentNumber, $notification_message, $notification_link);
@@ -438,9 +438,9 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
         exit;
     }
     $sql_details = "SELECT vt.violation_type_id, vt.violation_type, vt.resolution_number, vt.violation_description, vc.category_name
-                      FROM violation_type_tbl vt
-                      LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id
-                      WHERE vt.violation_type_id = ?";
+                          FROM violation_type_tbl vt
+                          LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id
+                          WHERE vt.violation_type_id = ?";
     $stmt_details = $conn->prepare($sql_details);
     if ($stmt_details) {
         $stmt_details->bind_param("i", $violation_type_id);
@@ -473,7 +473,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
         <div id="toast-notification" class="toast"></div>
         <header>
             <div class="logo">
-                <img src="../assets/PUPlogo.png" alt="PUP Logo" />
+                <img src="../assets/PUPLogo.png" alt="PUP Logo" />
             </div>
             <nav>
                 <a href="../HTML/admin_homepage.html">Home</a>
@@ -545,13 +545,13 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
                                 }
                                 ?>
                             </select>
-                            <input type="text" id="searchInput" name="search" placeholder="Search by Student Number, Name" value="<?php echo htmlspecialchars($search); ?>" class="search-input"/>
-                            <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
+                            <div class="search-group">
+                                <input type="text" id="searchInput" name="search" placeholder="Search by Student Number, Name" value="<?php echo htmlspecialchars($search); ?>" class="search-input"/>
+                                <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
+                            </div>
+                            <button type="button" id="refreshTableBtn" class="refresh-button"><i class="fas fa-sync-alt"></i> Refresh List</button>
+                            <button type="button" id="addViolationBtn" class="add-violation-button"><i class="fas fa-plus"></i> Add Violation</button>
                         </form>
-                    </div>
-                    <div class="table-actions">
-                        <button type="button" id="refreshTableBtn" class="refresh-button"><i class="fas fa-sync-alt"></i> Refresh List</button>
-                        <button id="addViolationBtn" class="add-violation-button"><i class="fas fa-plus"></i> Add Violation</button>
                     </div>
                 </div>
                 <div class="main-table-scroll-container">
@@ -599,7 +599,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
                             $params[] = $filterCategory; $paramTypes .= "i";
                         }
                         $finalWhereClauses = [];
-                        $finalWhereClauses[] = "v_main.violation_id IS NOT NULL";
+                        $finalWhereClauses[] = "v_main.violation_id IS NOT NULL"; 
                         foreach ($filter_whereClauses as $clause) {
                             $finalWhereClauses[] = $clause;
                         }
@@ -652,7 +652,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
                                     $hasSanction = false;
                                     if ($total_individual_violations > 0) {
                                         foreach ($violations_by_type_count as $count) {
-                                            if ($count >= 2) {
+                                            if ($count >= 2) { 
                                                 $hasSanction = true;
                                                 break;
                                             }
