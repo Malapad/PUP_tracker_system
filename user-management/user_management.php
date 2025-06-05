@@ -504,7 +504,6 @@ include '../PHP/dbcon.php';
                 <div><label for="add-admin-last-name">Last Name:</label><input type="text" id="add-admin-last-name" name="last_name" placeholder="Last Name" required></div>
                 <div><label for="add-admin-position">Position:</label><input type="text" id="add-admin-position" name="position" placeholder="Position" required></div>
                 <div><label for="add-admin-email">Email (will be used as Username):</label><input type="email" id="add-admin-email" name="email" placeholder="Email" required></div>
-                <div><label for="add-admin-password">Password:</label><input type="password" id="add-admin-password" name="password" placeholder="Password" required></div>
                 <button type="submit">Add Admin</button>
             </form>
         </div>
