@@ -1,68 +1,70 @@
 <?php
-@include '../PHP/dbcon.php';
-header('Content-Type: application/json');
+ob_start();
+session_start();
+require '../PHP/dbcon.php';
+require_once './history_logger.php';
 
 $response = ['success' => false, 'error' => 'An unknown error occurred.'];
 
-if (!isset($conn) || !$conn || (is_object($conn) && $conn->connect_error)) {
-    $response['error'] = 'Database connection failed.';
-    if (isset($conn) && is_object($conn) && $conn->connect_error) {
-        $response['error'] .= ' DB Error: ' . $conn->connect_error;
-    }
-    echo json_encode($response);
-    exit;
-}
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $admin_id = $_POST['admin_id'] ?? '';
+    $admin_id = (int)($_POST['admin_id'] ?? 0);
 
-    if (empty($admin_id)) {
-        $response['error'] = 'Admin ID is required for deletion.';
-        echo json_encode($response);
-        if (is_object($conn)) $conn->close();
-        exit;
-    }
-    
-    if ($conn->begin_transaction()) {
-        try {
-            $stmt_info = $conn->prepare("DELETE FROM admin_info_tbl WHERE admin_id = ?");
-            if (!$stmt_info) throw new Exception("Database prepare statement failed (delete from admin_info_tbl): " . $conn->error);
-            $stmt_info->bind_param("i", $admin_id);
-            $stmt_info->execute();
-            $stmt_info->close();
-
-            $stmt_admins = $conn->prepare("DELETE FROM admins WHERE id = ?");
-            if (!$stmt_admins) throw new Exception("Database prepare statement failed (delete from admins): " . $conn->error);
-            $stmt_admins->bind_param("i", $admin_id);
-            $stmt_admins->execute();
-
-            if ($stmt_admins->affected_rows > 0) {
-                $conn->commit();
-                $response['success'] = true;
-                $response['message'] = 'Admin deleted successfully.';
-            } else {
-                throw new Exception("Admin not found in main accounts table or already deleted. Info table entry might have been removed if it existed.");
-            }
-            $stmt_admins->close();
-
-        } catch (Exception $e) {
-            $conn->rollback();
-            if ($conn->errno == 1451) { 
-                 $response['error'] = "Cannot delete admin. They might be linked to other records in the system.";
-            } else {
-                 $response['error'] = "Deletion failed: " . $e->getMessage();
-            }
-        }
+    if ($admin_id <= 0) {
+        $response['error'] = 'A valid Admin ID is required.';
     } else {
-        $response['error'] = "Failed to start database transaction: " . $conn->error;
-    }
+        $info_stmt = $conn->prepare("SELECT a.email, i.firstname, i.lastname FROM admins a JOIN admin_info_tbl i ON a.id = i.admin_id WHERE a.id = ?");
+        $info_stmt->bind_param("i", $admin_id);
+        $info_stmt->execute();
+        $admin_info = $info_stmt->get_result()->fetch_assoc();
+        $info_stmt->close();
 
+        if ($conn->begin_transaction()) {
+            try {
+                $stmt_info = $conn->prepare("DELETE FROM admin_info_tbl WHERE admin_id = ?");
+                $stmt_info->bind_param("i", $admin_id);
+                $stmt_info->execute();
+                $stmt_info->close();
+
+                $stmt_admins = $conn->prepare("DELETE FROM admins WHERE id = ?");
+                $stmt_admins->bind_param("i", $admin_id);
+                $stmt_admins->execute();
+
+                if ($stmt_admins->affected_rows > 0) {
+                    $conn->commit();
+                    $response['success'] = true;
+                    $response['message'] = 'Admin deleted successfully.';
+                    unset($response['error']);
+
+                    if ($admin_info) {
+                        $admin_name = trim(($admin_info['firstname'] ?? '') . ' ' . ($admin_info['lastname'] ?? ''));
+                        $admin_email = $admin_info['email'] ?? 'ID: ' . $admin_id;
+                        log_user_action($conn, 'Delete Admin', 'Admin', $admin_email, 'Deleted admin account for ' . $admin_name . '.');
+                    }
+                } else {
+                    throw new Exception("Admin not found or already deleted from main table.");
+                }
+                $stmt_admins->close();
+            } catch (Exception $e) {
+                $conn->rollback();
+                if (strpos($e->getMessage(), 'foreign key constraint') !== false || $conn->errno == 1451) {
+                    $response['error'] = "Cannot delete admin. They are linked to other records.";
+                } else {
+                    $response['error'] = "Deletion failed: " . $e->getMessage();
+                }
+            }
+        } else {
+            $response['error'] = "Failed to start transaction.";
+        }
+    }
 } else {
-    $response['error'] = 'Invalid request method. Only POST is accepted.';
+    $response['error'] = 'Invalid request method.';
 }
 
-echo json_encode($response);
-if (is_object($conn) && !$conn->connect_error) {
+if (is_object($conn)) {
     $conn->close();
 }
+
+ob_end_clean();
+header('Content-Type: application/json');
+echo json_encode($response);
 ?>
