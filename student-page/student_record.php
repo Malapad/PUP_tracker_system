@@ -188,7 +188,7 @@ $button_disabled = $total_individual_violations === 0;
 </head>
 <body>
     <header>
-        <div class="logo"><img src="../assets/PUPlogo.png" alt="PUP Logo"></div>
+        <div class="logo"><img src="../assets/PUPLogo.png" alt="PUP Logo"></div>
         <nav>
             <a href="./student_dashboard.php">Home</a>
             <a href="./student_record.php" class="active-nav">Record</a>

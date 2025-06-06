@@ -172,9 +172,6 @@ nav a.active-nav {
     display: inline-block;
     padding: 3px;
 }
-.notification-icon-area > a.notification img {
-
-}
 
 .notification-count {
     position: absolute;
