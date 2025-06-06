@@ -76,10 +76,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $mail->Port       = 587;
                         $mail->setFrom('pupinsync@gmail.com', 'PUPT Tracker System');
                         $mail->addAddress($email, $first_name . ' ' . $last_name);
+
                         $mail->isHTML(true);
                         $mail->Subject = 'Welcome! Your Account for PUPT Tracker System';
-                        $mail->Body    = "Hello " . htmlspecialchars($first_name) . ",<br><br>" . "Welcome to the PUPT Tracker System! Your student account has been successfully created.<br><br>" . "Here are your login credentials:<br>" . "Student Number: <b>" . htmlspecialchars($student_number) . "</b><br>" . "Temporary Password: <b>" . htmlspecialchars($plain_text_password) . "</b><br><br>" . "Please use these to access the system. We strongly recommend that you change your password after your first login for security reasons.<br><br>" . "Regards,<br>" . "PUPT Tracker System Administration";
-                        $mail->AltBody = "Hello " . htmlspecialchars($first_name) . ",\n\n" . "Welcome to the PUPT Tracker System! Your student account has been successfully created.\n\n" . "Here are your login credentials:\n" . "Student Number: " . htmlspecialchars($student_number) . "\n" . "Temporary Password: " . htmlspecialchars($plain_text_password) . "\n\n" . "Please use these to access the system. We strongly recommend that you change your password after your first login for security reasons.\n\n" . "Regards,\n" . "PUPT Tracker System Administration";
+                        
+                        $student_login_url = "https://insync.ojt-ims-bsit.net/PHP/student_login.php";
+
+                        $emailBody = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Student Account Created</title></head><body style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, Helvetica, sans-serif;">';
+                        $emailBody .= '<div style="max-width:600px; margin:20px auto; background-color:#ffffff; border:1px solid #dddddd; border-radius:8px; overflow:hidden;">';
+                        $emailBody .= '<div style="background-color:#8a1c1c; color:#ffffff; padding:20px; text-align:center;">';
+                        $emailBody .= '<img src="https://insync.ojt-ims-bsit.net/assets/PUP_logo.png" alt="PUPT Logo" style="max-width:80px; margin-bottom:10px;">';
+                        $emailBody .= '<h1 style="margin:0; font-size:24px;">PUPT Tracker System</h1>';
+                        $emailBody .= '</div>';
+                        $emailBody .= '<div style="padding:20px 30px; color:#333333; line-height:1.6;">';
+                        $emailBody .= "<p>Hello " . htmlspecialchars($first_name) . ",</p>";
+                        $emailBody .= "<p>Welcome to the PUPT Tracker System! Your student account has been successfully created.</p>";
+                        $emailBody .= "<p>Here are your login credentials:<br>";
+                        $emailBody .= "Student Number: <strong style=\"color:#555555;\">" . htmlspecialchars($student_number) . "</strong><br>";
+                        $emailBody .= "Temporary Password: <strong style=\"color:#555555;\">" . htmlspecialchars($plain_text_password) . "</strong></p>";
+                        $emailBody .= "<p>You can log in to your account using the button below:</p>";
+                        $emailBody .= "<p style=\"text-align:center;\"><a href='" . $student_login_url . "' style='display:inline-block; background-color:#8a1c1c; color:#ffffff; padding:12px 25px; text-decoration:none; border-radius:5px; font-size:16px;'>Go to Student Login</a></p>";
+                        $emailBody .= "<p>Please use these to access the system. We strongly recommend that you change your password after your first login for security reasons.</p>";
+                        $emailBody .= "<p>Regards,<br>PUPT Tracker System Administration</p>";
+                        $emailBody .= '</div>';
+                        $emailBody .= '<div style="background-color:#f0f0f0; padding:15px 30px; text-align:center; font-size:12px; color:#777777;">';
+                        $emailBody .= '&copy; ' . date("Y") . ' PUPT Tracker System. All rights reserved.';
+                        $emailBody .= '</div>';
+                        $emailBody .= '</div></body></html>';
+
+                        $mail->Body = $emailBody;
+                        $mail->AltBody = "Hello " . htmlspecialchars($first_name) . ",\n\nWelcome to the PUPT Tracker System! Your student account has been successfully created.\n\nHere are your login credentials:\nStudent Number: " . htmlspecialchars($student_number) . "\nTemporary Password: " . htmlspecialchars($plain_text_password) . "\n\nYou can log in at the following address: " . $student_login_url . "\n\nPlease use these to access the system.\n\nRegards,\nPUPT Tracker System Administration";
+                        
                         $mail->send();
                         $response['email_status'] = 'Verification email sent successfully.';
                     } catch (Exception $e) {
