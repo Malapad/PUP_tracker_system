@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Sanction System</title>
+    <title>Admin Header</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="./header.css">
-</head>
+    <link rel="stylesheet" href="../header.css"> </head>
 <body>
-    <header class="navbar navbar-expand-lg custom-navbar">
+<header class="navbar navbar-expand-lg custom-navbar">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
                 <img src="../IMAGE/Tracker_logo.png" alt="Logo" width="40" height="40" class="d-inline-block align-text-top">
@@ -20,16 +18,16 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#" data-tab="home"><strong>Home</strong></a>
+                        <a class="nav-link active" aria-current="page" href="../HTML/admin_homepage.html" data-tab="home"><strong>Home</strong></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" data-tab="violations"><strong>Violations</strong></a>
+                        <a class="nav-link" href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" data-tab="violations"><strong>Violations</strong></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" data-tab="student-sanction"><strong>Student Sanction</strong></a>
+                        <a class="nav-link" href="../updated-admin-sanction/admin_sanction.php" data-tab="student-sanction"><strong>Student Sanction</strong></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" data-tab="user-management"><strong>User Management</strong></a>
+                        <a class="nav-link" href="../user-management/user_management.php" data-tab="user-management"><strong>User Management</strong></a>
                     </li>
                 </ul>
                 <ul class="navbar-nav icon-nav">
@@ -46,15 +44,8 @@
                 </ul>
             </div>
         </div>
-    </header>
-
-    <div class="container mt-4">
-        <div id="content-area">
-            <p>Welcome to the Student Sanction System. Click on a tab to see content.</p>
-        </div>
-    </div>
+</header>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="./header.js"></script>
-</body>
+    <script src="../header.js"></script> </body>
 </html>
