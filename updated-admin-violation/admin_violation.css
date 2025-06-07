@@ -1,3 +1,4 @@
+/* Base CSS from your request */
 * {
     margin: 0;
     padding: 0;
@@ -5,10 +6,13 @@
     font-family: Arial, sans-serif;
 }
 
+/* Reverted body background color to its original style */
 body {
-    background-color: #f4f7f6;
+    background-color: #f4f7f6; 
 }
 
+/* Removed old header styles that conflict with new Bootstrap-based header */
+/*
 header {
     display: flex;
     align-items: center;
@@ -65,13 +69,14 @@ nav a.active {
 .notification {
     width: 34px;
 }
+*/
 
 .container {
     background: white;
     padding: 20px;
     border-radius: 8px;
     width: 90%;
-    max-width: 1600px;
+    max-width: 1800px; /* INCREASED MAX-WIDTH HERE */
     margin: 20px auto;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
@@ -408,9 +413,6 @@ button i, .more-details-btn i, .clear-filters-btn i {
     border: 1px solid #ddd;
     border-radius: 4px;
     position: relative;
-}
-
-.config-table-scroll-container {
 }
 
 .table-overlay-spinner {
@@ -987,7 +989,7 @@ tbody td {
         margin-bottom: 10px;
     }
      .filters-area form > *:last-child {
-       margin-bottom: 0;
+        margin-bottom: 0;
     }
 
     .table-actions {
@@ -1081,26 +1083,29 @@ tbody td {
 }
 
 @media (max-width: 768px) {
+    /* Main header style in smaller screens */
     header {
         flex-direction: column;
         padding: 10px;
     }
 
-    .logo img {
-        margin-left: 0;
-        margin-bottom: 10px;
+    /* Keep Bootstrap's navbar-brand for logo margin handling for small screens */
+    .custom-navbar .navbar-brand {
+        margin-left: 0; /* Override general header margin */
+        margin-bottom: 10px; /* Add space below logo */
     }
 
-    nav {
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-bottom: 10px;
+    .custom-navbar .navbar-collapse {
+        text-align: center; /* Ensure collapsed menu is centered */
+    }
+    .custom-navbar .navbar-nav.mx-auto {
+        margin-left: auto !important; /* Ensure centering works for collapsed menu */
+        margin-right: auto !important;
     }
 
-    .admin-icons {
-        margin-right: 0;
-        justify-content: center;
+    .custom-navbar .icon-nav {
+        margin-right: 0; /* Override */
+        justify-content: center; /* Center icons when collapsed */
         width: 100%;
     }
 
@@ -1197,3 +1202,88 @@ tbody td {
         transform: translateX(0);
     }
 }
+
+/* START OF INJECTED HEADER CSS FROM header.css */
+/* Custom Navbar Styles from header.css */
+.custom-navbar {
+    background-color: #ffffff; 
+    border-bottom: 2px solid #d1cece;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    align-items: center;
+}
+
+/* Note: 'header {}' padding: 1px from header.css. The .custom-navbar above sets more specific padding. */
+header {
+    padding: 1px; /* This is from the original header.css and targets the <header> element. */
+}
+
+/* Logo specific margin */
+.custom-navbar .navbar-brand {
+    margin-left: 70px; /* Specific margin for the logo */
+    margin-right: auto;
+}
+
+.custom-navbar .navbar-brand img {
+    width: 170px;  
+    height: 70px;
+}
+
+.custom-navbar .nav-link {
+    color: #333333; /* Darker text for links */
+    font-weight: 500;
+    padding: 0.5rem 1rem; /* Adjust padding for spacing */
+    position: relative; /* Needed for the underline effect */
+    transition: color 0.3s ease;
+}
+
+.custom-navbar .nav-link:hover {
+    color: #000000; /* Darker on hover */
+}
+
+.custom-navbar .nav-link.active {
+    color: #a00000; /* Red color for active tab */
+    font-weight: 600;
+}
+
+.custom-navbar .nav-link.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0; /* Position the underline at the bottom of the link */
+    height: 2px;
+    background-color: #a00000; /* Red underline for active tab */
+}
+
+/* Icon specific width and right margin */
+.custom-navbar .icon-nav {
+    margin-right: 55px; 
+}
+
+.custom-navbar .icon-nav .nav-link img {
+    width: 40px;  /* Set icon width to 80px */
+    height: auto; /* Maintain aspect ratio */
+    vertical-align: middle; /* Align icons vertically in the middle */
+}
+
+/* Responsive adjustments for smaller screens from header.css */
+@media (max-width: 991.98px) { /* Bootstrap's 'lg' breakpoint */
+    .custom-navbar .navbar-brand {
+        margin-left: 15px; /* Adjust margin for smaller screens */
+    }
+    .custom-navbar .icon-nav {
+        margin-right: 15px; /* Adjust margin for smaller screens */
+        width: 100%; /* Icons take full width below breakpoint */
+        justify-content: flex-end; /* Push icons to the right on small screens */
+    }
+    .custom-navbar .navbar-collapse {
+        text-align: center; /* Center items when collapsed */
+    }
+    .custom-navbar .navbar-nav.mx-auto {
+        margin-left: auto !important; /* Ensure centering works for collapsed menu */
+        margin-right: auto !important;
+    }
+}
+/* END OF INJECTED HEADER CSS FROM header.css */

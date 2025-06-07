@@ -1,6 +1,9 @@
 <?php
 include '../PHP/dbcon.php';
 
+// Get the current script name to determine which tab should be active in the header
+$current_page_filename = basename($_SERVER['PHP_SELF']);
+
 if (isset($_GET['action']) && $_GET['action'] == 'search_student_for_violation' && isset($_GET['student_search_number'])) {
     $response = ['success' => false, 'message' => 'Student not found.', 'student' => null];
     $studentNumberInput = trim($_GET['student_search_number']);
@@ -11,14 +14,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'search_student_for_violation' 
         exit;
     }
     $sql_search_student = "SELECT u.student_number, u.first_name, u.middle_name, u.last_name,
-                                   COALESCE(c.course_name, 'N/A') as course_name, 
-                                   COALESCE(y.year, 'N/A') as year, 
-                                   COALESCE(s.section_name, 'N/A') as section_name
-                             FROM users_tbl u
-                             LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                             LEFT JOIN year_tbl y ON u.year_id = y.year_id
-                             LEFT JOIN section_tbl s ON u.section_id = s.section_id
-                             WHERE u.student_number = ? LIMIT 1";
+                                 COALESCE(c.course_name, 'N/A') as course_name, 
+                                 COALESCE(y.year, 'N/A') as year, 
+                                 COALESCE(s.section_name, 'N/A') as section_name
+                            FROM users_tbl u
+                            LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                            LEFT JOIN year_tbl y ON u.year_id = y.year_id
+                            LEFT JOIN section_tbl s ON u.section_id = s.section_id
+                            WHERE u.student_number = ? LIMIT 1";
     $stmt_search_student = $conn->prepare($sql_search_student);
     if ($stmt_search_student) {
         $stmt_search_student->bind_param("s", $studentNumberInput);
@@ -438,9 +441,9 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
         exit;
     }
     $sql_details = "SELECT vt.violation_type_id, vt.violation_type, vt.resolution_number, vt.violation_description, vc.category_name
-                          FROM violation_type_tbl vt
-                          LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id
-                          WHERE vt.violation_type_id = ?";
+                            FROM violation_type_tbl vt
+                            LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id
+                            WHERE vt.violation_type_id = ?";
     $stmt_details = $conn->prepare($sql_details);
     if ($stmt_details) {
         $stmt_details->bind_param("i", $violation_type_id);
@@ -468,26 +471,47 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
         <title>Student Violation Records</title>
         <link rel="stylesheet" href="./admin_violation.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body>
         <div id="toast-notification" class="toast"></div>
-        <header>
-            <div class="logo">
-                <img src="../assets/PUPLogo.png" alt="PUP Logo" />
-            </div>
-            <nav>
-                <a href="../HTML/admin_homepage.html">Home</a>
-                <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="active">Violations</a>
-                <a href="../HTML/admin_sanction.html">Student Sanction</a>
-                <a href="../user-management/user_management.php">User Management</a>
-            </nav>
-            <div class="admin-icons">
-                <a href="../HTML/notification.html" class="notification">
-                    <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/>
+        
+        <header class="navbar navbar-expand-lg custom-navbar">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <img src="../IMAGE/Tracker_logo.png" alt="Logo" width="40" height="40" class="d-inline-block align-text-top">
                 </a>
-                <a href="../PHP/admin_account.php" class="admin">
-                    <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account"/>
-                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav mx-auto">
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo ($current_page_filename == 'admin_homepage.html' ? 'active' : ''); ?>" aria-current="page" href="../HTML/admin_homepage.html" data-tab="home"><strong>Home</strong></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo ($current_page_filename == 'admin_violation_page.php' ? 'active' : ''); ?>" href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" data-tab="violations"><strong>Violations</strong></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo ($current_page_filename == 'admin_sanction.php' ? 'active' : ''); ?>" href="../updated-admin-sanction/admin_sanction.php" data-tab="student-sanction"><strong>Student Sanction</strong></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo ($current_page_filename == 'user_management.php' ? 'active' : ''); ?>" href="../user-management/user_management.php" data-tab="user-management"><strong>User Management</strong></a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav icon-nav">
+                        <li class="nav-item">
+                            <a class="nav-link icon-link" href="#">
+                                <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notification">
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link icon-link" href="#">
+                                <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Account">
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </header>
         <div class="container">
@@ -501,7 +525,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
                 if ($active_tab == 'Violation' && (!empty($filterCourse) || !empty($filterYear) || !empty($search) || !empty($filterCategory) )) {
                     $baseUrl = strtok($_SERVER["REQUEST_URI"], '?');
                     echo '<div class="clear-filters-container">';
-                    echo '    <a href="' . htmlspecialchars($baseUrl) . '?tab=Violation" class="clear-filters-btn"><i class="fas fa-eraser"></i> Clear Filters</a>';
+                    echo '      <a href="' . htmlspecialchars($baseUrl) . '?tab=Violation" class="clear-filters-btn"><i class="fas fa-eraser"></i> Clear Filters</a>';
                     echo '</div>';
                 }
                 ?>
@@ -710,39 +734,39 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php
-                                            $sql_config_violations = "SELECT vt.violation_type_id, vt.violation_type, vt.resolution_number, vt.violation_description, vt.date_published FROM violation_type_tbl vt WHERE vt.violation_category_id = ? ORDER BY vt.violation_type ASC";
-                                            $stmt_config_violations = $conn->prepare($sql_config_violations);
-                                            if ($stmt_config_violations) {
-                                                $stmt_config_violations->bind_param("i", $categoryId);
-                                                $stmt_config_violations->execute();
-                                                $result_config = $stmt_config_violations->get_result();
-                                                if ($result_config->num_rows > 0) {
-                                                    while ($row_config = $result_config->fetch_assoc()) {
-                                            ?>
-                                            <tr data-id="<?php echo $row_config['violation_type_id']; ?>" class="violation-type-row">
-                                                <td><?php echo htmlspecialchars($row_config['resolution_number'] ?? 'N/A'); ?></td>
-                                                <td><?php echo htmlspecialchars($row_config['violation_type']); ?></td>
-                                                <td><?php echo htmlspecialchars($row_config['violation_description'] ?? 'No description'); ?></td>
-                                                <td><?php echo htmlspecialchars($row_config['date_published'] ? date("F j, Y", strtotime($row_config['date_published'])) : 'N/A'); ?></td>
-                                                <td class="action-buttons-cell">
-                                                    <div class="action-buttons-container" style="display: none;">
-                                                        <button class='edit-violation-type-btn btn-secondary' data-id='<?php echo $row_config['violation_type_id']; ?>'><i class='fas fa-edit'></i> Update</button>
-                                                        <button class='delete-violation-type-btn btn-danger' data-id='<?php echo $row_config['violation_type_id']; ?>'><i class='fas fa-trash-alt'></i> Delete</button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <?php
+                                                <?php
+                                                $sql_config_violations = "SELECT vt.violation_type_id, vt.violation_type, vt.resolution_number, vt.violation_description, vt.date_published FROM violation_type_tbl vt WHERE vt.violation_category_id = ? ORDER BY vt.violation_type ASC";
+                                                $stmt_config_violations = $conn->prepare($sql_config_violations);
+                                                if ($stmt_config_violations) {
+                                                    $stmt_config_violations->bind_param("i", $categoryId);
+                                                    $stmt_config_violations->execute();
+                                                    $result_config = $stmt_config_violations->get_result();
+                                                    if ($result_config->num_rows > 0) {
+                                                        while ($row_config = $result_config->fetch_assoc()) {
+                                                ?>
+                                                <tr data-id="<?php echo $row_config['violation_type_id']; ?>" class="violation-type-row">
+                                                    <td><?php echo htmlspecialchars($row_config['resolution_number'] ?? 'N/A'); ?></td>
+                                                    <td><?php echo htmlspecialchars($row_config['violation_type']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row_config['violation_description'] ?? 'No description'); ?></td>
+                                                    <td><?php echo htmlspecialchars($row_config['date_published'] ? date("F j, Y", strtotime($row_config['date_published'])) : 'N/A'); ?></td>
+                                                    <td class="action-buttons-cell">
+                                                        <div class="action-buttons-container" style="display: none;">
+                                                            <button class='edit-violation-type-btn btn-secondary' data-id='<?php echo $row_config['violation_type_id']; ?>'><i class='fas fa-edit'></i> Update</button>
+                                                            <button class='delete-violation-type-btn btn-danger' data-id='<?php echo $row_config['violation_type_id']; ?>'><i class='fas fa-trash-alt'></i> Delete</button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <?php
+                                                        }
+                                                    } else {
+                                                        echo "<tr><td colspan='5' class='no-records-cell'>No violation types in this category.</td></tr>";
                                                     }
+                                                    $stmt_config_violations->close();
                                                 } else {
-                                                    echo "<tr><td colspan='5' class='no-records-cell'>No violation types in this category.</td></tr>";
+                                                    error_log("Failed to prepare config violation list statement: " . $conn->error);
+                                                    echo "<tr><td colspan='5' class='no-records-cell'>Error loading violation types.</td></tr>";
                                                 }
-                                                $stmt_config_violations->close();
-                                            } else {
-                                                error_log("Failed to prepare config violation list statement: " . $conn->error);
-                                                echo "<tr><td colspan='5' class='no-records-cell'>Error loading violation types.</td></tr>";
-                                            }
-                                            ?>
+                                                ?>
                                         </tbody>
                                     </table>
                                 </div>
@@ -966,6 +990,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
                 </div>
             </div>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="./admin_violation_page.js"></script>
     </body>
 </html>
