@@ -1,14 +1,14 @@
 /* Base CSS from your request */
-* {
+html, body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: Arial, sans-serif;
+    min-height: 100vh; /* Ensures the body (and its background) fills the viewport height */
 }
 
-/* Reverted body background color to its original style */
 body {
-    background-color: #f4f7f6; 
+    background-color: #f4f7f6; /* Confirmed and explicitly set as desired */
 }
 
 /* Removed old header styles that conflict with new Bootstrap-based header */
@@ -71,13 +71,19 @@ nav a.active {
 }
 */
 
+/* Adjusted container margins to align with header content */
 .container {
     background: white;
     padding: 20px;
     border-radius: 8px;
-    width: 90%;
-    max-width: 1800px; /* INCREASED MAX-WIDTH HERE */
-    margin: 20px auto;
+    /* Calculate left margin: Bootstrap's default gutter (0.75rem = 12px) + your custom logo margin (70px) */
+    margin-left: calc(var(--bs-gutter-x, 0.75rem) + 70px);
+    /* Calculate right margin: Bootstrap's default gutter (0.75rem = 12px) + your custom icon margin (55px) */
+    margin-right: calc(var(--bs-gutter-x, 0.75rem) + 55px);
+    margin-top: 20px;
+    margin-bottom: 20px;
+    width: auto; /* Allow width to be determined by the new margins */
+    max-width: none; /* Remove explicit max-width as width is now controlled by margins */
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -269,7 +275,7 @@ button i, .more-details-btn i, .clear-filters-btn i {
     background-color: #af1414;
     color: white;
     cursor: pointer;
-    border-radius: 0 5px 5px 0; 
+    border-radius: 0 55px 55px 0; /* Updated border-radius for search button */
     font-size: 0.85em;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     display: inline-flex;
@@ -413,6 +419,9 @@ button i, .more-details-btn i, .clear-filters-btn i {
     border: 1px solid #ddd;
     border-radius: 4px;
     position: relative;
+}
+
+.config-table-scroll-container {
 }
 
 .table-overlay-spinner {
@@ -1109,9 +1118,11 @@ tbody td {
         width: 100%;
     }
 
+    /* Adjust container margins for smaller screens to match header responsiveness */
     .container {
-        padding: 15px;
-        width: 95%;
+        margin-left: calc(var(--bs-gutter-x, 0.75rem) + 15px); /* From header's smaller screen brand margin */
+        margin-right: calc(var(--bs-gutter-x, 0.75rem) + 15px); /* From header's smaller screen icon margin */
+        width: auto;
     }
 
     h1 {
