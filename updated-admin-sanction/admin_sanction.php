@@ -41,6 +41,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['approve_sanction'])) {
             if ($stmt->affected_rows > 0) {
                 $response['success'] = true;
                 $response['message'] = 'Sanction approved and assigned successfully!';
+                
+                // --- NEW: Deactivate the request in sanction_requests_tbl ---
+                $update_req_stmt = $conn->prepare("UPDATE sanction_requests_tbl SET is_active = 0 WHERE student_number = ? AND is_active = 1");
+                if ($update_req_stmt) {
+                    $update_req_stmt->bind_param("s", $student_number);
+                    $update_req_stmt->execute();
+                    $update_req_stmt->close();
+                }
+                // --- END: Deactivate request ---
+
             } else {
                 $response['message'] = 'Failed to assign sanction. Please try again.';
             }
@@ -314,28 +324,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
                     </thead>
                     <tbody>
                         <?php
-                        // UPDATED SQL QUERY with category-based count
+                        // --- MODIFIED SQL QUERY to link with sanction_requests_tbl ---
                         $sql = "SELECT
                                     u.student_number, u.first_name, u.middle_name, u.last_name,
                                     c.course_name, y.year, s.section_name,
                                     v.violation_id, v.violation_date, vt.violation_type,
                                     (SELECT COUNT(*)
-                                     FROM violation_tbl v_inner
-                                     JOIN violation_type_tbl vt_inner ON v_inner.violation_type = vt_inner.violation_type_id
-                                     WHERE v_inner.student_number = u.student_number AND vt_inner.violation_category_id = vt.violation_category_id
+                                        FROM violation_tbl v_inner
+                                        JOIN violation_type_tbl vt_inner ON v_inner.violation_type = vt_inner.violation_type_id
+                                        WHERE v_inner.student_number = u.student_number AND vt_inner.violation_category_id = vt.violation_category_id
                                     ) as violation_category_count
                                 FROM violation_tbl v
                                 JOIN users_tbl u ON v.student_number = u.student_number
+                                JOIN sanction_requests_tbl req ON u.student_number = req.student_number
                                 JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
                                 LEFT JOIN course_tbl c ON u.course_id = c.course_id
                                 LEFT JOIN year_tbl y ON u.year_id = y.year_id
                                 LEFT JOIN section_tbl s ON u.section_id = s.section_id
                                 LEFT JOIN student_sanction_records_tbl ssr ON v.violation_id = ssr.violation_id
                                 WHERE ssr.record_id IS NULL 
+                                AND req.is_active = 1
                                 AND (SELECT COUNT(*)
-                                     FROM violation_tbl v_inner
-                                     JOIN violation_type_tbl vt_inner ON v_inner.violation_type = vt_inner.violation_type_id
-                                     WHERE v_inner.student_number = u.student_number AND vt_inner.violation_category_id = vt.violation_category_id
+                                        FROM violation_tbl v_inner
+                                        JOIN violation_type_tbl vt_inner ON v_inner.violation_type = vt_inner.violation_type_id
+                                        WHERE v_inner.student_number = u.student_number AND vt_inner.violation_category_id = vt.violation_category_id
                                     ) >= 2";
 
                         $params = [];
@@ -350,7 +362,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
                             $params[] = "%{$search}%";
                             $paramTypes .= "s";
                         }
-                        $sql .= " ORDER BY v.violation_date DESC";
+                        
+                        $sql .= " GROUP BY v.violation_id ORDER BY v.violation_date DESC";
 
                         $stmt = $conn->prepare($sql);
                         if ($stmt) {
@@ -387,7 +400,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
                             }
                             $stmt->close();
                         } else {
-                             echo "<tr><td colspan='9' class='no-records-cell'>Database query error.</td></tr>";
+                                echo "<tr><td colspan='9' class='no-records-cell'>Database query error.</td></tr>";
                         }
                         ?>
                     </tbody>
@@ -412,16 +425,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
                     <tbody>
                         <?php
                         $sql_ongoing = "SELECT
-                                        ssr.record_id, ssr.status, ssr.deadline_date,
-                                        u.student_number, u.first_name, u.middle_name, u.last_name,
-                                        vt.violation_type,
-                                        st.sanction_name
-                                    FROM student_sanction_records_tbl ssr
-                                    JOIN users_tbl u ON ssr.student_number = u.student_number
-                                    JOIN violation_tbl v ON ssr.violation_id = v.violation_id
-                                    JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                                    JOIN sanction_type_tbl st ON ssr.assigned_sanction_id = st.sanction_id
-                                    ORDER BY ssr.deadline_date ASC";
+                                            ssr.record_id, ssr.status, ssr.deadline_date,
+                                            u.student_number, u.first_name, u.middle_name, u.last_name,
+                                            vt.violation_type,
+                                            st.sanction_name
+                                        FROM student_sanction_records_tbl ssr
+                                        JOIN users_tbl u ON ssr.student_number = u.student_number
+                                        JOIN violation_tbl v ON ssr.violation_id = v.violation_id
+                                        JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                                        JOIN sanction_type_tbl st ON ssr.assigned_sanction_id = st.sanction_id
+                                        ORDER BY ssr.deadline_date ASC";
 
                         $result_ongoing = $conn->query($sql_ongoing);
                         if ($result_ongoing && $result_ongoing->num_rows > 0) {
@@ -483,7 +496,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
                                 echo "</tr>";
                             }
                         } else {
-                             echo "<tr><td colspan='3' class='no-records-cell'>No sanction types have been configured.</td></tr>";
+                                echo "<tr><td colspan='3' class='no-records-cell'>No sanction types have been configured.</td></tr>";
                         }
                         ?>
                     </tbody>

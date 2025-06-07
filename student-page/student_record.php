@@ -2,6 +2,47 @@
 require_once "../PHP/dbcon.php";
 session_start();
 
+// --- NEW: AJAX HANDLER FOR SANCTION REQUEST ---
+if (isset($_POST['action']) && $_POST['action'] == 'request_sanction') {
+    header('Content-Type: application/json');
+    $response = ['success' => false, 'message' => 'Authentication failed. Please log in again.'];
+
+    if (isset($_SESSION['user_student_number']) && isset($conn)) {
+        $student_number = $_SESSION['user_student_number'];
+
+        // Check for an existing active request to prevent duplicates
+        $check_stmt = $conn->prepare("SELECT request_id FROM sanction_requests_tbl WHERE student_number = ? AND is_active = 1");
+        $check_stmt->bind_param("s", $student_number);
+        $check_stmt->execute();
+        $result = $check_stmt->get_result();
+        $check_stmt->close();
+
+        if ($result->num_rows > 0) {
+            $response['success'] = false;
+            $response['message'] = 'You already have a pending sanction request.';
+        } else {
+            // Insert the new request
+            $insert_stmt = $conn->prepare("INSERT INTO sanction_requests_tbl (student_number) VALUES (?)");
+            if ($insert_stmt) {
+                $insert_stmt->bind_param("s", $student_number);
+                if ($insert_stmt->execute()) {
+                    $response['success'] = true;
+                    $response['message'] = 'Sanction request sent successfully!';
+                } else {
+                    $response['message'] = 'Error: Could not submit your request. ' . $conn->error;
+                }
+                $insert_stmt->close();
+            } else {
+                 $response['message'] = 'Database error: Could not prepare the request.';
+            }
+        }
+    }
+    echo json_encode($response);
+    exit; // Stop further script execution for AJAX requests
+}
+// --- END OF AJAX HANDLER ---
+
+
 if (!isset($_SESSION["current_user_id"]) || !isset($_SESSION["user_student_number"])) {
     header("Location: student_login.php");
     exit();
@@ -115,6 +156,8 @@ if (isset($conn) && $stmt_info = $conn->prepare($sql_student_info)) {
     $page_error = "Could not load student details. Please try again later.";
 }
 
+$has_sanctionable_offense = false; 
+
 if (isset($conn) && !empty($student_stud_number_for_page_violations)) {
     $sql_violations_updated = "SELECT v.violation_id, vc.category_name, vt.violation_type, v.violation_date, v.description AS remarks
                                FROM violation_tbl v
@@ -156,7 +199,11 @@ if (isset($conn) && !empty($student_stud_number_for_page_violations)) {
         
         foreach($temp_summary_data as $data_item){
             $violation_summary[] = $data_item;
+            if ($data_item['count'] >= 2) {
+                $has_sanctionable_offense = true;
+            }
         }
+        
         usort($violation_summary, function($a, $b) {
             $catComp = strcmp($a['category'], $b['category']);
             if ($catComp == 0) {
@@ -172,7 +219,7 @@ if (isset($conn) && !empty($student_stud_number_for_page_violations)) {
 }
 
 $total_individual_violations = count($violations_log);
-$button_disabled = $total_individual_violations === 0;
+$button_disabled = !$has_sanctionable_offense;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -183,56 +230,60 @@ $button_disabled = $total_individual_violations === 0;
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="../student-page/student_record_style.css">
-    <link rel="stylesheet" href="./student_dashboard_style.css">
 </head>
 <body>
-    <header>
-        <div class="logo"><img src="../assets/PUPLogo.png" alt="PUP Logo"></div>
-        <nav>
-            <a href="./student_dashboard.php">Home</a>
-            <a href="./student_record.php" class="active-nav">Record</a>
-        </nav>
-        <div class="user-icons admin-icons">
-            <div class="notification-icon-area">
-                <a href="#" class="notification" id="notificationLinkToggle">
-                    <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/>
-                    <?php if ($unread_notification_count_header > 0): ?>
-                        <span class="notification-count"><?php echo $unread_notification_count_header; ?></span>
-                    <?php endif; ?>
-                </a>
-                <div class="notifications-dropdown" id="notificationsDropdownContent">
-                    <ul>
-                        <?php if (!empty($unread_notifications_header)): ?>
-                            <?php foreach ($unread_notifications_header as $notification_h): ?>
-                                <li class="notification-item">
-                                    <a href="<?php echo !empty($notification_h['link']) ? htmlspecialchars($notification_h['link']) . (strpos($notification_h['link'], '?') === false ? '?' : '&') . 'notif_id=' . $notification_h['notification_id'] : '#'; ?>"
-                                       class="notification-message-link"
-                                       data-notification-id="<?php echo $notification_h['notification_id']; ?>">
-                                        <?php echo htmlspecialchars($notification_h['message']); ?>
-                                        <small class="notification-timestamp"><?php echo date("M d, Y h:i A", strtotime($notification_h['created_at'])); ?></small>
-                                    </a>
-                                    <a href="./mark_notification_read.php?id=<?php echo $notification_h['notification_id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="mark-as-read-link">Mark read</a>
-                                </li>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <li class="no-notifications">No new notifications.</li>
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
+            <nav class="main-nav">
+                <a href="./student_dashboard.php">Home</a>
+                <a href="./student_record.php" class="active-nav">Record</a>
+            </nav>
+            <div class="user-icons">
+                <div class="notification-icon-area">
+                    <a href="#" class="notification" id="notificationLinkToggle">
+                        <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/>
+                        <?php if ($unread_notification_count_header > 0): ?>
+                            <span class="notification-count"><?php echo $unread_notification_count_header; ?></span>
                         <?php endif; ?>
-                        <li class="view-all-container">
-                            <a href="./all_notifications.php" class="view-all-notifications-link">View All Notifications</a>
-                        </li>
-                    </ul>
+                    </a>
+                    <div class="notifications-dropdown" id="notificationsDropdownContent">
+                        <ul>
+                            <?php if (!empty($unread_notifications_header)): ?>
+                                <?php foreach ($unread_notifications_header as $notification_h): ?>
+                                    <li class="notification-item">
+                                        <a href="<?php echo !empty($notification_h['link']) ? htmlspecialchars($notification_h['link']) . (strpos($notification_h['link'], '?') === false ? '?' : '&') . 'notif_id=' . $notification_h['notification_id'] : '#'; ?>"
+                                           class="notification-message-link"
+                                           data-notification-id="<?php echo $notification_h['notification_id']; ?>">
+                                            <?php echo htmlspecialchars($notification_h['message']); ?>
+                                            <small class="notification-timestamp"><?php echo date("M d, Y h:i A", strtotime($notification_h['created_at'])); ?></small>
+                                        </a>
+                                        <a href="./mark_notification_read.php?id=<?php echo $notification_h['notification_id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="mark-as-read-link">Mark read</a>
+                                    </li>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <li class="no-notifications">No new notifications.</li>
+                            <?php endif; ?>
+                            <li class="view-all-container">
+                                <a href="./all_notifications.php" class="view-all-notifications-link">View All Notifications</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
+                <a href="./student_account.php" class="profile-icon admin"><img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Account"/></a>
             </div>
-            <a href="./student_account.php" class="profile-icon admin"><img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Account"/></a>
         </div>
     </header>
 
-<main>
-    <div class="page-main-title-container">
-        <h1>Violation Record</h1>
+    <div class="breadcrumb-container">
+        <a href="./student_dashboard.php"><i class="fas fa-home"></i> Home</a>
+        <span class="separator"><i class="fas fa-angle-right"></i></span>
+        <span><i class="fas fa-file-alt"></i> Record</span>
     </div>
 
+<main>
     <?php if (isset($page_error)): ?>
         <div class="content-wrapper-wide">
             <p class="error-message" style="color: red; text-align:center; padding: 20px; background-color: #ffebee; border: 1px solid red; border-radius: 4px;">
@@ -241,6 +292,7 @@ $button_disabled = $total_individual_violations === 0;
         </div>
     <?php elseif ($student_details): ?>
         <div class="content-wrapper-wide">
+            <h1 class="page-main-title">Violation Record</h1>
             <div class="info-block-wide">
                 <p class="student-name-prominent">
                     <?php echo $student_details['FirstNameDisplay'] . " " . $student_details['MiddleNameDisplay'] . " " . $student_details['LastNameDisplay']; ?>
@@ -258,73 +310,75 @@ $button_disabled = $total_individual_violations === 0;
             <div class="highlight-panel-wide">
                 <p>Total Violations Committed: <strong><?php echo $total_individual_violations; ?></strong></p>
             </div>
-
-            <h3 class="section-title-styled">Summary by Violation</h3>
-            <div class="table-container-wide">
-                <table class="data-table-wide" id="summaryViolationTable">
-                    <thead>
-                        <tr>
-                            <th>Category</th>
-                            <th>Violation Type</th>
-                            <th>Number of commits</th>
-                            <th>Offense</th>
-                            <th>Remarks (for single instance)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($violation_summary)): ?>
-                            <?php foreach ($violation_summary as $summary_item): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($summary_item['category']); ?></td>
-                                    <td><?php echo htmlspecialchars($summary_item['type']); ?></td>
-                                    <td style="text-align: center;"><?php echo $summary_item['count']; ?></td>
-                                    <td style="text-align: center;">
-                                        <?php
-                                        $typeOffenseStatus = ($summary_item['count'] >= 2) ? 'Sanction' : 'Warning';
-                                        $typeOffenseClass = ($summary_item['count'] >= 2) ? 'offense-tag-look offense-tag-look-sanction' : 'offense-tag-look offense-tag-look-warning';
-                                        echo "<span class='" . $typeOffenseClass . "'>" . htmlspecialchars($typeOffenseStatus) . "</span>";
-                                        ?>
-                                    </td>
-                                    <td><?php echo nl2br(htmlspecialchars($summary_item['remark_display'])); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
+            
+            <div class="scrollable-tables-area">
+                <h3 class="section-title-styled">Summary by Violation</h3>
+                <div class="table-container-wide">
+                    <table class="data-table-wide" id="summaryViolationTable">
+                        <thead>
                             <tr>
-                                <td colspan="5" class="no-records-message">No violation records found to summarize.</td>
+                                <th>Category</th>
+                                <th>Violation Type</th>
+                                <th>Number of commits</th>
+                                <th>Offense</th>
+                                <th>Remarks (for single instance)</th>
                             </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-
-            <h3 class="section-title-styled">Individual Violations Log</h3>
-            <div class="log-table-scroll-container">
-                <table class="data-table-wide" id="individualViolationsTable">
-                    <thead>
-                        <tr>
-                            <th>Category</th>
-                            <th>Violation Type</th>
-                            <th>Date of Violation</th>
-                            <th>Remarks</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($violations_log)): ?>
-                            <?php foreach ($violations_log as $record): ?>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($violation_summary)): ?>
+                                <?php foreach ($violation_summary as $summary_item): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($summary_item['category']); ?></td>
+                                        <td><?php echo htmlspecialchars($summary_item['type']); ?></td>
+                                        <td style="text-align: center;"><?php echo $summary_item['count']; ?></td>
+                                        <td style="text-align: center;">
+                                            <?php
+                                            $typeOffenseStatus = ($summary_item['count'] >= 2) ? 'Sanction' : 'Warning';
+                                            $typeOffenseClass = ($summary_item['count'] >= 2) ? 'offense-tag-look offense-tag-look-sanction' : 'offense-tag-look offense-tag-look-warning';
+                                            echo "<span class='" . $typeOffenseClass . "'>" . htmlspecialchars($typeOffenseStatus) . "</span>";
+                                            ?>
+                                        </td>
+                                        <td><?php echo nl2br(htmlspecialchars($summary_item['remark_display'])); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($record['category_name'] ?? 'N/A'); ?></td>
-                                    <td><?php echo htmlspecialchars($record['violation_type']); ?></td>
-                                    <td><?php echo htmlspecialchars(date("M d, Y, h:i a", strtotime($record['violation_date']))); ?></td>
-                                    <td><?php echo nl2br(htmlspecialchars(trim($record['remarks'] ?? '') === '' ? 'No remarks' : $record['remarks'])); ?></td>
+                                    <td colspan="5" class="no-records-message">No violation records found to summarize.</td>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="section-title-styled">Individual Violations Log</h3>
+                <div class="log-table-scroll-container">
+                    <table class="data-table-wide" id="individualViolationsTable">
+                        <thead>
                             <tr>
-                                <td colspan="4" class="no-records-message">No individual violation records found.</td>
+                                <th>Category</th>
+                                <th>Violation Type</th>
+                                <th>Date of Violation</th>
+                                <th>Remarks</th>
                             </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($violations_log)): ?>
+                                <?php foreach ($violations_log as $record): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($record['category_name'] ?? 'N/A'); ?></td>
+                                        <td><?php echo htmlspecialchars($record['violation_type']); ?></td>
+                                        <td><?php echo htmlspecialchars(date("M d, Y, h:i a", strtotime($record['violation_date']))); ?></td>
+                                        <td><?php echo nl2br(htmlspecialchars(trim($record['remarks'] ?? '') === '' ? 'No remarks' : $record['remarks'])); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="4" class="no-records-message">No individual violation records found.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="student-actions-panel-wide">
