@@ -1,26 +1,11 @@
 // Function to show toast notifications
-function showToast(message, type = 'success', duration = 3000, position = 'top-center') {
+function showToast(message, type = 'success', duration = 3000) {
     const toast = document.getElementById('toast-notification');
-    if (!toast) {
-        console.error('Toast element not found!');
-        return;
-    }
+    if (!toast) return;
 
     toast.textContent = message;
-    toast.className = 'toast'; // Reset classes
-    toast.classList.add(type);
-
-    // Position handling
-    toast.classList.remove('top-center', 'bottom-center'); // Clear previous positions
-    if (position === 'bottom-center') {
-        toast.classList.add('bottom-center');
-    } else {
-        toast.classList.add('top-center');
-    }
-
-    toast.classList.remove('show');
-    void toast.offsetWidth; // Trigger reflow for animation reset
-    toast.classList.add('show');
+    toast.className = 'toast show';
+    toast.classList.add(type, 'top-center');
 
     setTimeout(() => {
         toast.classList.remove('show');
@@ -40,14 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
             tab.classList.add('active');
 
             tabContents.forEach(content => {
-                if (content.id === targetTab) {
-                    content.style.display = 'block';
-                } else {
-                    content.style.display = 'none';
-                }
+                content.style.display = (content.id === targetTab) ? 'block' : 'none';
             });
 
-            // Update URL to reflect active tab for refresh/bookmarking
+            // Update URL to reflect active tab
             const currentUrl = new URL(window.location.href);
             currentUrl.searchParams.set('tab', targetTab);
             window.history.pushState({ path: currentUrl.href }, '', currentUrl.href);
@@ -55,414 +36,202 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- Common Modal Functions ---
-    function openModal(modalElement) {
-        if (modalElement) {
-            modalElement.style.display = "block";
-        }
-    }
+    const openModal = (modalElement) => {
+        if (modalElement) modalElement.style.display = "block";
+    };
 
-    function closeModal(modalElement) {
+    const closeModal = (modalElement) => {
         if (modalElement) {
             modalElement.style.display = "none";
-            // Find and clear any message divs within this modal
             const messageDiv = modalElement.querySelector('.modal-message');
             if (messageDiv) {
-                clearModalMessage(messageDiv);
+                messageDiv.style.display = 'none';
+                messageDiv.textContent = '';
             }
-            // Reset forms if applicable
             const form = modalElement.querySelector('form');
-            if (form) {
-                form.reset();
-            }
-            // Reset modal steps if applicable (for addSanctionTypeModal)
-            if (modalElement.id === 'addSanctionTypeModal') {
-                document.getElementById('addSanctionStep1').style.display = 'block';
-                document.getElementById('addSanctionStep2').style.display = 'none';
-            }
+            if (form) form.reset();
         }
-    }
-
+    };
+    
     // Generic display message function for modals
-    function displayModalMessage(modalMessageDiv, message, type = 'error') {
+    const displayModalMessage = (modalMessageDiv, message, type = 'error') => {
         if (modalMessageDiv) {
             modalMessageDiv.textContent = message;
             modalMessageDiv.className = `modal-message ${type}-message`;
             modalMessageDiv.style.display = 'block';
-        } else {
-            console.error("Modal message div not found for message:", message);
-            alert(message);
         }
-    }
+    };
 
-    // Generic clear message function for modals
-    function clearModalMessage(modalMessageDiv) {
-        if (modalMessageDiv) {
-            modalMessageDiv.textContent = '';
-            modalMessageDiv.style.display = 'none';
-        }
-    }
-
-    // --- Modals Global Close Logic (Clicking outside or close button) ---
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-        // Close when clicking outside modal content
-        modal.addEventListener('click', function(event) {
-            if (event.target === this) { // Only close if clicking the modal overlay itself
-                closeModal(this);
-            }
-        });
-    });
-
-    // Close buttons within modals (using event delegation for efficiency)
+    // --- Global Modal Close Logic ---
     document.body.addEventListener('click', function(e) {
+        // Close via close button
         const closeBtn = e.target.closest('.close-modal-button');
         if (closeBtn) {
             const modalId = closeBtn.dataset.modal;
             const modalElement = document.getElementById(modalId);
-            closeModal(modalElement);
+            if (modalElement) closeModal(modalElement);
+        }
+        // Close by clicking overlay
+        if (e.target.classList.contains('modal')) {
+            closeModal(e.target);
         }
     });
 
-    // --- Sanction Configuration Tab Logic ---
+    // --- MANAGE SANCTION REQUEST MODAL (FORMERLY VIEW DETAILS) ---
+    const viewSanctionModal = document.getElementById('viewSanctionDetailsModal');
+    const approveSanctionForm = document.getElementById('approveSanctionForm');
+    const approveSanctionMsgDiv = document.getElementById('approveSanctionModalMessage');
 
-    // Add Sanction Type Modal
-    const addSanctionTypeModal = document.getElementById('addSanctionTypeModal');
-    const addSanctionTypeBtn = document.getElementById('addSanctionTypeBtn'); // Button to open modal
-    const addSanctionTypeForm = document.getElementById('addSanctionTypeForm');
-    const addSanctionTypeModalMessageDiv = document.getElementById('addSanctionTypeModalMessage');
+    document.querySelector('#sanction-request').addEventListener('click', (e) => {
+        const viewBtn = e.target.closest('.view-manage-btn');
+        if (viewBtn) {
+            // Populate static info
+            document.getElementById('detailStudentNumber').textContent = viewBtn.dataset.studentNumber;
+            document.getElementById('detailStudentName').textContent = viewBtn.dataset.studentName;
+            document.getElementById('detailViolationType').textContent = viewBtn.dataset.violationType;
+            
+            // Populate form fields
+            document.getElementById('approveStudentNumber').value = viewBtn.dataset.studentNumber;
+            document.getElementById('approveViolationId').value = viewBtn.dataset.violationId;
+            
+            // Set minimum date for deadline to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('deadlineDate').setAttribute('min', today);
 
-    const addSanctionStep1 = document.getElementById('addSanctionStep1');
-    const addSanctionStep2 = document.getElementById('addSanctionStep2');
-    const newSanctionNameInput = document.getElementById('newSanctionName');
-    const newHoursRequiredInput = document.getElementById('newHoursRequired');
-    const nextToAddSanctionStep2Btn = document.getElementById('nextToAddSanctionStep2');
-    const backToAddSanctionStep1Btn = document.getElementById('backToAddSanctionStep1');
+            openModal(viewSanctionModal);
+        }
+    });
 
-    if (addSanctionTypeBtn) {
-        addSanctionTypeBtn.addEventListener('click', () => {
-            closeModal(addSanctionTypeModal); // Ensures reset
-            openModal(addSanctionTypeModal);
-            newSanctionNameInput.focus();
-            addInputListenersForCapslock(); // Re-add listener for uppercase inputs
-        });
-    }
-
-    if (nextToAddSanctionStep2Btn) {
-        nextToAddSanctionStep2Btn.addEventListener('click', () => {
-            const sanctionName = newSanctionNameInput.value.trim();
-            const hoursRequired = newHoursRequiredInput.value; // Value is string, but number input validates
-            let isValid = true;
-            let errorMessage = '';
-
-            if (sanctionName === '') {
-                errorMessage += 'Sanction Type Name is required. ';
-                isValid = false;
-            }
-            if (hoursRequired === '' || isNaN(parseFloat(hoursRequired)) || parseFloat(hoursRequired) < 0) {
-                errorMessage += 'Hours must be a non-negative number. ';
-                isValid = false;
-            }
-
-            if (!isValid) {
-                displayModalMessage(addSanctionTypeModalMessageDiv, errorMessage, 'error');
-                return;
-            }
-
-            document.getElementById('summarySanctionName').textContent = sanctionName.toUpperCase();
-            document.getElementById('summaryHoursRequired').textContent = hoursRequired;
-            clearModalMessage(addSanctionTypeModalMessageDiv);
-            addSanctionStep1.style.display = 'none';
-            addSanctionStep2.style.display = 'block';
-        });
-    }
-
-    if (backToAddSanctionStep1Btn) {
-        backToAddSanctionStep1Btn.addEventListener('click', () => {
-            clearModalMessage(addSanctionTypeModalMessageDiv);
-            addSanctionStep2.style.display = 'none';
-            addSanctionStep1.style.display = 'block';
-            newSanctionNameInput.focus();
-        });
-    }
-
-    // Add Sanction Type Form Submission (AJAX)
-    if (addSanctionTypeForm) {
-        addSanctionTypeForm.addEventListener('submit', async (e) => {
+    // AJAX for Approving Sanction
+    if (approveSanctionForm) {
+        approveSanctionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            clearModalMessage(addSanctionTypeModalMessageDiv);
-
-            const submitButton = addSanctionTypeForm.querySelector('button[type="submit"]');
-            const originalButtonContent = submitButton ? submitButton.innerHTML : '';
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
-            }
-
-            const formData = new FormData(addSanctionTypeForm);
+            const submitButton = approveSanctionForm.querySelector('button[type="submit"]');
+            const originalBtnHTML = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Approving...';
 
             try {
-                const response = await fetch(addSanctionTypeForm.action, {
+                const formData = new FormData(approveSanctionForm);
+                const response = await fetch(approveSanctionForm.action, {
                     method: 'POST',
                     body: formData
                 });
-
-                if (!response.ok) {
-                    let errorMsg = `Server error: ${response.status}`;
-                    try {
-                        const errorData = await response.json();
-                        if (errorData && errorData.message) errorMsg = errorData.message;
-                    } catch (jsonError) { /* Ignore */ }
-                    throw new Error(errorMsg);
-                }
-
+                
                 const result = await response.json();
 
                 if (result.success) {
-                    closeModal(addSanctionTypeModal);
-                    showToast(result.message, 'success', 3000, 'bottom-center');
-                    // Refresh the Sanction Configuration tab to show new entry
-                    window.location.href = window.location.pathname + '?tab=sanction-config';
+                    closeModal(viewSanctionModal);
+                    showToast(result.message, 'success');
+                    setTimeout(() => window.location.reload(), 1500); // Reload to see changes
                 } else {
-                    displayModalMessage(addSanctionTypeModalMessageDiv, result.message || "An error occurred.", 'error');
+                    displayModalMessage(approveSanctionMsgDiv, result.message || 'An unknown error occurred.', 'error');
                 }
-
             } catch (error) {
-                console.error('Add sanction type form submission error:', error);
-                displayModalMessage(addSanctionTypeModalMessageDiv, "Submission failed: " + error.message, 'error');
+                displayModalMessage(approveSanctionMsgDiv, 'A network error occurred. Please try again.', 'error');
             } finally {
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = originalButtonContent;
-                }
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalBtnHTML;
             }
         });
     }
 
 
-    // Edit Sanction Type Modal
+    // --- SANCTION CONFIGURATION CRUD ---
+
+    // Add Sanction Type
+    const addSanctionTypeModal = document.getElementById('addSanctionTypeModal');
+    const addSanctionTypeForm = document.getElementById('addSanctionTypeForm');
+    document.getElementById('addSanctionTypeBtn')?.addEventListener('click', () => openModal(addSanctionTypeModal));
+    
+    // Step logic for Add modal
+    document.getElementById('nextToAddSanctionStep2')?.addEventListener('click', () => {
+        document.getElementById('summarySanctionName').textContent = document.getElementById('newSanctionName').value.toUpperCase();
+        document.getElementById('summaryHoursRequired').textContent = document.getElementById('newHoursRequired').value;
+        document.getElementById('addSanctionStep1').style.display = 'none';
+        document.getElementById('addSanctionStep2').style.display = 'block';
+    });
+    document.getElementById('backToAddSanctionStep1')?.addEventListener('click', () => {
+        document.getElementById('addSanctionStep2').style.display = 'none';
+        document.getElementById('addSanctionStep1').style.display = 'block';
+    });
+
+    if (addSanctionTypeForm) {
+        addSanctionTypeForm.addEventListener('submit', handleFormSubmit.bind(null, addSanctionTypeForm, addSanctionTypeModal, 'addSanctionTypeModalMessage'));
+    }
+
+    // Edit Sanction Type
     const editSanctionTypeModal = document.getElementById('editSanctionTypeModal');
     const editSanctionTypeForm = document.getElementById('editSanctionTypeForm');
-    const editSanctionTypeModalMessageDiv = document.getElementById('editSanctionTypeModalMessage');
-    const editSanctionNameInput = document.getElementById('editSanctionName');
-    const editHoursRequiredInput = document.getElementById('editHoursRequired');
-
-
-    // Handle clicks on "Update" buttons in the sanction config table (using event delegation)
-    document.querySelector('#sanction-config').addEventListener('click', async (e) => {
+    document.querySelector('#sanction-config').addEventListener('click', e => {
         const editBtn = e.target.closest('.edit-sanction-type-btn');
         if (editBtn) {
-            const sanctionId = editBtn.dataset.id;
-            const sanctionName = editBtn.dataset.name;
-            const hoursRequired = editBtn.dataset.hours;
-
-            // Handle default (hardcoded) sanctions separately
-            if (sanctionId.startsWith('default_')) {
-                showToast("Default sanction types cannot be updated.", 'error', 3000, 'bottom-center');
-                return;
-            }
-
-            document.getElementById('editSanctionId').value = sanctionId;
-            document.getElementById('editSanctionName').value = sanctionName;
-            document.getElementById('editHoursRequired').value = hoursRequired; // Set hours in input
-
-            clearModalMessage(editSanctionTypeModalMessageDiv);
+            document.getElementById('editSanctionId').value = editBtn.dataset.id;
+            document.getElementById('editSanctionName').value = editBtn.dataset.name;
+            document.getElementById('editHoursRequired').value = editBtn.dataset.hours;
             openModal(editSanctionTypeModal);
-            editSanctionNameInput.focus();
-            addInputListenersForCapslock(); // Re-add listener for uppercase inputs
         }
     });
-
-    // Edit Sanction Type Form Submission (AJAX)
     if (editSanctionTypeForm) {
-        editSanctionTypeForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearModalMessage(editSanctionTypeModalMessageDiv);
-
-            const submitButton = editSanctionTypeForm.querySelector('button[type="submit"]');
-            const originalButtonContent = submitButton ? submitButton.innerHTML : '';
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-            }
-
-            const formData = new FormData(editSanctionTypeForm);
-
-            try {
-                const response = await fetch(editSanctionTypeForm.action, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    let errorMsg = `Server error: ${response.status}`;
-                    try {
-                        const errorData = await response.json();
-                        if (errorData && errorData.message) errorMsg = errorData.message;
-                    } catch (jsonError) { /* Ignore */ }
-                    throw new Error(errorMsg);
-                }
-
-                const result = await response.json();
-
-                if (result.success) {
-                    closeModal(editSanctionTypeModal);
-                    showToast(result.message, 'success', 3000, 'bottom-center');
-                    // Refresh the Sanction Configuration tab
-                    window.location.href = window.location.pathname + '?tab=sanction-config';
-                } else {
-                    displayModalMessage(editSanctionTypeModalMessageDiv, result.message || "An error occurred.", 'error');
-                }
-
-            } catch (error) {
-                console.error('Edit sanction type form submission error:', error);
-                displayModalMessage(editSanctionTypeModalMessageDiv, "Submission failed: " + error.message, 'error');
-            } finally {
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = originalButtonContent;
-                }
-            }
-        });
+        editSanctionTypeForm.addEventListener('submit', handleFormSubmit.bind(null, editSanctionTypeForm, editSanctionTypeModal, 'editSanctionTypeModalMessage'));
     }
 
-    // Delete Sanction Type Modal
+    // Delete Sanction Type
     const deleteSanctionTypeModal = document.getElementById('deleteSanctionTypeModal');
-    const confirmDeleteSanctionTypeBtn = document.getElementById('confirmDeleteSanctionTypeBtn');
-    const deleteSanctionTypeModalMessageDiv = document.getElementById('deleteSanctionTypeModalMessage');
-    let currentSanctionTypeIdToDelete = null;
-
-    // Handle clicks on "Delete" buttons in the sanction config table (using event delegation)
-    document.querySelector('#sanction-config').addEventListener('click', async (e) => {
+    let sanctionIdToDelete = null;
+    document.querySelector('#sanction-config').addEventListener('click', e => {
         const deleteBtn = e.target.closest('.delete-sanction-type-btn');
         if (deleteBtn) {
-            const sanctionId = deleteBtn.dataset.id;
-            const sanctionName = deleteBtn.dataset.name;
-
-            // Handle default (hardcoded) sanctions separately
-            if (sanctionId.startsWith('default_')) {
-                showToast("Default sanction types cannot be deleted.", 'error', 3000, 'bottom-center');
-                return;
-            }
-
-            currentSanctionTypeIdToDelete = sanctionId;
-            document.getElementById('deleteSanctionTypeDisplay').textContent = sanctionName;
-            clearModalMessage(deleteSanctionTypeModalMessageDiv);
+            sanctionIdToDelete = deleteBtn.dataset.id;
+            document.getElementById('deleteSanctionTypeDisplay').textContent = deleteBtn.dataset.name;
             openModal(deleteSanctionTypeModal);
         }
     });
 
-    // Confirm Delete button handler
-    if (confirmDeleteSanctionTypeBtn) {
-        confirmDeleteSanctionTypeBtn.addEventListener('click', async () => {
-            if (currentSanctionTypeIdToDelete) {
-                const submitButton = confirmDeleteSanctionTypeBtn;
-                const originalButtonContent = submitButton ? submitButton.innerHTML : '';
-                if (submitButton) {
-                    submitButton.disabled = true;
-                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-                }
-
-                const formData = new FormData();
-                formData.append('delete_sanction_id', currentSanctionTypeIdToDelete);
-
-                try {
-                    const response = await fetch(window.location.pathname, {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (!response.ok) {
-                        let errorMsg = `Server error: ${response.status}`;
-                        try {
-                            const errorData = await response.json();
-                            if (errorData && errorData.message) errorMsg = errorData.message;
-                        } catch (jsonError) { /* Ignore */ }
-                        throw new Error(errorMsg);
-                    }
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        closeModal(deleteSanctionTypeModal);
-                        showToast(result.message, 'success', 3000, 'bottom-center');
-                        window.location.href = window.location.pathname + '?tab=sanction-config'; // Refresh tab
-                    } else {
-                        displayModalMessage(deleteSanctionTypeModalMessageDiv, result.message || "Failed to delete.", 'error');
-                    }
-                } catch (error) {
-                    console.error('Delete submission error:', error);
-                    displayModalMessage(deleteSanctionTypeModalMessageDiv, "Deletion failed: " + error.message, 'error');
-                } finally {
-                    if (submitButton) {
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = originalButtonContent;
-                    }
-                }
+    document.getElementById('confirmDeleteSanctionTypeBtn')?.addEventListener('click', async () => {
+        if (!sanctionIdToDelete) return;
+        const formData = new FormData();
+        formData.append('delete_sanction_id', sanctionIdToDelete);
+        
+        try {
+            const response = await fetch(window.location.pathname, { method: 'POST', body: formData });
+            const result = await response.json();
+            if (result.success) {
+                closeModal(deleteSanctionTypeModal);
+                showToast(result.message, 'success');
+                setTimeout(() => window.location.href = window.location.pathname + '?tab=sanction-config', 1500);
+            } else {
+                displayModalMessage(document.getElementById('deleteSanctionTypeModalMessage'), result.message, 'error');
             }
-        });
-    }
-
-
-    // View Sanction Details Modal (for Sanction Request table "View/Manage" button)
-    const viewSanctionDetailsModal = document.getElementById('viewSanctionDetailsModal');
-
-    // Event delegation for "View/Manage" buttons in Sanction Request tab
-    document.querySelector('#sanction-request').addEventListener('click', (e) => {
-        const viewBtn = e.target.closest('.view-sanction-details-btn');
-        if (viewBtn) {
-            // Get all data from the data attributes
-            const studentNumber = viewBtn.dataset.studentNumber;
-            const studentName = viewBtn.dataset.studentName;
-            const course = viewBtn.dataset.course;
-            const year = viewBtn.dataset.year;
-            const dateSubmitted = viewBtn.dataset.dateSubmitted;
-            const violationType = viewBtn.dataset.violationType;
-            const offense = viewBtn.dataset.offense;
-            const sanction = viewBtn.dataset.sanction;
-            const deadline = viewBtn.dataset.deadline;
-            const statusText = viewBtn.dataset.statusText;
-            const statusClass = viewBtn.dataset.statusClass; // This will already be like "status-pending"
-
-            // Populate viewSanctionDetailsModal with student-specific sanction data
-            document.getElementById('detailStudentNumber').textContent = studentNumber;
-            document.getElementById('detailStudentName').textContent = studentName;
-            document.getElementById('detailCourse').textContent = course;
-            document.getElementById('detailYear').textContent = year;
-            document.getElementById('detailDateSubmitted').textContent = dateSubmitted;
-            document.getElementById('detailViolationType').textContent = violationType;
-            document.getElementById('detailOffense').textContent = offense;
-            document.getElementById('detailSanction').textContent = sanction;
-            document.getElementById('detailDeadline').textContent = deadline;
-            
-            // Set status text and class
-            const detailSanctionStatusElement = document.getElementById('detailSanctionStatus');
-            detailSanctionStatusElement.textContent = statusText;
-            detailSanctionStatusElement.className = 'status-badge ' + statusClass; // Ensure base class 'status-badge' is always there
-
-
-            openModal(viewSanctionDetailsModal);
+        } catch (err) {
+            displayModalMessage(document.getElementById('deleteSanctionTypeModalMessage'), 'A network error occurred.', 'error');
         }
     });
 
-    // --- Force uppercase for relevant inputs ---
-    function addInputListenersForCapslock() {
-        const inputsToForceUppercase = [
-            document.getElementById('newSanctionName'),
-            document.getElementById('editSanctionName')
-        ];
+    // --- Universal Form Submission Handler for Add/Edit Sanction Type ---
+    async function handleFormSubmit(form, modal, messageDivId, event) {
+        event.preventDefault();
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalBtnHTML = submitButton.innerHTML;
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
-        inputsToForceUppercase.forEach(input => {
-            if (input) {
-                input.removeEventListener('input', handleInputUppercase); // Prevent duplicate listeners
-                input.addEventListener('input', handleInputUppercase);
+        try {
+            const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+            const result = await response.json();
+
+            if (result.success) {
+                closeModal(modal);
+                showToast(result.message, 'success');
+                setTimeout(() => window.location.href = window.location.pathname + '?tab=sanction-config', 1500);
+            } else {
+                displayModalMessage(document.getElementById(messageDivId), result.message, 'error');
             }
-        });
+        } catch (error) {
+            displayModalMessage(document.getElementById(messageDivId), 'A network error occurred.', 'error');
+        } finally {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalBtnHTML;
+        }
     }
-
-    function handleInputUppercase() {
-        this.value = this.value.toUpperCase();
-    }
-
-    // Initial call to set up listeners for static inputs (e.g., if a modal is pre-filled)
-    addInputListenersForCapslock();
 });
