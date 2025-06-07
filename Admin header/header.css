@@ -1,0 +1,93 @@
+/* Base CSS from your request */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f7f6;
+}
+
+/* Custom Navbar Styles */
+.custom-navbar {
+    background-color: #ffffff; /* White background for the header */
+    border-bottom: 2px solid #e0e0e0; /* Light gray border at the bottom */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow */
+    align-items: center;
+}
+
+header {
+    padding: 1px;
+}
+
+/* Logo specific margin */
+.custom-navbar .navbar-brand {
+    margin-left: 70px; /* Specific margin for the logo */
+    margin-right: auto;
+}
+
+.custom-navbar .navbar-brand img {
+    width: 170px;  
+    height: 70px;
+}
+
+.custom-navbar .nav-link {
+    color: #333333; /* Darker text for links */
+    font-weight: 500;
+    padding: 0.5rem 1rem; /* Adjust padding for spacing */
+    position: relative; /* Needed for the underline effect */
+    transition: color 0.3s ease;
+}
+
+.custom-navbar .nav-link:hover {
+    color: #000000; /* Darker on hover */
+}
+
+.custom-navbar .nav-link.active {
+    color: #a00000; /* Red color for active tab */
+    font-weight: 600;
+}
+
+.custom-navbar .nav-link.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0; /* Position the underline at the bottom of the link */
+    height: 2px;
+    background-color: #a00000; /* Red underline for active tab */
+}
+
+/* Icon specific width and right margin */
+.custom-navbar .icon-nav {
+    margin-right: 55px; /* Specific margin for the icon container */
+}
+
+.custom-navbar .icon-nav .nav-link img {
+    width: 80px;  /* Set icon width to 80px */
+    height: auto; /* Maintain aspect ratio */
+    vertical-align: middle; /* Align icons vertically in the middle */
+}
+
+/* Responsive adjustments for smaller screens if needed (optional) */
+@media (max-width: 991.98px) { /* Bootstrap's 'lg' breakpoint */
+    .custom-navbar .navbar-brand {
+        margin-left: 15px; /* Adjust margin for smaller screens */
+    }
+    .custom-navbar .icon-nav {
+        margin-right: 15px; /* Adjust margin for smaller screens */
+        width: 100%; /* Icons take full width below breakpoint */
+        justify-content: flex-end; /* Push icons to the right on small screens */
+    }
+    .custom-navbar .navbar-collapse {
+        text-align: center; /* Center items when collapsed */
+    }
+    .custom-navbar .navbar-nav.mx-auto {
+        margin-left: auto !important; /* Ensure centering works for collapsed menu */
+        margin-right: auto !important;
+    }
+}
