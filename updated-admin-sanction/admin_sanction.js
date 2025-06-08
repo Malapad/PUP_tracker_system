@@ -1,4 +1,3 @@
-// Function to show toast notifications
 function showToast(message, type = 'success', duration = 3000) {
     const toast = document.getElementById('toast-notification');
     if (!toast) return;
@@ -13,7 +12,7 @@ function showToast(message, type = 'success', duration = 3000) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    // --- Tab Switching Logic ---
+    // --- Tab Switching ---
     const tabs = document.querySelectorAll('.tab');
     const tabContents = document.querySelectorAll('.tab-content');
 
@@ -21,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
         tab.addEventListener('click', () => {
             const targetTab = tab.dataset.tab;
 
-            // Do not switch tab content if a history view is active
             const currentUrl = new URL(window.location.href);
             if (currentUrl.searchParams.get('view') === 'history') {
                 window.location.href = `?tab=${targetTab}`;
@@ -35,14 +33,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 content.style.display = (content.id === targetTab) ? 'block' : 'none';
             });
 
-            // Update URL to reflect active tab
             currentUrl.searchParams.set('tab', targetTab);
-            currentUrl.searchParams.delete('view'); // Remove view param when switching tabs
+            currentUrl.searchParams.delete('view'); 
             window.history.pushState({ path: currentUrl.href }, '', currentUrl.href);
         });
     });
 
-    // --- Common Modal Functions ---
     const openModal = (modalElement) => {
         if (modalElement) modalElement.style.display = "block";
     };
@@ -68,7 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // --- Global Modal Close Logic ---
     document.body.addEventListener('click', function(e) {
         const closeBtn = e.target.closest('.close-modal-button');
         if (closeBtn) {
@@ -81,7 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // --- MANAGE SANCTION REQUEST MODAL ---
     const viewSanctionModal = document.getElementById('viewSanctionDetailsModal');
     const approveSanctionForm = document.getElementById('approveSanctionForm');
     const approveSanctionMsgDiv = document.getElementById('approveSanctionModalMessage');
@@ -126,7 +120,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- NEW: SANCTION COMPLIANCE STATUS UPDATE ---
     document.querySelector('#sanction-compliance')?.addEventListener('click', async (e) => {
         const updateBtn = e.target.closest('.update-status-btn');
         if (!updateBtn) return;
@@ -155,11 +148,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (result.success) {
                 showToast(result.message, 'success');
-                // Optimistically remove the row from the UI
+
                 updateBtn.closest('tr').style.opacity = '0';
                 setTimeout(() => {
                     updateBtn.closest('tr').remove();
-                    // Check if table is empty
+
                     const tableBody = document.querySelector('#sanction-compliance tbody');
                     if (tableBody && tableBody.rows.length === 0) {
                         const colCount = document.querySelector('#sanction-compliance thead th').length;
@@ -179,95 +172,4 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-
-    // --- SANCTION CONFIGURATION CRUD ---
-    const addSanctionTypeModal = document.getElementById('addSanctionTypeModal');
-    const addSanctionTypeForm = document.getElementById('addSanctionTypeForm');
-    document.getElementById('addSanctionTypeBtn')?.addEventListener('click', () => openModal(addSanctionTypeModal));
-    
-    document.getElementById('nextToAddSanctionStep2')?.addEventListener('click', () => {
-        document.getElementById('summarySanctionName').textContent = document.getElementById('newSanctionName').value.toUpperCase();
-        document.getElementById('summaryHoursRequired').textContent = document.getElementById('newHoursRequired').value || '0';
-        document.getElementById('addSanctionStep1').style.display = 'none';
-        document.getElementById('addSanctionStep2').style.display = 'block';
-    });
-    document.getElementById('backToAddSanctionStep1')?.addEventListener('click', () => {
-        document.getElementById('addSanctionStep2').style.display = 'none';
-        document.getElementById('addSanctionStep1').style.display = 'block';
-    });
-
-    if (addSanctionTypeForm) {
-        handleFormSubmit(addSanctionTypeForm, addSanctionTypeModal, 'addSanctionTypeModalMessage');
-    }
-
-    const editSanctionTypeModal = document.getElementById('editSanctionTypeModal');
-    const editSanctionTypeForm = document.getElementById('editSanctionTypeForm');
-    document.querySelector('#sanction-config')?.addEventListener('click', e => {
-        const editBtn = e.target.closest('.edit-sanction-type-btn');
-        if (editBtn) {
-            document.getElementById('editSanctionId').value = editBtn.dataset.id;
-            document.getElementById('editSanctionName').value = editBtn.dataset.name;
-            document.getElementById('editHoursRequired').value = editBtn.dataset.hours;
-            openModal(editSanctionTypeModal);
-        }
-    });
-    if (editSanctionTypeForm) {
-        handleFormSubmit(editSanctionTypeForm, editSanctionTypeModal, 'editSanctionTypeModalMessage');
-    }
-
-    const deleteSanctionTypeModal = document.getElementById('deleteSanctionTypeModal');
-    let sanctionIdToDelete = null;
-    document.querySelector('#sanction-config')?.addEventListener('click', e => {
-        const deleteBtn = e.target.closest('.delete-sanction-type-btn');
-        if (deleteBtn) {
-            sanctionIdToDelete = deleteBtn.dataset.id;
-            document.getElementById('deleteSanctionTypeDisplay').textContent = deleteBtn.dataset.name;
-            openModal(deleteSanctionTypeModal);
-        }
-    });
-
-    document.getElementById('confirmDeleteSanctionTypeBtn')?.addEventListener('click', async () => {
-        if (!sanctionIdToDelete) return;
-        const formData = new FormData();
-        formData.append('delete_sanction_id', sanctionIdToDelete);
-        try {
-            const response = await fetch(window.location.pathname, { method: 'POST', body: formData });
-            const result = await response.json();
-            if (result.success) {
-                closeModal(deleteSanctionTypeModal);
-                showToast(result.message, 'success');
-                setTimeout(() => window.location.href = window.location.pathname + '?tab=sanction-config', 1500);
-            } else {
-                displayModalMessage(document.getElementById('deleteSanctionTypeModalMessage'), result.message, 'error');
-            }
-        } catch (err) {
-            displayModalMessage(document.getElementById('deleteSanctionTypeModalMessage'), 'A network error occurred.', 'error');
-        }
-    });
-
-    async function handleFormSubmit(form, modal, messageDivId) {
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const submitButton = form.querySelector('button[type="submit"]');
-            const originalBtnHTML = submitButton.innerHTML;
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-            try {
-                const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
-                const result = await response.json();
-                if (result.success) {
-                    closeModal(modal);
-                    showToast(result.message, 'success');
-                    setTimeout(() => window.location.href = window.location.pathname + '?tab=sanction-config', 1500);
-                } else {
-                    displayModalMessage(document.getElementById(messageDivId), result.message, 'error');
-                }
-            } catch (error) {
-                displayModalMessage(document.getElementById(messageDivId), 'A network error occurred.', 'error');
-            } finally {
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalBtnHTML;
-            }
-        });
-    }
 });

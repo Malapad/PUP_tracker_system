@@ -103,118 +103,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
     exit;
 }
 
-
-// Handle adding new sanction type
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_sanction_type'])) {
-    $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
-    header('Content-Type: application/json');
-
-    $sanction_name = strtoupper(trim($_POST['sanction_name'] ?? ''));
-    $hours_required = $_POST['hours_required'] ?? null;
-
-    if (empty($sanction_name)) {
-        $response['message'] = 'Sanction Type name is required.';
-        echo json_encode($response);
-        exit;
-    }
-    if ($hours_required !== null && (!is_numeric($hours_required) || $hours_required < 0)) {
-        $response['message'] = 'Hours must be a non-negative number.';
-        echo json_encode($response);
-        exit;
-    }
-
-    $stmt_check = $conn->prepare("SELECT sanction_id FROM sanction_type_tbl WHERE sanction_name = ?");
-    $stmt_check->bind_param("s", $sanction_name);
-    $stmt_check->execute();
-    if ($stmt_check->get_result()->num_rows > 0) {
-        $response['message'] = 'Error: Sanction Type "' . htmlspecialchars($sanction_name) . '" already exists.';
-        echo json_encode($response);
-        exit;
-    }
-    $stmt_check->close();
-
-    $stmt_insert = $conn->prepare("INSERT INTO sanction_type_tbl (sanction_name, hours_required) VALUES (?, ?)");
-    $stmt_insert->bind_param("si", $sanction_name, $hours_required);
-    if ($stmt_insert->execute()) {
-        $response['success'] = true;
-        $response['message'] = 'Sanction Type "' . htmlspecialchars($sanction_name) . '" added successfully.';
-    } else {
-        $response['message'] = 'Error adding new sanction type: ' . htmlspecialchars($stmt_insert->error);
-    }
-    $stmt_insert->close();
-
-    echo json_encode($response);
-    exit;
-}
-
-// Handle deleting sanction type
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_sanction_id'])) {
-    $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
-    header('Content-Type: application/json');
-
-    $sanction_id = $_POST['delete_sanction_id'];
-    if (empty($sanction_id)) {
-        $response['message'] = 'Sanction ID not provided.';
-        echo json_encode($response); exit;
-    }
-
-    $delete_stmt = $conn->prepare("DELETE FROM sanction_type_tbl WHERE sanction_id = ?");
-    $delete_stmt->bind_param("i", $sanction_id);
-    if ($delete_stmt->execute()) {
-        if ($delete_stmt->affected_rows > 0) {
-            $response['success'] = true;
-            $response['message'] = 'Sanction type deleted successfully.';
-        } else {
-            $response['message'] = 'Sanction type not found or already deleted.';
-        }
-    } else {
-        $response['message'] = 'Error deleting sanction type: ' . htmlspecialchars($delete_stmt->error);
-    }
-    $delete_stmt->close();
-    
-    echo json_encode($response);
-    exit;
-}
-
-// Handle updating sanction type
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_submit'])) {
-    $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
-    header('Content-Type: application/json');
-
-    $sanction_id = $_POST['edit_sanction_id'] ?? '';
-    $new_sanction_name = strtoupper(trim($_POST['edit_sanction_name'] ?? ''));
-    $new_hours_required = $_POST['edit_hours_required'] ?? null;
-
-    if (empty($sanction_id) || empty($new_sanction_name)) {
-        $response['message'] = 'Sanction ID and Name are required.';
-        echo json_encode($response); exit;
-    }
-    if ($new_hours_required !== null && (!is_numeric($new_hours_required) || $new_hours_required < 0)) {
-        $response['message'] = 'Hours must be a non-negative number.';
-        echo json_encode($response); exit;
-    }
-
-    $check_duplicate_stmt = $conn->prepare("SELECT sanction_id FROM sanction_type_tbl WHERE sanction_name = ? AND sanction_id != ?");
-    $check_duplicate_stmt->bind_param("si", $new_sanction_name, $sanction_id);
-    $check_duplicate_stmt->execute();
-    if ($check_duplicate_stmt->get_result()->num_rows > 0) {
-        $response['message'] = 'Error: Sanction Type "' . htmlspecialchars($new_sanction_name) . '" already exists.';
-    } else {
-        $update_stmt = $conn->prepare("UPDATE sanction_type_tbl SET sanction_name = ?, hours_required = ? WHERE sanction_id = ?");
-        $update_stmt->bind_param("sii", $new_sanction_name, $new_hours_required, $sanction_id);
-        if ($update_stmt->execute()) {
-            $response['success'] = true;
-            $response['message'] = 'Sanction type updated successfully.';
-        } else {
-            $response['message'] = 'Error updating sanction type: ' . htmlspecialchars($update_stmt->error);
-        }
-        $update_stmt->close();
-    }
-    $check_duplicate_stmt->close();
-    
-    echo json_encode($response);
-    exit;
-}
+// --- SANCTION CONFIGURATION CRUD HANDLERS REMOVED AS REQUESTED ---
+// The following PHP blocks were removed to clear the functionality:
+// - Handle adding new sanction type
+// - Handle deleting sanction type
+// - Handle updating sanction type
 
 ?>
 <!DOCTYPE html>
@@ -453,11 +346,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
                                         echo "<td><button class='sanction-request-btn'>Sanction</button></td>";
                                         echo "<td class='action-buttons-cell'>";
                                         echo "<button class='view-manage-btn'
-                                                data-student-number='" . htmlspecialchars($row['student_number']) . "'
-                                                data-student-name='" . $student_full_name . "'
-                                                data-violation-id='" . htmlspecialchars($row['violation_id']) . "'
-                                                data-violation-type='" . htmlspecialchars($row['violation_type']) . "'
-                                                ><i class='fas fa-eye'></i> Manage</button>";
+                                                        data-student-number='" . htmlspecialchars($row['student_number']) . "'
+                                                        data-student-name='" . $student_full_name . "'
+                                                        data-violation-id='" . htmlspecialchars($row['violation_id']) . "'
+                                                        data-violation-type='" . htmlspecialchars($row['violation_type']) . "'
+                                                        ><i class='fas fa-eye'></i> Manage</button>";
                                         echo "</td>";
                                         echo "</tr>";
                                     }
@@ -553,44 +446,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
             </div>
 
             <div id="sanction-config" class="tab-content" style="<?php echo ($active_tab == 'sanction-config' ? 'display: block;' : 'display: none;'); ?>">
-                <div class="config-controls">
-                    <button id="addSanctionTypeBtn" class="button add-sanction-type-btn"><i class="fas fa-plus"></i> Add Sanction Type</button>
                 </div>
-                <div class="config-table-scroll-container">
-                    <table class="config-table">
-                        <thead>
-                            <tr>
-                                <th>Sanction</th>
-                                <th>Hours</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $sql_sanction_types = "SELECT sanction_id, sanction_name, hours_required FROM sanction_type_tbl ORDER BY sanction_name ASC";
-                            $result_sanction_types = $conn->query($sql_sanction_types);
-
-                            if ($result_sanction_types && $result_sanction_types->num_rows > 0) {
-                                while ($row_sanction = $result_sanction_types->fetch_assoc()) {
-                                    echo "<tr data-id='" . htmlspecialchars($row_sanction['sanction_id']) . "' class='sanction-type-row'>";
-                                    echo "<td>" . htmlspecialchars($row_sanction['sanction_name']) . "</td>";
-                                    echo "<td>" . htmlspecialchars($row_sanction['hours_required'] ?? 'N/A') . "</td>";
-                                    echo "<td class='action-buttons-cell'>";
-                                    echo "<div class='action-buttons-container'>";
-                                    echo "<button class='edit-sanction-type-btn btn-secondary' data-id='" . htmlspecialchars($row_sanction['sanction_id']) . "' data-name='" . htmlspecialchars($row_sanction['sanction_name']) . "' data-hours='" . htmlspecialchars($row_sanction['hours_required']) . "'><i class='fas fa-edit'></i> Update</button>";
-                                    echo "<button class='delete-sanction-type-btn btn-danger' data-id='" . htmlspecialchars($row_sanction['sanction_id']) . "' data-name='" . htmlspecialchars($row_sanction['sanction_name']) . "'><i class='fas fa-trash-alt'></i> Delete</button>";
-                                    echo "</div>";
-                                    echo "</td>";
-                                    echo "</tr>";
-                                }
-                            } else {
-                                    echo "<tr><td colspan='3' class='no-records-cell'>No sanction types have been configured.</td></tr>";
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         <?php endif; ?> </div>
 
     <div id="viewSanctionDetailsModal" class="modal" style="display:none;">
@@ -601,9 +457,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
             </div>
              <div id="approveSanctionModalMessage" class="modal-message" style="display: none;"></div>
             <form id="approveSanctionForm" method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
-                 <input type="hidden" name="approve_sanction" value="1">
-                 <input type="hidden" id="approveStudentNumber" name="student_number">
-                 <input type="hidden" id="approveViolationId" name="violation_id">
+                <input type="hidden" name="approve_sanction" value="1">
+                <input type="hidden" id="approveStudentNumber" name="student_number">
+                <input type="hidden" id="approveViolationId" name="violation_id">
 
                 <div class="details-content">
                     <p><strong>Student Number:</strong> <span id="detailStudentNumber"></span></p>
@@ -629,108 +485,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
                 </div>
                  <div class="row">
                     <div class="column full-width">
-                         <label for="deadlineDate">Set Deadline:</label>
-                         <input type="date" id="deadlineDate" name="deadline_date" class="modal-input" required>
+                        <label for="deadlineDate">Set Deadline:</label>
+                        <input type="date" id="deadlineDate" name="deadline_date" class="modal-input" required>
                     </div>
-                 </div>
+                </div>
 
                 <div class="button-row">
                     <button type="submit" class="modal-button-publish"><i class="fas fa-check"></i> Approve</button>
                     <button type="button" class="modal-button-cancel close-modal-button" data-modal="viewSanctionDetailsModal"><i class="fas fa-times"></i> Cancel</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <div id="addSanctionTypeModal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <div class="head-modal">
-                <h3>Add New Sanction Type</h3>
-                <span class="close-modal-button" data-modal="addSanctionTypeModal">&times;</span>
-            </div>
-            <div id="addSanctionTypeModalMessage" class="modal-message" style="display: none;"></div>
-
-            <form id="addSanctionTypeForm" class="form-container" method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
-                <input type="hidden" name="add_sanction_type" value="1">
-                <div id="addSanctionStep1" class="modal-step" style="display: block;">
-                    <div class="row">
-                        <div class="column full-width">
-                            <label for="newSanctionName">Sanction Type Name:</label>
-                            <input type="text" id="newSanctionName" name="sanction_name" required style="text-transform: uppercase;" />
-                        </div>
-                    </div>
-                    <div class="row">
-                         <div class="column full-width">
-                            <label for="newHoursRequired">Hours (if applicable):</label>
-                            <input type="number" id="newHoursRequired" name="hours_required" min="0" value="0" required />
-                        </div>
-                    </div>
-                    <div class="button-row">
-                        <button type="button" id="nextToAddSanctionStep2" class="modal-button-next"><i class="fas fa-arrow-right"></i> Next</button>
-                    </div>
-                </div>
-
-                <div id="addSanctionStep2" class="modal-step" style="display: none;">
-                    <div class="summary-content">
-                        <p>Please review the details before confirming:</p>
-                        <p><strong>Sanction Type:</strong> <span id="summarySanctionName"></span></p>
-                        <p><strong>Hours:</strong> <span id="summaryHoursRequired"></span></p>
-                    </div>
-                    <div class="button-row">
-                        <button type="submit" class="modal-button-publish"><i class="fas fa-check"></i> Confirm & Publish</button>
-                        <button type="button" id="backToAddSanctionStep1" class="modal-button-back"><i class="fas fa-arrow-left"></i> Back</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="editSanctionTypeModal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <div class="head-modal">
-                <h3>Edit Sanction Type</h3>
-                <span class="close-modal-button" data-modal="editSanctionTypeModal">&times;</span>
-            </div>
-            <div id="editSanctionTypeModalMessage" class="modal-message" style="display: none;"></div>
-
-            <form id="editSanctionTypeForm" class="form-container" method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
-                <input type="hidden" name="edit_sanction_type_submit" value="1">
-                <input type="hidden" id="editSanctionId" name="edit_sanction_id">
-                <div class="row">
-                    <div class="column full-width">
-                        <label for="editSanctionName">Sanction Type Name:</label>
-                        <input type="text" id="editSanctionName" name="edit_sanction_name" required style="text-transform: uppercase;" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="column full-width">
-                        <label for="editHoursRequired">Hours:</label>
-                        <input type="number" id="editHoursRequired" name="edit_hours_required" min="0" required />
-                    </div>
-                </div>
-                <div class="button-row">
-                    <button type="submit" class="modal-button-publish"><i class="fas fa-save"></i> Save Changes</button>
-                    <button type="button" class="modal-button-cancel close-modal-button" data-modal="editSanctionTypeModal"><i class="fas fa-times"></i> Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="deleteSanctionTypeModal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <div class="head-modal">
-                <h3>Delete Sanction Type</h3>
-                <span class="close-modal-button" data-modal="deleteSanctionTypeModal">&times;</span>
-            </div>
-            <div id="deleteSanctionTypeModalMessage" class="modal-message" style="display: none;"></div>
-            <div class="confirmation-content">
-                <p>Are you sure you want to delete this Sanction Type?</p>
-                <p><strong>Sanction Type:</strong> <span id="deleteSanctionTypeDisplay"></span></p>
-            </div>
-            <div class="button-row">
-                <button type="button" id="confirmDeleteSanctionTypeBtn" class="btn-confirm-delete"><i class="fas fa-check"></i> Confirm Delete</button>
-                <button type="button" class="modal-button-cancel close-modal-button" data-modal="deleteSanctionTypeModal"><i class="fas fa-times"></i> Cancel</button>
-            </div>
         </div>
     </div>
 
