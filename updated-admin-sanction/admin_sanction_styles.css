@@ -12,6 +12,8 @@
     --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     --table-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
     --header-height: 80px; /* Define header height */
+    --status-pending-color: #d9a400;
+    --status-completed-color: #28a745;
 }
 
 * {
@@ -300,10 +302,22 @@ tbody td {
     white-space: nowrap;
 }
 
-.status-pending { background-color: #ffc107; color: #333; }
-.status-completed { background-color: #28a745; }
+.status-pending { background-color: var(--status-pending-color); color: #fff; }
+.status-completed { background-color: var(--status-completed-color); }
 .status-warning { background-color: #ff9800; color: #333; }
 .status-default { background-color: #6c757d; }
+
+/* NEW: Sanction Request Status Button */
+.sanction-request-btn {
+    background-color: #ffc107;
+    color: #333;
+    border: none;
+    padding: 5px 15px;
+    font-weight: bold;
+    border-radius: 4px;
+    font-size: 0.8em;
+    cursor: default;
+}
 
 .no-records-cell {
     text-align: center;
@@ -342,6 +356,132 @@ tbody td {
 }
 .tabs .tab i { margin-right: 8px; }
 .tab-content { padding-top: 15px; }
+
+
+/* --- NEW: SANCTION COMPLIANCE & HISTORY STYLES --- */
+
+/* Compliance Controls Container */
+.compliance-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Filter Tabs (Pending/Completed) */
+.compliance-filter-tabs {
+    display: inline-flex;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.filter-tab-btn {
+    padding: 8px 20px;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.filter-tab-btn:not(:last-child) {
+    border-right: 1px solid #ccc;
+}
+
+.filter-tab-btn:hover {
+    background-color: #f5f5f5;
+}
+
+.filter-tab-btn.active {
+    background-color: var(--primary-color);
+    color: white !important;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-tab-btn:not(.active) { color: #555; }
+.filter-tab-btn:first-of-type.active { color: white; }
+.filter-tab-btn:first-of-type:not(.active) { color: var(--status-pending-color); }
+.filter-tab-btn:last-of-type:not(.active) { color: var(--status-completed-color); }
+
+
+/* View History Button */
+.view-history-btn {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.view-history-btn:hover {
+    background-color: #5a6268;
+}
+
+/* History Page Styles */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.back-to-list-btn {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.back-to-list-btn:hover { background-color: #5a6268; }
+
+.history-table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.history-table thead th {
+    background-color: var(--primary-color);
+    color: white;
+    text-align: left;
+    padding: 12px 15px;
+}
+
+.history-table tbody td {
+    border-bottom: 1px solid #eee;
+    padding: 10px 15px;
+}
+
+.history-table .action-badge {
+    padding: 4px 10px;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 0.8em;
+}
+.history-table .action-badge.action-completed { background-color: var(--status-completed-color); }
+.history-table .action-badge.action-pending { background-color: var(--status-pending-color); }
+
 
 /* Modals */
 .modal {
@@ -440,7 +580,7 @@ tbody td {
 .config-table td:nth-child(3) { text-align: center; }
 
 /* Generic & Action Buttons */
-.button, .btn-danger, .btn-secondary, .modal-button-publish, .modal-button-cancel, .view-manage-btn, .status-completed-btn {
+.button, .btn-danger, .btn-secondary, .modal-button-publish, .modal-button-cancel, .view-manage-btn, .update-status-btn {
     padding: 6px 14px;
     border: none;
     color: white;
@@ -453,13 +593,16 @@ tbody td {
     justify-content: center;
     text-decoration: none;
 }
-.button i, .btn-danger i, .btn-secondary i, .view-manage-btn i, .status-completed-btn i { margin-right: 6px; }
+.button i, .btn-danger i, .btn-secondary i, .view-manage-btn i, .update-status-btn i { margin-right: 6px; }
 
 .view-manage-btn { background-color: var(--secondary-color); }
 .view-manage-btn:hover { background-color: var(--secondary-hover-color); }
 
-.status-completed-btn { background-color: #17a2b8; }
-.status-completed-btn:hover { background-color: #138496; }
+.update-status-btn.status-completed-btn { background-color: #17a2b8; }
+.update-status-btn.status-completed-btn:hover { background-color: #138496; }
+.update-status-btn.status-pending-btn { background-color: #ffc107; color: #333;}
+.update-status-btn.status-pending-btn:hover { background-color: #e0a800;}
+
 
 .btn-danger { background-color: #dc3545; }
 .btn-danger:hover { background-color: #c82333; }
