@@ -421,9 +421,6 @@ button i, .more-details-btn i, .clear-filters-btn i {
     position: relative;
 }
 
-.config-table-scroll-container {
-}
-
 .table-overlay-spinner {
     position: absolute;
     top: 0;

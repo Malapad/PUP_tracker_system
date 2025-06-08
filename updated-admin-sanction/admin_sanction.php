@@ -1,25 +1,16 @@
 <?php
-include '../PHP/dbcon.php'; // Assuming dbcon.php handles the database connection
+include '../PHP/dbcon.php'; 
 
-// --- NEW: Central Admin Info (replace with your session logic) ---
-$admin_id = 1; // HARDCODED: Replace with actual logged-in admin ID from session
-$admin_name = "System Admin"; // Example admin name
+// IMPORTANT: Replace with actual admin session ID and name
+// For demonstration, using a placeholder. In a real system, this would come from session variables.
+$admin_id = 1; 
+$admin_name = "System Admin";
 
-// Active tab determination
 $DEFAULT_TAB = 'sanction-request';
 $active_tab = $_GET['tab'] ?? $DEFAULT_TAB;
-$active_view = $_GET['view'] ?? 'list'; // 'list' or 'history'
+$active_view = $_GET['view'] ?? 'list'; // 'list' for main table, 'history' for compliance history, 'sanction_config_history' for sanction config history
 
-// Filter and Search parameters
-$filterViolation = $_GET['violation_type'] ?? '';
-$search = trim($_GET['search_student_number'] ?? '');
-$filterCourse = $_GET['filter_course'] ?? '';
-$filterYear = $_GET['filter_year'] ?? '';
-$filterSection = $_GET['filter_section'] ?? '';
-$filterComplianceStatus = $_GET['status_filter'] ?? 'Pending'; // Default to 'Pending' for compliance tab
-
-// --- BACKEND ACTION HANDLERS ---
-
+// --- AJAX Actions for Sanction Request Tab ---
 // Handle "Approve Sanction" from modal
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['approve_sanction'])) {
     $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
@@ -61,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['approve_sanction'])) {
     exit;
 }
 
-// --- NEW: Handle marking sanction status (Completed/Pending) ---
+// --- Handle marking sanction status (Completed/Pending) ---
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status'])) {
     $response = ['success' => false, 'message' => 'An error occurred.'];
     header('Content-Type: application/json');
@@ -103,11 +94,285 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
     exit;
 }
 
-// --- SANCTION CONFIGURATION CRUD HANDLERS REMOVED AS REQUESTED ---
-// The following PHP blocks were removed to clear the functionality:
-// - Handle adding new sanction type
-// - Handle deleting sanction type
-// - Handle updating sanction type
+
+// --- NEW: AJAX Actions for Sanction Configuration Tab ---
+
+// Fetch sanctions for a specific violation type (used by JS when accordion expands)
+if (isset($_GET['action']) && $_GET['action'] == 'get_sanctions_for_violation_type' && isset($_GET['violation_type_id'])) {
+    $response = ['success' => false, 'message' => 'Sanctions not found.', 'sanctions' => []];
+    $violationTypeId = trim($_GET['violation_type_id']);
+    if (empty($violationTypeId) || !is_numeric($violationTypeId)) {
+        $response['message'] = 'Invalid Violation Type ID.';
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
+
+    $sql_sanctions = "SELECT disciplinary_sanction_id, offense_level, disciplinary_sanction
+                      FROM disciplinary_sanctions
+                      WHERE violation_type_id = ? ORDER BY offense_level ASC";
+    $stmt_sanctions = $conn->prepare($sql_sanctions);
+    if ($stmt_sanctions) {
+        $stmt_sanctions->bind_param("i", $violationTypeId);
+        $stmt_sanctions->execute();
+        $result_sanctions = $stmt_sanctions->get_result();
+        $sanctions_data = [];
+        while ($sanc_row = $result_sanctions->fetch_assoc()) {
+            $sanctions_data[] = $sanc_row;
+        }
+        $response['success'] = true;
+        $response['sanctions'] = $sanctions_data;
+        $response['message'] = empty($sanctions_data) ? 'No disciplinary sanctions found for this violation type.' : 'Sanctions fetched successfully.';
+        $stmt_sanctions->close();
+    } else {
+        $response['message'] = 'Error preparing sanctions fetch statement: ' . $conn->error;
+        error_log('Error preparing sanctions fetch statement: ' . $conn->error);
+    }
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+}
+
+// Fetch details for a specific disciplinary sanction (for edit/delete modals)
+if (isset($_GET['action']) && $_GET['action'] == 'get_disciplinary_sanction_details' && isset($_GET['id'])) {
+    $response = ['success' => false, 'message' => 'Details not found.', 'data' => null];
+    $disciplinary_sanction_id = $_GET['id'];
+    if (empty($disciplinary_sanction_id)) {
+        $response['message'] = 'Sanction ID not provided.';
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
+    $sql_details = "SELECT ds.disciplinary_sanction_id, ds.violation_type_id, ds.offense_level, ds.disciplinary_sanction, vt.violation_type AS violation_type_name
+                    FROM disciplinary_sanctions ds
+                    JOIN violation_type_tbl vt ON ds.violation_type_id = vt.violation_type_id
+                    WHERE ds.disciplinary_sanction_id = ?";
+    $stmt_details = $conn->prepare($sql_details);
+    if ($stmt_details) {
+        $stmt_details->bind_param("i", $disciplinary_sanction_id);
+        $stmt_details->execute();
+        $result_details = $stmt_details->get_result();
+        if ($row_details = $result_details->fetch_assoc()) {
+            $response['success'] = true;
+            $response['message'] = 'Details fetched successfully.';
+            $response['data'] = $row_details;
+        }
+        $stmt_details->close();
+    } else {
+        $response['message'] = 'Error preparing details fetch statement: ' . $conn->error;
+    }
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+}
+
+// --- POST Actions for Sanction Configuration (Add, Edit, Delete Disciplinary Sanctions) ---
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_disciplinary_sanction'])) {
+    $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
+    $violation_type_id = $_POST['violation_type_id_sanction_modal'] ?? '';
+    $offense_level = trim($_POST['offense_level_sanction_modal'] ?? '');
+    $disciplinary_sanction = trim($_POST['disciplinary_sanction_text'] ?? '');
+    $violation_type_name = trim($_POST['violation_type_name_hidden'] ?? ''); // From hidden input
+
+    if (empty($violation_type_id) || empty($offense_level) || empty($disciplinary_sanction)) {
+        $response['message'] = 'All fields are required for adding a sanction.';
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
+
+    $conn->begin_transaction();
+    try {
+        // Check for existing offense level for this violation type
+        $check_stmt = $conn->prepare("SELECT disciplinary_sanction_id FROM disciplinary_sanctions WHERE violation_type_id = ? AND offense_level = ?");
+        if ($check_stmt) {
+            $check_stmt->bind_param("is", $violation_type_id, $offense_level);
+            $check_stmt->execute();
+            $check_result = $check_stmt->get_result();
+            if ($check_result->num_rows > 0) {
+                $response['message'] = "Error: An offense level '{$offense_level}' already exists for this violation type.";
+                $conn->rollback();
+                echo json_encode($response);
+                exit;
+            }
+            $check_stmt->close();
+        } else {
+            throw new mysqli_sql_exception('Error preparing check statement for sanction: ' . $conn->error);
+        }
+
+        $insert_stmt = $conn->prepare("INSERT INTO disciplinary_sanctions (violation_type_id, offense_level, disciplinary_sanction) VALUES (?, ?, ?)");
+        if ($insert_stmt) {
+            $insert_stmt->bind_param("iss", $violation_type_id, $offense_level, $disciplinary_sanction);
+            if ($insert_stmt->execute()) {
+                $new_sanction_id = $conn->insert_id;
+
+                // Log the action to history table
+                $stmt_history = $conn->prepare("INSERT INTO disciplinary_sanction_history_tbl (performed_by_admin_name, action_type, violation_type_id, violation_type_name, offense_level, sanction_details_snapshot) VALUES (?, ?, ?, ?, ?, ?)");
+                $action = "Added Sanction";
+                $snapshot = json_encode([
+                    'disciplinary_sanction_id' => $new_sanction_id,
+                    'offense_level' => $offense_level,
+                    'disciplinary_sanction' => $disciplinary_sanction
+                ]);
+                $stmt_history->bind_param("ssisss", $admin_name, $action, $violation_type_id, $violation_type_name, $offense_level, $snapshot);
+                $stmt_history->execute();
+
+                $response['success'] = true;
+                $response['message'] = 'Disciplinary sanction added successfully!';
+            } else {
+                throw new mysqli_sql_exception('Error adding disciplinary sanction: ' . $insert_stmt->error);
+            }
+            $insert_stmt->close();
+        } else {
+            throw new mysqli_sql_exception('Error preparing insert statement for sanction: ' . $conn->error);
+        }
+
+        $conn->commit();
+    } catch (mysqli_sql_exception $exception) {
+        $conn->rollback();
+        $response['message'] = 'Database transaction failed: ' . $exception->getMessage();
+    }
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_disciplinary_sanction_submit'])) {
+    $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
+    $disciplinary_sanction_id = $_POST['edit_disciplinary_sanction_id'] ?? '';
+    $violation_type_id = $_POST['edit_violation_type_id_sanction_modal'] ?? '';
+    $offense_level = trim($_POST['edit_offense_level_sanction_modal'] ?? '');
+    $disciplinary_sanction_text = trim($_POST['edit_disciplinary_sanction_text'] ?? '');
+    $violation_type_name = trim($_POST['edit_violation_type_name_hidden'] ?? ''); // From hidden input
+
+    if (empty($disciplinary_sanction_id) || empty($violation_type_id) || empty($offense_level) || empty($disciplinary_sanction_text)) {
+        $response['message'] = 'All fields are required for editing a sanction.';
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
+
+    $conn->begin_transaction();
+    try {
+        // Fetch old details for snapshot/logging
+        $old_details_stmt = $conn->prepare("SELECT offense_level, disciplinary_sanction FROM disciplinary_sanctions WHERE disciplinary_sanction_id = ?");
+        $old_details_stmt->bind_param("i", $disciplinary_sanction_id);
+        $old_details_stmt->execute();
+        $old_details_result = $old_details_stmt->get_result();
+        $old_sanction_data = $old_details_result->fetch_assoc();
+        $old_details_stmt->close();
+
+        // Check for duplicate offense level for the same violation type, excluding the current sanction being edited
+        $check_stmt = $conn->prepare("SELECT disciplinary_sanction_id FROM disciplinary_sanctions WHERE violation_type_id = ? AND offense_level = ? AND disciplinary_sanction_id != ?");
+        if ($check_stmt) {
+            $check_stmt->bind_param("isi", $violation_type_id, $offense_level, $disciplinary_sanction_id);
+            $check_stmt->execute();
+            $check_result = $check_stmt->get_result();
+            if ($check_result->num_rows > 0) {
+                $response['message'] = "Error: An offense level '{$offense_level}' already exists for this violation type.";
+                $conn->rollback();
+                echo json_encode($response);
+                exit;
+            }
+            $check_stmt->close();
+        } else {
+            throw new mysqli_sql_exception('Error preparing check statement for sanction update: ' . $conn->error);
+        }
+
+        $update_stmt = $conn->prepare("UPDATE disciplinary_sanctions SET violation_type_id = ?, offense_level = ?, disciplinary_sanction = ? WHERE disciplinary_sanction_id = ?");
+        if ($update_stmt) {
+            $update_stmt->bind_param("issi", $violation_type_id, $offense_level, $disciplinary_sanction_text, $disciplinary_sanction_id);
+            if ($update_stmt->execute()) {
+                // Log the action to history table
+                $stmt_history = $conn->prepare("INSERT INTO disciplinary_sanction_history_tbl (performed_by_admin_name, action_type, violation_type_id, violation_type_name, offense_level, sanction_details_snapshot) VALUES (?, ?, ?, ?, ?, ?)");
+                $action = "Updated Sanction";
+                $snapshot = json_encode([
+                    'disciplinary_sanction_id' => $disciplinary_sanction_id,
+                    'old_offense_level' => $old_sanction_data['offense_level'],
+                    'old_disciplinary_sanction' => $old_sanction_data['disciplinary_sanction'],
+                    'new_offense_level' => $offense_level,
+                    'new_disciplinary_sanction' => $disciplinary_sanction_text
+                ]);
+                $stmt_history->bind_param("ssisss", $admin_name, $action, $violation_type_id, $violation_type_name, $offense_level, $snapshot);
+                $stmt_history->execute();
+
+                $response['success'] = true;
+                $response['message'] = 'Disciplinary sanction updated successfully!';
+            } else {
+                throw new mysqli_sql_exception('Error updating disciplinary sanction: ' . $update_stmt->error);
+            }
+            $update_stmt->close();
+        } else {
+            throw new mysqli_sql_exception('Error preparing update statement for sanction: ' . $conn->error);
+        }
+
+        $conn->commit();
+    } catch (mysqli_sql_exception $exception) {
+        $conn->rollback();
+        $response['message'] = 'Database transaction failed: ' . $exception->getMessage();
+    }
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sanction_id'])) {
+    $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
+    $disciplinary_sanction_id = $_POST['delete_disciplinary_sanction_id'];
+    $violation_type_id = $_POST['violation_type_id_hidden'] ?? null; // From hidden input
+    $violation_type_name = $_POST['violation_type_name_hidden'] ?? null; // From hidden input
+    $offense_level = $_POST['offense_level_hidden'] ?? null; // From hidden input
+    $disciplinary_sanction_text = $_POST['sanction_details_hidden'] ?? null; // From hidden input
+
+
+    if (empty($disciplinary_sanction_id)) {
+        $response['message'] = 'Sanction ID not provided for deletion.';
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
+
+    $conn->begin_transaction();
+    try {
+        $delete_stmt = $conn->prepare("DELETE FROM disciplinary_sanctions WHERE disciplinary_sanction_id = ?");
+        if ($delete_stmt) {
+            $delete_stmt->bind_param("i", $disciplinary_sanction_id);
+            if ($delete_stmt->execute()) {
+                if ($delete_stmt->affected_rows > 0) {
+                    // Log the action to history table
+                    $stmt_history = $conn->prepare("INSERT INTO disciplinary_sanction_history_tbl (performed_by_admin_name, action_type, violation_type_id, violation_type_name, offense_level, sanction_details_snapshot) VALUES (?, ?, ?, ?, ?, ?)");
+                    $action = "Deleted Sanction";
+                    $snapshot = json_encode([
+                        'disciplinary_sanction_id' => $disciplinary_sanction_id,
+                        'offense_level' => $offense_level,
+                        'disciplinary_sanction' => $disciplinary_sanction_text
+                    ]);
+                    $stmt_history->bind_param("ssisss", $admin_name, $action, $violation_type_id, $violation_type_name, $offense_level, $snapshot);
+                    $stmt_history->execute();
+
+                    $response['success'] = true;
+                    $response['message'] = 'Disciplinary sanction deleted successfully.';
+                } else {
+                    $response['message'] = 'Disciplinary sanction not found or already deleted.';
+                }
+            } else {
+                throw new mysqli_sql_exception('Error deleting disciplinary sanction: ' . $delete_stmt->error);
+            }
+            $delete_stmt->close();
+        } else {
+            throw new mysqli_sql_exception('Error preparing delete statement for sanction: ' . $conn->error);
+        }
+
+        $conn->commit();
+    } catch (mysqli_sql_exception $exception) {
+        $conn->rollback();
+        $response['message'] = 'Database transaction failed: ' . $exception->getMessage();
+    }
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+}
 
 ?>
 <!DOCTYPE html>
@@ -116,7 +381,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Sanction</title>
-    <link rel="stylesheet" href="./admin_sanction_styles.css">
+    <link rel="stylesheet" href="./admin_sanction_styles.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
@@ -185,7 +450,63 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
                     </tbody>
                 </table>
             </div>
-            <?php else: ?>
+        <?php elseif ($active_view === 'sanction_config_history'): ?>
+            <div class="history-header">
+                <h1>Disciplinary Sanction Configuration History</h1>
+                <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>?tab=sanction-config" class="back-to-list-btn"><i class="fas fa-arrow-left"></i> Back to Sanction Configuration</a>
+            </div>
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Performed By</th>
+                            <th>Action Type</th>
+                            <th>Violation Type</th>
+                            <th>Offense Level</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $history_sql = "SELECT * FROM disciplinary_sanction_history_tbl ORDER BY `timestamp` DESC";
+                        $history_result = $conn->query($history_sql);
+                        if ($history_result && $history_result->num_rows > 0) {
+                            while ($row = $history_result->fetch_assoc()) {
+                                $action_class = '';
+                                if ($row['action_type'] == 'Added Sanction') $action_class = 'action-added';
+                                if ($row['action_type'] == 'Updated Sanction') $action_class = 'action-updated';
+                                if ($row['action_type'] == 'Deleted Sanction') $action_class = 'action-deleted';
+
+                                $details_output = 'N/A';
+                                if (!empty($row['sanction_details_snapshot'])) {
+                                    $snapshot = json_decode($row['sanction_details_snapshot'], true);
+                                    if ($snapshot) {
+                                        if ($row['action_type'] == 'Added Sanction' || $row['action_type'] == 'Deleted Sanction') {
+                                            $details_output = "Offense: " . htmlspecialchars($snapshot['offense_level']) . ", Sanction: " . htmlspecialchars($snapshot['disciplinary_sanction']);
+                                        } elseif ($row['action_type'] == 'Updated Sanction') {
+                                            $details_output = "Old: " . htmlspecialchars($snapshot['old_offense_level']) . " - " . htmlspecialchars($snapshot['old_disciplinary_sanction']) . "; New: " . htmlspecialchars($snapshot['new_offense_level']) . " - " . htmlspecialchars($snapshot['new_disciplinary_sanction']);
+                                        }
+                                    }
+                                }
+
+                                echo "<tr>";
+                                echo "<td>" . htmlspecialchars(date("M d, Y, h:i A", strtotime($row['timestamp']))) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['performed_by_admin_name']) . "</td>";
+                                echo "<td><span class='action-badge " . $action_class . "'>" . htmlspecialchars($row['action_type']) . "</span></td>";
+                                echo "<td>" . htmlspecialchars($row['violation_type_name'] ?? 'N/A') . "</td>";
+                                echo "<td>" . htmlspecialchars($row['offense_level'] ?? 'N/A') . "</td>";
+                                echo "<td>" . htmlspecialchars($details_output) . "</td>";
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='6' class='no-records-cell'>No disciplinary sanction configuration history found.</td></tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
             <h1>Student Sanction List</h1>
 
             <div class="tabs">
@@ -196,10 +517,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
 
             <div id="sanction-request" class="tab-content" style="<?php echo ($active_tab == 'sanction-request' ? 'display: block;' : 'display: none;'); ?>">
                 <?php
+                // Filter parameters for Sanction Request tab
+                $filterViolation = $_GET['violation_type'] ?? '';
+                $search = trim($_GET['search_student_number'] ?? '');
+                $filterCourse = $_GET['filter_course'] ?? '';
+                $filterYear = $_GET['filter_year'] ?? '';
+                $filterSection = $_GET['filter_section'] ?? '';
+
                 if ($active_tab == 'sanction-request' && (!empty($filterViolation) || !empty($search) || !empty($filterCourse) || !empty($filterYear) || !empty($filterSection))) {
                     $baseUrl = strtok($_SERVER["REQUEST_URI"], '?');
                     echo '<div class="clear-filters-container">';
-                    echo '    <a href="' . htmlspecialchars($baseUrl) . '?tab=sanction-request" class="clear-filters-btn"><i class="fas fa-eraser"></i> Clear Filters</a>';
+                    echo '      <a href="' . htmlspecialchars($baseUrl) . '?tab=sanction-request" class="clear-filters-btn"><i class="fas fa-eraser"></i> Clear Filters</a>';
                     echo '</div>';
                 }
                 ?>
@@ -342,15 +670,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
                                         echo "<td>" . htmlspecialchars(date("F j, Y", strtotime($row['violation_date']))) . "</td>";
                                         echo "<td>" . htmlspecialchars($row['violation_type']) . "</td>";
                                         echo "<td>" . htmlspecialchars($row['offense_level']) . "</td>";
-                                        // MODIFIED: Status column now shows a button
                                         echo "<td><button class='sanction-request-btn'>Sanction</button></td>";
                                         echo "<td class='action-buttons-cell'>";
                                         echo "<button class='view-manage-btn'
-                                                        data-student-number='" . htmlspecialchars($row['student_number']) . "'
-                                                        data-student-name='" . $student_full_name . "'
-                                                        data-violation-id='" . htmlspecialchars($row['violation_id']) . "'
-                                                        data-violation-type='" . htmlspecialchars($row['violation_type']) . "'
-                                                        ><i class='fas fa-eye'></i> Manage</button>";
+                                                    data-student-number='" . htmlspecialchars($row['student_number']) . "'
+                                                    data-student-name='" . $student_full_name . "'
+                                                    data-violation-id='" . htmlspecialchars($row['violation_id']) . "'
+                                                    data-violation-type='" . htmlspecialchars($row['violation_type']) . "'
+                                                    ><i class='fas fa-eye'></i> Manage</button>";
                                         echo "</td>";
                                         echo "</tr>";
                                     }
@@ -370,8 +697,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
             <div id="sanction-compliance" class="tab-content" style="<?php echo ($active_tab == 'sanction-compliance' ? 'display: block;' : 'display: none;'); ?>">
                 <div class="compliance-controls">
                     <div class="compliance-filter-tabs">
-                        <a href="?tab=sanction-compliance&status_filter=Pending" class="filter-tab-btn <?php echo ($filterComplianceStatus == 'Pending' ? 'active' : ''); ?>">Pending</a>
-                        <a href="?tab=sanction-compliance&status_filter=Completed" class="filter-tab-btn <?php echo ($filterComplianceStatus == 'Completed' ? 'active' : ''); ?>">Completed</a>
+                        <a href="?tab=sanction-compliance&status_filter=Pending" class="filter-tab-btn <?php echo ((($_GET['status_filter'] ?? 'Pending') == 'Pending') ? 'active' : ''); ?>">Pending</a>
+                        <a href="?tab=sanction-compliance&status_filter=Completed" class="filter-tab-btn <?php echo ((($_GET['status_filter'] ?? 'Pending') == 'Completed') ? 'active' : ''); ?>">Completed</a>
                     </div>
                     <a href="?tab=sanction-compliance&view=history" class="view-history-btn">
                         <i class="fas fa-history"></i> View History
@@ -393,7 +720,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
                         </thead>
                         <tbody>
                             <?php
-                            // MODIFIED: Query now filters by status
+                            $filterComplianceStatus = $_GET['status_filter'] ?? 'Pending';
                             $sql_ongoing = "SELECT
                                                 ssr.record_id, ssr.status, ssr.deadline_date,
                                                 u.student_number, u.first_name, u.middle_name, u.last_name,
@@ -439,6 +766,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
                             } else {
                                 echo "<tr><td colspan='7' class='no-records-cell'>No " . strtolower(htmlspecialchars($filterComplianceStatus)) . " sanctions found.</td></tr>";
                             }
+                            $stmt_ongoing->close();
                             ?>
                         </tbody>
                     </table>
@@ -446,7 +774,63 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
             </div>
 
             <div id="sanction-config" class="tab-content" style="<?php echo ($active_tab == 'sanction-config' ? 'display: block;' : 'display: none;'); ?>">
+                <div class="sanction-config-controls-row">
+                    <div class="sanction-config-controls-right-group">
+                        <a href="?tab=sanction-config&view=sanction_config_history" class="view-history-btn"><i class="fas fa-history"></i> View History</a>
+                        <div class="sanction-config-search-bar">
+                            <input type="text" id="violation-type-search" placeholder="Search Violation Type">
+                            <button type="button" class="search-button"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
                 </div>
+                <div class="accordion-container-wrapper">
+                    <div class="accordion-container">
+                        <?php
+                        $violationTypesQuery = "SELECT violation_type_id, violation_type, resolution_number FROM violation_type_tbl ORDER BY violation_type ASC";
+                        $vtResult = $conn->query($violationTypesQuery);
+                        if ($vtResult && $vtResult->num_rows > 0) {
+                            while ($vtRow = $vtResult->fetch_assoc()) {
+                                $violationTypeId = htmlspecialchars($vtRow['violation_type_id']);
+                                $violationTypeName = htmlspecialchars($vtRow['violation_type']);
+                                $resolutionNumber = htmlspecialchars($vtRow['resolution_number'] ?? 'N/A');
+                        ?>
+                        <div class="accordion-item violation-type-item" data-violation-type-name="<?php echo $violationTypeName; ?>">
+                            <button class="accordion-header" data-violation-type-id="<?php echo $violationTypeId; ?>" data-violation-type-name="<?php echo $violationTypeName; ?>">
+                                <?php echo $violationTypeName; ?>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <div class="sanction-config-header-inside-accordion">
+                                    <h4>Disciplinary Sanctions for '<?php echo $violationTypeName; ?>'</h4>
+                                    <button class="add-sanction-btn" data-violation-type-id="<?php echo $violationTypeId; ?>" data-violation-type-name="<?php echo $violationTypeName; ?>">
+                                        <i class="fas fa-plus"></i> Add Sanction
+                                    </button>
+                                </div>
+                                <div class="sanction-table-container">
+                                    <table class="sanction-config-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Offense Level</th>
+                                                <th>Disciplinary Sanction</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="sanction-table-body" id="sanction-table-body-<?php echo $violationTypeId; ?>">
+                                            <tr><td colspan='3' class='no-records-cell'><i class="fas fa-spinner fa-spin"></i> Loading sanctions...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <?php
+                            }
+                        } else {
+                            echo "<p class='no-records-cell'>No violation types found. Please add violation types in the Violations page first.</p>";
+                        }
+                        ?>
+                    </div>
+                </div>
+            </div>
         <?php endif; ?> </div>
 
     <div id="viewSanctionDetailsModal" class="modal" style="display:none;">
@@ -455,7 +839,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
                 <h3>Manage Sanction Request</h3>
                 <span class="close-modal-button" data-modal="viewSanctionDetailsModal">&times;</span>
             </div>
-             <div id="approveSanctionModalMessage" class="modal-message" style="display: none;"></div>
+            <div id="approveSanctionModalMessage" class="modal-message" style="display: none;"></div>
             <form id="approveSanctionForm" method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
                 <input type="hidden" name="approve_sanction" value="1">
                 <input type="hidden" id="approveStudentNumber" name="student_number">
@@ -483,7 +867,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
                         </select>
                     </div>
                 </div>
-                 <div class="row">
+                <div class="row">
                     <div class="column full-width">
                         <label for="deadlineDate">Set Deadline:</label>
                         <input type="date" id="deadlineDate" name="deadline_date" class="modal-input" required>
@@ -495,6 +879,96 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
                     <button type="button" class="modal-button-cancel close-modal-button" data-modal="viewSanctionDetailsModal"><i class="fas fa-times"></i> Cancel</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="addSanctionModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="head-modal">
+                <h3>Add Disciplinary Sanction</h3>
+                <span class="close-modal-add-sanction-button" style="float:right; cursor:pointer; font-size: 1.5em;">&times;</span>
+            </div>
+            <div id="addSanctionModalMessage" class="modal-message" style="display: none;"></div>
+            <form id="addSanctionForm" class="form-container" method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+                <input type="hidden" name="add_disciplinary_sanction" value="1">
+                <input type="hidden" id="sanctionViolationTypeId" name="violation_type_id_sanction_modal">
+                <input type="hidden" id="sanctionViolationTypeNameHidden" name="violation_type_name_hidden">
+                <p>For Violation Type: <strong id="sanctionViolationTypeNameDisplay"></strong></p>
+                <div class="row">
+                    <div class="column full-width">
+                        <label for="offenseLevelSanctionModal">Offense Level:</label>
+                        <input type="text" id="offenseLevelSanctionModal" name="offense_level_sanction_modal" required />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="column full-width">
+                        <label for="disciplinarySanctionText">Disciplinary Sanction:</label>
+                        <textarea id="disciplinarySanctionText" name="disciplinary_sanction_text" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="button-row">
+                    <button type="submit" class="modal-button-add-edit"><i class="fas fa-plus"></i> Add Sanction</button>
+                    <button type="button" class="modal-button-cancel close-modal-add-sanction-button"><i class="fas fa-times"></i> Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editSanctionModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="head-modal">
+                <h3>Edit Disciplinary Sanction</h3>
+                <span class="close-modal-edit-sanction-button" style="float:right; cursor:pointer; font-size: 1.5em;">&times;</span>
+            </div>
+            <div id="editSanctionModalMessage" class="modal-message" style="display: none;"></div>
+            <form id="editSanctionForm" class="form-container" method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+                <input type="hidden" name="edit_disciplinary_sanction_submit" value="1">
+                <input type="hidden" id="editDisciplinarySanctionId" name="edit_disciplinary_sanction_id">
+                <input type="hidden" id="editSanctionViolationTypeId" name="edit_violation_type_id_sanction_modal">
+                <input type="hidden" id="editSanctionViolationTypeNameHidden" name="edit_violation_type_name_hidden">
+                <p>For Violation Type: <strong id="editSanctionViolationTypeNameDisplay"></strong></p>
+                <div class="row">
+                    <div class="column full-width">
+                        <label for="editOffenseLevelSanctionModal">Offense Level:</label>
+                        <input type="text" id="editOffenseLevelSanctionModal" name="edit_offense_level_sanction_modal" required />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="column full-width">
+                        <label for="editDisciplinarySanctionText">Disciplinary Sanction:</label>
+                        <textarea id="editDisciplinarySanctionText" name="edit_disciplinary_sanction_text" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="button-row">
+                    <button type="submit" class="modal-button-add-edit"><i class="fas fa-save"></i> Save Changes</button>
+                    <button type="button" class="modal-button-cancel close-modal-edit-sanction-button"><i class="fas fa-times"></i> Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteSanctionModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="head-modal">
+                <h3>Delete Disciplinary Sanction</h3>
+                <span class="close-modal-delete-sanction-button" style="float:right; cursor:pointer; font-size: 1.5em;">&times;</span>
+            </div>
+            <div id="deleteSanctionModalMessage" class="modal-message" style="display: none;"></div>
+            <div class="confirmation-content">
+                <p>Are you sure you want to delete this Disciplinary Sanction?</p>
+                <input type="hidden" id="deleteSanctionViolationTypeIdHidden" name="violation_type_id_hidden">
+                <input type="hidden" id="deleteSanctionViolationTypeNameHidden" name="violation_type_name_hidden">
+                <input type="hidden" id="deleteSanctionOffenseLevelHidden" name="offense_level_hidden">
+                <input type="hidden" id="deleteSanctionTextHidden" name="sanction_details_hidden">
+
+                <p>For Violation Type: <strong id="deleteSanctionViolationTypeNameDisplay"></strong></p>
+                <p><strong>Offense Level:</strong> <span id="deleteSanctionOffenseLevelDisplay"></span></p>
+                <p><strong>Sanction:</strong> <span id="deleteSanctionTextDisplay"></span></p>
+            </div>
+            <div class="button-row">
+                <button type="button" id="confirmDeleteSanctionBtn" class="btn-confirm-delete"><i class="fas fa-check"></i> Confirm Delete</button>
+                <button type="button" class="modal-button-cancel close-modal-delete-sanction-button"><i class="fas fa-times"></i> Cancel</button>
+            </div>
         </div>
     </div>
 
