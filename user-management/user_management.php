@@ -6,27 +6,48 @@ include '../PHP/dbcon.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./user_management.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="./user_management.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>User Management</title>
 </head>
 <body>
     <header>
-        <div class="logo">
-            <img src="../assets/PUP_logo.png" alt="PUP Logo">
-        </div>
-        <nav>
-            <a href="../HTML/admin_homepage.html">Home</a>
-            <a href="../updated-admin-violation/admin_violation_page.php">Violations</a>
-            <a href="../HTML/admin_sanction.html">Student Sanction</a>
-            <a href="./user_management.php" class="active">User Management</a>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top py-0">
+            <div class="container-fluid px-4 px-md-5">
+                <a class="navbar-brand py-0" href="../HTML/admin_homepage.html">
+                    <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo" class="img-fluid" style="height: 60px; width: 180px;">
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="../HTML/admin_homepage.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../updated-admin-violation/admin_violation_page.php">Violations</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../updated-admin-sanction/admin_sanction.php">Student Sanction</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="./user_management.php">User Management</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center">
+                        <a href="notification.html" class="me-3">
+                            <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications" style="width: 35px; height: 35px;"/>
+                        </a>
+                        <a href="admin_account.html">
+                            <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account" style="width: 35px; height: 35px;"/>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </nav>
-        <div class="admin-icons">
-            <a href="../HTML/notification.html" class="notification"><img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/></a>
-            <a href="./admin_account.php" class="admin"><img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account"/></a>
-        </div>
     </header>
-
     <div class="container">
         <h1>User Management</h1>
         <div class="tabs">
@@ -35,7 +56,7 @@ include '../PHP/dbcon.php';
         </div>
 
         <div id="students-content" class="tab-content active">
-            
+
             <div id="student-list-view">
                 <div class="controls" id="student-controls">
                     <div class="main-controls-wrapper">
@@ -43,59 +64,59 @@ include '../PHP/dbcon.php';
                             <form method="GET" action="" id="student-filter-form">
                                 <input type="hidden" name="tab" value="students">
                                 <select name="course" onchange="this.form.submit()"><option value="">Select Course</option>
-                                    <?php 
-                                    if ($conn) { 
-                                        $courseQuery = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name ASC"; 
-                                        $courseResultPHP = mysqli_query($conn, $courseQuery); 
-                                        if ($courseResultPHP) { 
-                                            while ($row = mysqli_fetch_assoc($courseResultPHP)) { 
-                                                $selected = isset($_GET['course']) && $_GET['course'] == $row['course_id'] ? 'selected' : ''; 
-                                                echo "<option value='{$row['course_id']}' $selected>{$row['course_name']}</option>"; 
-                                            } 
-                                        } 
-                                    } 
+                                    <?php
+                                    if ($conn) {
+                                        $courseQuery = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name ASC";
+                                        $courseResultPHP = mysqli_query($conn, $courseQuery);
+                                        if ($courseResultPHP) {
+                                            while ($row = mysqli_fetch_assoc($courseResultPHP)) {
+                                                $selected = isset($_GET['course']) && $_GET['course'] == $row['course_id'] ? 'selected' : '';
+                                                echo "<option value='{$row['course_id']}' $selected>{$row['course_name']}</option>";
+                                            }
+                                        }
+                                    }
                                     ?>
                                 </select>
                                 <select name="year" onchange="this.form.submit()"><option value="">Select Year</option>
-                                    <?php 
-                                    if ($conn) { 
-                                        $yearQuery = "SELECT year_id, year FROM year_tbl ORDER BY year ASC"; 
-                                        $yearResultPHP = mysqli_query($conn, $yearQuery); 
-                                        if ($yearResultPHP) { 
-                                            while ($row = mysqli_fetch_assoc($yearResultPHP)) { 
-                                                $selected = isset($_GET['year']) && $_GET['year'] == $row['year_id'] ? 'selected' : ''; 
-                                                echo "<option value='{$row['year_id']}' $selected>{$row['year']}</option>"; 
-                                            } 
-                                        } 
-                                    } 
+                                    <?php
+                                    if ($conn) {
+                                        $yearQuery = "SELECT year_id, year FROM year_tbl ORDER BY year ASC";
+                                        $yearResultPHP = mysqli_query($conn, $yearQuery);
+                                        if ($yearResultPHP) {
+                                            while ($row = mysqli_fetch_assoc($yearResultPHP)) {
+                                                $selected = isset($_GET['year']) && $_GET['year'] == $row['year_id'] ? 'selected' : '';
+                                                echo "<option value='{$row['year_id']}' $selected>{$row['year']}</option>";
+                                            }
+                                        }
+                                    }
                                     ?>
                                 </select>
                                 <select name="section" onchange="this.form.submit()"><option value="">Select Section</option>
-                                    <?php 
-                                    if ($conn) { 
-                                        $sectionQuery = "SELECT section_id, section_name FROM section_tbl ORDER BY section_name ASC"; 
-                                        $sectionResultPHP = mysqli_query($conn, $sectionQuery); 
-                                        if ($sectionResultPHP) { 
-                                            while ($row = mysqli_fetch_assoc($sectionResultPHP)) { 
-                                                $selected = isset($_GET['section']) && $_GET['section'] == $row['section_id'] ? 'selected' : ''; 
-                                                echo "<option value='{$row['section_id']}' $selected>{$row['section_name']}</option>"; 
-                                            } 
-                                        } 
-                                    } 
+                                    <?php
+                                    if ($conn) {
+                                        $sectionQuery = "SELECT section_id, section_name FROM section_tbl ORDER BY section_name ASC";
+                                        $sectionResultPHP = mysqli_query($conn, $sectionQuery);
+                                        if ($sectionResultPHP) {
+                                            while ($row = mysqli_fetch_assoc($sectionResultPHP)) {
+                                                $selected = isset($_GET['section']) && $_GET['section'] == $row['section_id'] ? 'selected' : '';
+                                                echo "<option value='{$row['section_id']}' $selected>{$row['section_name']}</option>";
+                                            }
+                                        }
+                                    }
                                     ?>
                                 </select>
                                 <select name="status" onchange="this.form.submit()"><option value="">Select Status</option>
-                                    <?php 
-                                    if ($conn) { 
-                                        $statusQuery = "SELECT status_id, status_name FROM status_tbl ORDER BY status_name ASC"; 
-                                        $statusResultPHP = mysqli_query($conn, $statusQuery); 
-                                        if ($statusResultPHP) { 
-                                            while ($row = mysqli_fetch_assoc($statusResultPHP)) { 
-                                                $selected = isset($_GET['status']) && $_GET['status'] == $row['status_id'] ? 'selected' : ''; 
-                                                echo "<option value='{$row['status_id']}' $selected>{$row['status_name']}</option>"; 
-                                            } 
-                                        } 
-                                    } 
+                                    <?php
+                                    if ($conn) {
+                                        $statusQuery = "SELECT status_id, status_name FROM status_tbl ORDER BY status_name ASC";
+                                        $statusResultPHP = mysqli_query($conn, $statusQuery);
+                                        if ($statusResultPHP) {
+                                            while ($row = mysqli_fetch_assoc($statusResultPHP)) {
+                                                $selected = isset($_GET['status']) && $_GET['status'] == $row['status_id'] ? 'selected' : '';
+                                                echo "<option value='{$row['status_id']}' $selected>{$row['status_name']}</option>";
+                                            }
+                                        }
+                                    }
                                     ?>
                                 </select>
                                 <div class="search-field-group">
@@ -230,7 +251,7 @@ include '../PHP/dbcon.php';
             </div>
         </div>
     </div>
-    
+
     <div id="edit-student-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Student</h3><form id="edit-student-form"><input type="hidden" id="original-student-number" name="original_student_number"><div><label>Student Number:</label><input type="text" id="edit-student-number" name="student_number" required></div><div><label>First Name:</label><input type="text" id="edit-student-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-student-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-student-last-name" name="last_name" required></div><div><label>Email:</label><input type="email" id="edit-student-email" name="email" required></div><div><label>Course:</label><select id="edit-student-course" name="course_id" required><option value="">Select Course</option><?php if (isset($courseResultPHP) && $courseResultPHP) { mysqli_data_seek($courseResultPHP, 0); while ($row = mysqli_fetch_assoc($courseResultPHP)) { echo "<option value='{$row['course_id']}'>{$row['course_name']}</option>"; } } ?></select></div><div><label>Year:</label><select id="edit-student-year" name="year_id" required><option value="">Select Year</option><?php if (isset($yearResultPHP) && $yearResultPHP) { mysqli_data_seek($yearResultPHP, 0); while ($row = mysqli_fetch_assoc($yearResultPHP)) { echo "<option value='{$row['year_id']}'>{$row['year']}</option>"; } } ?></select></div><div><label>Section:</label><select id="edit-student-section" name="section_id" required><option value="">Select Section</option><?php if (isset($sectionResultPHP) && $sectionResultPHP) { mysqli_data_seek($sectionResultPHP, 0); while ($row = mysqli_fetch_assoc($sectionResultPHP)) { echo "<option value='{$row['section_id']}'>{$row['section_name']}</option>"; } } ?></select></div><div><label>Status:</label><select id="edit-student-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP) && $statusResultPHP) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Student</button></form></div></div>
     <div id="add-student-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Student</h3><form id="add-student-form"><div><label>Student Number:</label><input type="text" name="student_number" required></div><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Email:</label><input type="email" name="email" required></div><div><label>Course:</label><select name="course_id" required><option value="">Select Course</option><?php if (isset($courseResultPHP) && $courseResultPHP) { mysqli_data_seek($courseResultPHP, 0); while ($row = mysqli_fetch_assoc($courseResultPHP)) { echo "<option value='{$row['course_id']}'>{$row['course_name']}</option>"; } } ?></select></div><div><label>Year:</label><select name="year_id" required><option value="">Select Year</option><?php if (isset($yearResultPHP) && $yearResultPHP) { mysqli_data_seek($yearResultPHP, 0); while ($row = mysqli_fetch_assoc($yearResultPHP)) { echo "<option value='{$row['year_id']}'>{$row['year']}</option>"; } } ?></select></div><div><label>Section:</label><select name="section_id" required><option value="">Select Section</option><?php if (isset($sectionResultPHP) && $sectionResultPHP) { mysqli_data_seek($sectionResultPHP, 0); while ($row = mysqli_fetch_assoc($sectionResultPHP)) { echo "<option value='{$row['section_id']}'>{$row['section_name']}</option>"; } } ?></select></div><div><label>Status:</label><select name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP) && $statusResultPHP) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-plus"></i> Add Student</button></form></div></div>
     <div id="add-admin-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Admin</h3><form id="add-admin-form"><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Position:</label><input type="text" name="position" required></div><div><label>Email (will be used as Username):</label><input type="email" name="email" required></div><button type="submit"><i class="fas fa-plus"></i> Add Admin</button></form></div></div>
@@ -238,6 +259,7 @@ include '../PHP/dbcon.php';
     <div id="delete-confirm-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h3><p id="delete-confirm-text">Are you sure you want to delete <span id="delete-item-type-placeholder"></span>: <strong id="delete-item-identifier-placeholder"></strong>?</p><div class="delete-confirm-actions"><button type="button" id="confirm-delete-action-btn" class="delete-btn"><i class="fas fa-trash-alt"></i> Confirm Delete</button><button type="button" id="cancel-delete-action-btn" class="edit-btn"><i class="fas fa-times"></i> Cancel</button></div></div></div>
     <div id="custom-toast-notification" class="toast-notification"><span id="toast-notification-message"></span></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="./user_management.js"></script>
 </body>
 </html>

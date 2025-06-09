@@ -17,11 +17,11 @@ if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
 
     if ($conn) {
-        $query = "SELECT ai.firstname, ai.middlename, ai.lastname, ai.Position, a.email 
+        $query = "SELECT ai.firstname, ai.middlename, ai.lastname, ai.Position, a.email
                   FROM admin_info_tbl ai
                   JOIN admins a ON ai.admin_id = a.id
                   WHERE ai.admin_id = ?";
-        
+
         $stmt = $conn->prepare($query);
         if ($stmt) {
             $stmt->bind_param("i", $admin_id);
@@ -58,27 +58,49 @@ if (isset($_SESSION['admin_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Account Information</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="../CSS/admin_account.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../CSS/header.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
+
     <header>
-        <div class="logo">
-            <img src="../assets/PUPlogo.png" alt="PUP Logo">
-        </div>
-        <nav>
-            <a href="../HTML/admin_homepage.html">Home</a>
-            <a href="../updated-admin-violation/admin_violation_page.php">Violations</a>
-            <a href="../HTML/admin_sanction.html">Student Sanction</a>
-            <a href="../user-management/user_management.php">User Management</a>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top py-0">
+            <div class="container-fluid px-4 px-md-5">
+                <a class="navbar-brand py-0" href="../HTML/admin_homepage.html">
+                    <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo" class="img-fluid" style="height: 60px; width: 180px;">
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="../HTML/admin_homepage.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../updated-admin-violation/admin-violationpage.php">Violations</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">Student Sanction</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../user-management/user_management.php">User Management</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center">
+                        <a href="notification.html" class="me-3">
+                            <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications" style="width: 35px; height: 35px;"/>
+                        </a>
+                        <a href="admin_account.html">
+                            <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account" style="width: 35px; height: 35px;"/>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </nav>
-        <div class="admin-icons">
-            <a href="./notification.html" class="notification">
-                <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/></a>
-            <a href="./admin_account.php" class="admin">
-               <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account"/></a>
-        </div>
     </header>
+
 
     <div class="container">
         <h1>Account Information</h1>
@@ -123,6 +145,7 @@ if (isset($_SESSION['admin_id'])) {
         <div id="errorMessageDisplay" style="color: red; margin-top: 15px;"></div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
         const adminData = <?php echo json_encode($adminPageData); ?>;
 
@@ -137,7 +160,7 @@ if (isset($_SESSION['admin_id'])) {
 
             if (adminData.isLoggedIn && !adminData.errorMessage) {
                 adminFirstNameElement.textContent = adminData.firstName;
-                adminMiddleNameElement.textContent = adminData.middleName || ''; 
+                adminMiddleNameElement.textContent = adminData.middleName || '';
                 adminLastNameElement.textContent = adminData.lastName;
                 adminPositionElement.textContent = adminData.position;
                 adminEmailElement.textContent = adminData.email;
@@ -152,14 +175,14 @@ if (isset($_SESSION['admin_id'])) {
                 }
                 if (adminData.errorMessage && (adminData.errorMessage.includes("Not authorized") || adminData.errorMessage.includes("session has expired"))) {
                     setTimeout(() => {
-                        window.location.href = './login.html'; 
+                        window.location.href = './login.html';
                     }, 3000);
                 }
             }
 
             if (signOutBtn) {
                 signOutBtn.addEventListener("click", function() {
-                    window.location.href = '../PHP/logout.php?role=admins'; 
+                    window.location.href = '../PHP/logout.php?role=admins';
                 });
             }
         });
