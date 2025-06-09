@@ -66,11 +66,20 @@ body, html {
   color: white;
 }
 
+.btn-security {
+  background-color: #800000;
+  color: white;
+}
+
 .btn-student:hover {
   background-color: #42dc37;
 }
 
 .btn-admin:hover {
+  background-color: #a00000;
+}
+
+.btn-security:hover {
   background-color: #a00000;
 }
 
