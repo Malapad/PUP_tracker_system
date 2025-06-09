@@ -30,6 +30,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const approveSanctionForm = document.getElementById('approveSanctionForm');
     const approveSanctionModalMessage = document.getElementById('approveSanctionModalMessage');
 
+    // NEW Compliance Status Modal for 'All' tab
+    const complianceStatusModal = document.getElementById('complianceStatusModal');
+    const complianceStatusModalMessage = document.getElementById('complianceStatusModalMessage');
+    const markAsPendingBtnModal = document.getElementById('markAsPendingBtnModal');
+    const markAsCompletedBtnModal = document.getElementById('markAsCompletedBtnModal');
+    let currentRecordIdToUpdate = null; // To store record_id for modal updates
+
     let activeSanctionComplianceRowActionButtonsContainer = null; // for sanction-compliance table
     let activeDisciplinarySanctionRowActionButtonsContainer = null; // for sanction-config table within accordion
 
@@ -126,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 else if (modalElement.id === 'addSanctionModal') closeModal(modalElement, addSanctionModalMessage, addSanctionForm);
                 else if (modalElement.id === 'editSanctionModal') closeModal(modalElement, editSanctionModalMessage, editSanctionForm);
                 else if (modalElement.id === 'deleteSanctionModal') closeModal(modalElement, deleteSanctionModalMessage, null);
+                else if (modalElement.id === 'complianceStatusModal') closeModal(modalElement, complianceStatusModalMessage, null); // New modal
             }
             return; // Prevent fall-through to generic modal close
         }
@@ -136,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
             else if (e.target.id === 'addSanctionModal') closeModal(e.target, addSanctionModalMessage, addSanctionForm);
             else if (e.target.id === 'editSanctionModal') closeModal(e.target, editSanctionModalMessage, editSanctionForm);
             else if (e.target.id === 'deleteSanctionModal') closeModal(e.target, deleteSanctionModalMessage, null);
+            else if (e.target.id === 'complianceStatusModal') closeModal(e.target, complianceStatusModalMessage, null); // New modal
         }
     });
 
@@ -211,9 +220,6 @@ document.addEventListener("DOMContentLoaded", () => {
             // Set hidden inputs for form submission
             document.getElementById('approveStudentNumber').value = viewBtn.dataset.studentNumber;
             document.getElementById('approveViolationId').value = viewBtn.dataset.violationId;
-            // IMPORTANT: The assigned_sanction_id should ideally come from the selected disciplinary_sanction_id
-            // If the disciplinary sanction is pre-determined by offense level, we can pass its ID.
-            // For now, I'm assuming data-assigned-sanction-id holds this.
             document.getElementById('approveAssignedSanctionId').value = viewBtn.dataset.assignedSanctionId; // New
             
             // Set min date for deadline
@@ -246,6 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     closeModal(viewSanctionDetailsModal, approveSanctionModalMessage, approveSanctionForm);
                     showToast(result.message, 'success');
                     // Redirect to sanction compliance tab, filtered by Pending to see the newly added sanction
+                    // Full page reload to ensure table data is consistent
                     setTimeout(() => window.location.href = window.location.pathname + '?tab=sanction-compliance&status_filter=Pending', 1500);
                 } else {
                     displayModalMessage(approveSanctionModalMessage, result.message || 'An unknown error occurred.', 'error');
@@ -262,24 +269,118 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Sanction Compliance Tab Logic ---
     document.querySelector('#sanction-compliance')?.addEventListener('click', async (e) => {
+        const row = e.target.closest('tr.compliance-row-data');
+        if (!row) return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const statusFilter = urlParams.get('status_filter') || 'All';
+
+        // Handle clicks on the buttons "Mark as Completed" / "Mark as Pending"
         const updateBtn = e.target.closest('.update-status-btn');
-        if (!updateBtn) return;
+        if (updateBtn && statusFilter !== 'All') { // Only allow if not 'All' tab
+            e.preventDefault(); // Prevent default action (like link following)
+            const recordId = updateBtn.dataset.recordId;
+            const newStatus = updateBtn.dataset.newStatus;
+            const studentNumber = updateBtn.dataset.studentNumber;
+            const originalButtonContent = updateBtn.innerHTML;
 
-        e.preventDefault();
-        const recordId = updateBtn.dataset.recordId;
-        const newStatus = updateBtn.dataset.newStatus;
-        const studentNumber = updateBtn.dataset.studentNumber;
-        const originalButtonContent = updateBtn.innerHTML;
+            updateBtn.disabled = true;
+            updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
 
-        updateBtn.disabled = true;
-        updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+            try {
+                const formData = new FormData();
+                formData.append('update_sanction_status', '1');
+                formData.append('record_id', recordId);
+                formData.append('new_status', newStatus);
+                formData.append('student_number', studentNumber); // For logging
+
+                const response = await fetch(window.location.pathname, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    // Reload the page to refresh the table data consistently
+                    setTimeout(() => window.location.reload(), 800); 
+                } else {
+                    showToast(result.message, 'error');
+                    updateBtn.disabled = false;
+                    updateBtn.innerHTML = originalButtonContent;
+                }
+            } catch (error) {
+                console.error('Update status submission error:', error);
+                showToast('A network error occurred.', 'error');
+                updateBtn.disabled = false;
+                updateBtn.innerHTML = originalButtonContent;
+            }
+        } 
+        // Handle clicks on rows in the 'All' tab to open the new modal
+        else if (statusFilter === 'All' && row) {
+            currentRecordIdToUpdate = row.dataset.recordId; // Store record ID for modal button actions
+            
+            document.getElementById('modalComplianceStudentName').textContent = row.dataset.studentName;
+            document.getElementById('modalComplianceStudentNumber').textContent = row.dataset.studentNumber;
+            document.getElementById('modalComplianceViolationType').textContent = row.dataset.violationType;
+            document.getElementById('modalComplianceDisciplinarySanction').textContent = row.dataset.disciplinarySanction;
+            document.getElementById('modalComplianceOffenseLevel').textContent = row.dataset.offenseLevel;
+            document.getElementById('modalComplianceDeadline').textContent = row.dataset.dateOfCompliance;
+
+            const currentStatus = row.dataset.status;
+            const statusBadge = document.getElementById('modalComplianceCurrentStatus');
+            statusBadge.textContent = currentStatus;
+            statusBadge.className = 'status-badge'; // Reset class
+            if (currentStatus === 'Pending') {
+                statusBadge.classList.add('status-pending');
+                markAsPendingBtnModal.style.display = 'none'; // Hide pending button if current is pending
+                markAsCompletedBtnModal.style.display = 'inline-flex';
+            } else {
+                statusBadge.classList.add('status-completed');
+                markAsPendingBtnModal.style.display = 'inline-flex';
+                markAsCompletedBtnModal.style.display = 'none'; // Hide completed button if current is completed
+            }
+
+            // Ensure buttons have the correct recordId and studentNumber data
+            markAsPendingBtnModal.dataset.recordId = currentRecordIdToUpdate;
+            markAsPendingBtnModal.dataset.studentNumber = row.dataset.studentNumber;
+            markAsCompletedBtnModal.dataset.recordId = currentRecordIdToUpdate;
+            markAsCompletedBtnModal.dataset.studentNumber = row.dataset.studentNumber;
+
+
+            openModal(complianceStatusModal);
+            clearModalMessage(complianceStatusModalMessage);
+        }
+    });
+
+    // Event listeners for the new modal's buttons
+    if (markAsPendingBtnModal) {
+        markAsPendingBtnModal.addEventListener('click', async function() {
+            await handleStatusUpdateFromModal(this);
+        });
+    }
+    if (markAsCompletedBtnModal) {
+        markAsCompletedBtnModal.addEventListener('click', async function() {
+            await handleStatusUpdateFromModal(this);
+        });
+    }
+
+    async function handleStatusUpdateFromModal(button) {
+        const recordId = button.dataset.recordId;
+        const newStatus = button.dataset.newStatus;
+        const studentNumber = button.dataset.studentNumber;
+        const originalButtonContent = button.innerHTML;
+
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+        clearModalMessage(complianceStatusModalMessage);
 
         try {
             const formData = new FormData();
             formData.append('update_sanction_status', '1');
             formData.append('record_id', recordId);
             formData.append('new_status', newStatus);
-            formData.append('student_number', studentNumber); // For logging
+            formData.append('student_number', studentNumber);
 
             const response = await fetch(window.location.pathname, {
                 method: 'POST',
@@ -288,37 +389,23 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await response.json();
 
             if (result.success) {
+                closeModal(complianceStatusModal, complianceStatusModalMessage);
                 showToast(result.message, 'success');
-
-                // Visual removal/update
-                const row = updateBtn.closest('tr');
-                if (row) {
-                    row.style.opacity = '0';
-                    setTimeout(() => {
-                        row.remove();
-                        // Check if table is empty after removal
-                        const tableBody = document.querySelector('#sanction-compliance tbody');
-                        if (tableBody && tableBody.rows.length === 0) {
-                            // Determine current filter to display correct 'no records' message
-                            const currentUrl = new URL(window.location.href);
-                            const statusFilter = currentUrl.searchParams.get('status_filter') || 'All'; // Default to 'All'
-                            const colCount = document.querySelector('#sanction-compliance thead th').length;
-                            tableBody.innerHTML = `<tr><td colspan="${colCount}" class="no-records-cell">No ${statusFilter === 'All' ? '' : statusFilter.toLowerCase()} sanctions found.</td></tr>`;
-                        }
-                    }, 400); // Match CSS transition duration
-                }
+                // Reload the page to refresh the table data consistently
+                setTimeout(() => window.location.reload(), 800);
             } else {
-                showToast(result.message, 'error');
-                updateBtn.disabled = false;
-                updateBtn.innerHTML = originalButtonContent;
+                displayModalMessage(complianceStatusModalMessage, result.message, 'error');
+                button.disabled = false;
+                button.innerHTML = originalButtonContent;
             }
         } catch (error) {
-            console.error('Update status submission error:', error);
-            showToast('A network error occurred.', 'error');
-            updateBtn.disabled = false;
-            updateBtn.innerHTML = originalButtonContent;
+            console.error('Modal status update submission error:', error);
+            displayModalMessage(complianceStatusModalMessage, 'A network error occurred.', 'error');
+            button.disabled = false;
+            button.innerHTML = originalButtonContent;
         }
-    });
+    }
+
 
     // --- NEW: Sanction Configuration Tab Logic (Accordion-based) ---
 

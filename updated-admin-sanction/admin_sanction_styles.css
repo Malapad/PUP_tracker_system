@@ -687,7 +687,7 @@ tbody td {
     margin-left: auto; /* Pushes this group to the right */
     flex-wrap: wrap; /* Allow items to wrap within the group if needed */
     flex-grow: 1; /* Allow the group to grow to take available space */
-    justify-content: flex-end; /* Align contents to the right within the group */
+    justify-content: flex-end; /* Align to right within the group */
 }
 
 /* NEW: Search Bar for Sanction Configuration */

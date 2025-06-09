@@ -83,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
 
     $record_id = $_POST['record_id'] ?? '';
     $new_status = $_POST['new_status'] ?? '';
-    $student_number = $_POST['student_number'] ?? '';
+    $student_number = $_POST['student_number'] ?? ''; // For logging
 
     if (empty($record_id) || empty($new_status) || !in_array($new_status, ['Completed', 'Pending'])) {
         $response['message'] = 'Invalid data provided.';
@@ -650,7 +650,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                                         u.first_name, u.middle_name, u.last_name,
                                         c.course_name, y.year, s.section_name,
                                         vt.violation_type_id, vt.violation_type,
-                                        (SELECT COUNT(*) FROM violation_tbl WHERE student_number = u.student_number AND violation_type = vt.violation_type_id) as offense_level_count,
+                                        (SELECT COUNT(v2.violation_id) + 1 FROM violation_tbl v2 
+                                         WHERE v2.student_number = u.student_number 
+                                         AND v2.violation_type = vt.violation_type_id 
+                                         AND v2.violation_date < v.violation_date) as offense_level_num,
                                         ds.disciplinary_sanction_id, ds.disciplinary_sanction, ds.offense_level
                                     FROM violation_tbl v
                                     JOIN users_tbl u ON v.student_number = u.student_number
@@ -658,7 +661,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                                     LEFT JOIN course_tbl c ON u.course_id = c.course_id
                                     LEFT JOIN year_tbl y ON u.year_id = y.year_id
                                     LEFT JOIN section_tbl s ON u.section_id = s.section_id
-                                    LEFT JOIN disciplinary_sanctions ds ON vt.violation_type_id = ds.violation_type_id AND ds.offense_level = (SELECT COUNT(*) FROM violation_tbl WHERE student_number = u.student_number AND violation_type = vt.violation_type_id)
+                                    LEFT JOIN disciplinary_sanctions ds ON vt.violation_type_id = ds.violation_type_id 
+                                        AND ds.offense_level = (SELECT COUNT(v3.violation_id) + 1 FROM violation_tbl v3 
+                                                                 WHERE v3.student_number = u.student_number 
+                                                                 AND v3.violation_type = vt.violation_type_id 
+                                                                 AND v3.violation_date < v.violation_date)
                                     WHERE NOT EXISTS (
                                         SELECT 1 FROM student_sanction_records_tbl ssr WHERE ssr.violation_id = v.violation_id
                                     )";
@@ -690,7 +697,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                                     while ($row = $result->fetch_assoc()) {
                                         $student_full_name = htmlspecialchars($row['first_name'] . ' ' . ($row['middle_name'] ? $row['middle_name'][0] . '. ' : '') . $row['last_name']);
                                         $course_year_section = htmlspecialchars(($row['course_name'] ?? 'N/A') . ' | ' . ($row['year'] ?? 'N/A') . ' - ' . ($row['section_name'] ?? 'N/A'));
-                                        
+
+                                        $offense_level_display = '';
+                                        if ($row['offense_level_num'] !== null) {
+                                            $offense_level_display = $row['offense_level_num'] . 
+                                                                     (in_array($row['offense_level_num'] % 10, [1]) && ($row['offense_level_num'] % 100 < 11 || $row['offense_level_num'] % 100 > 13) ? 'st' : 
+                                                                     (in_array($row['offense_level_num'] % 10, [2]) && ($row['offense_level_num'] % 100 < 11 || $row['offense_level_num'] % 100 > 13) ? 'nd' : 
+                                                                     (in_array($row['offense_level_num'] % 10, [3]) && ($row['offense_level_num'] % 100 < 11 || $row['offense_level_num'] % 100 > 13) ? 'rd' : 'th'))) . ' Offense';
+                                        } else {
+                                            $offense_level_display = 'N/A';
+                                        }
+
+
                                         echo "<tr>";
                                         echo "<td>" . htmlspecialchars($row['student_number']) . "</td>";
                                         echo "<td class='text-wrap-content'>" . $student_full_name . "</td>";
@@ -698,7 +716,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                                         echo "<td>" . htmlspecialchars(($row['year'] ?? 'N/A') . ' - ' . ($row['section_name'] ?? 'N/A')) . "</td>";
                                         echo "<td class='text-wrap-content'>" . htmlspecialchars($row['violation_type']) . "</td>";
                                         echo "<td class='text-wrap-content'>" . htmlspecialchars($row['disciplinary_sanction'] ?? 'No sanction defined for this offense level.') . "</td>";
-                                        echo "<td>" . htmlspecialchars($row['offense_level'] ?? 'N/A') . "</td>";
+                                        echo "<td>" . htmlspecialchars($offense_level_display) . "</td>";
                                         echo "<td>" . htmlspecialchars(date("F j, Y", strtotime($row['violation_date']))) . "</td>";
                                         echo "<td class='action-buttons-cell'>";
                                         echo "<button class='view-manage-btn'
@@ -707,8 +725,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                                                         data-course-year-section='" . $course_year_section . "'
                                                         data-violation-id='" . htmlspecialchars($row['violation_id']) . "'
                                                         data-violation-type='" . htmlspecialchars($row['violation_type']) . "'
-                                                        data-disciplinary-sanction='" . htmlspecialchars($row['disciplinary_sanction'] ?? '') . "'
-                                                        data-offense-level='" . htmlspecialchars($row['offense_level'] ?? '') . "'
+                                                        data-disciplinary-sanction='" . htmlspecialchars($row['disciplinary_sanction'] ?? 'No sanction defined for this offense level.') . "'
+                                                        data-offense-level='" . htmlspecialchars($offense_level_display) . "'
                                                         data-date-requested='" . htmlspecialchars(date("F j, Y", strtotime($row['violation_date']))) . "'
                                                         data-assigned-sanction-id='" . htmlspecialchars($row['disciplinary_sanction_id'] ?? '') . "'
                                                         ><i class='fas fa-eye'></i> Manage</button>";
@@ -802,7 +820,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                                         $student_full_name = htmlspecialchars($row['first_name'] . ' ' . ($row['middle_name'] ? $row['middle_name'][0] . '. ' : '') . $row['last_name']);
                                         $course_year_section = htmlspecialchars(($row['course_name'] ?? 'N/A') . ' | ' . ($row['year'] ?? 'N/A') . ' - ' . ($row['section_name'] ?? 'N/A'));
 
-                                        echo "<tr>";
+                                        echo "<tr class='compliance-row-data' 
+                                                data-record-id='" . htmlspecialchars($row['record_id']) . "'
+                                                data-student-number='" . htmlspecialchars($row['student_number']) . "'
+                                                data-student-name='" . $student_full_name . "'
+                                                data-course-year-section='" . $course_year_section . "'
+                                                data-violation-type='" . htmlspecialchars($row['violation_type']) . "'
+                                                data-disciplinary-sanction='" . htmlspecialchars($row['disciplinary_sanction'] ?? 'N/A') . "'
+                                                data-offense-level='" . htmlspecialchars($row['offense_level'] ?? 'N/A') . "'
+                                                data-date-of-compliance='" . htmlspecialchars(date("F j, Y", strtotime($row['deadline_date']))) . "'
+                                                data-status='" . htmlspecialchars($row['status']) . "'
+                                              >";
                                         echo "<td>" . htmlspecialchars($row['student_number']) . "</td>";
                                         echo "<td class='text-wrap-content'>" . $student_full_name . "</td>";
                                         echo "<td>" . htmlspecialchars($row['course_name'] ?? 'N/A') . "</td>";
@@ -935,6 +963,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                     <button type="button" class="modal-button-cancel close-modal-button" data-modal="viewSanctionDetailsModal"><i class="fas fa-times"></i> Cancel</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+<div id="complianceStatusModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="head-modal">
+                <h3>Update Sanction Status</h3>
+                <span class="close-modal-button" data-modal="complianceStatusModal">&times;</span>
+            </div>
+            <div id="complianceStatusModalMessage" class="modal-message" style="display: none;"></div>
+            <div class="details-content">
+                <p><strong>Student Name:</strong> <span id="modalComplianceStudentName"></span></p>
+                <p><strong>Student Number:</strong> <span id="modalComplianceStudentNumber"></span></p>
+                <p><strong>Violation Type:</strong> <span id="modalComplianceViolationType"></span></p>
+                <p><strong>Disciplinary Sanction:</strong> <span id="modalComplianceDisciplinarySanction"></span></p>
+                <p><strong>Offense Level:</strong> <span id="modalComplianceOffenseLevel"></span></p>
+                <p><strong>Current Status:</strong> <span id="modalComplianceCurrentStatus" class="status-badge"></span></p>
+                <p><strong>Deadline:</strong> <span id="modalComplianceDeadline"></span></p>
+            </div>
+            <div class="button-row">
+                <button type="button" id="markAsPendingBtnModal" class="update-status-btn status-pending-btn" data-new-status="Pending"><i class="fas fa-undo"></i> Mark as Pending</button>
+                <button type="button" id="markAsCompletedBtnModal" class="update-status-btn status-completed-btn" data-new-status="Completed"><i class="fas fa-check-circle"></i> Mark Completed</button>
+                <button type="button" class="modal-button-cancel close-modal-button" data-modal="complianceStatusModal"><i class="fas fa-times"></i> Cancel</button>
+            </div>
         </div>
     </div>
 
