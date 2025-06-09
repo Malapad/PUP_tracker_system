@@ -14,8 +14,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'search_student_for_violation' 
         exit;
     }
     $sql_search_student = "SELECT u.student_number, u.first_name, u.middle_name, u.last_name,
-                                 COALESCE(c.course_name, 'N/A') as course_name, 
-                                 COALESCE(y.year, 'N/A') as year, 
+                                 COALESCE(c.course_name, 'N/A') as course_name,
+                                 COALESCE(y.year, 'N/A') as year,
                                  COALESCE(s.section_name, 'N/A') as section_name
                             FROM users_tbl u
                             LEFT JOIN course_tbl c ON u.course_id = c.course_id
@@ -132,7 +132,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                     if(!empty($violationRemarks)){
                         $notification_message .= " (Remarks: " . htmlspecialchars($violationRemarks) . ")";
                     }
-                    $notification_link = "./student_record.php"; 
+                    $notification_link = "./student_record.php";
                     $sql_notify = "INSERT INTO notifications_tbl (student_number, message, link) VALUES (?, ?, ?)";
                     if ($stmt_notify = $conn->prepare($sql_notify)) {
                         $stmt_notify->bind_param("sss", $studentNumber, $notification_message, $notification_link);
@@ -469,50 +469,48 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Student Violation Records</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
         <link rel="stylesheet" href="./admin_violation.css?v=<?php echo time(); ?>" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body>
         <div id="toast-notification" class="toast"></div>
-        
-        <header class="navbar navbar-expand-lg custom-navbar">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#">
-                    <img src="../IMAGE/Tracker_logo.png" alt="Logo" width="40" height="40" class="d-inline-block align-text-top">
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav mx-auto">
-                        <li class="nav-item">
-                            <a class="nav-link <?php echo ($current_page_filename == 'admin_homepage.html' ? 'active' : ''); ?>" aria-current="page" href="../HTML/admin_homepage.html" data-tab="home"><strong>Home</strong></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?php echo ($current_page_filename == 'admin_violation_page.php' ? 'active' : ''); ?>" href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" data-tab="violations"><strong>Violations</strong></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?php echo ($current_page_filename == 'admin_sanction.php' ? 'active' : ''); ?>" href="../updated-admin-sanction/admin_sanction.php" data-tab="student-sanction"><strong>Student Sanction</strong></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?php echo ($current_page_filename == 'user_management.php' ? 'active' : ''); ?>" href="../user-management/user_management.php" data-tab="user-management"><strong>User Management</strong></a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav icon-nav">
-                        <li class="nav-item">
-                            <a class="nav-link icon-link" href="#">
-                                <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notification">
+
+        <header>
+            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top py-0">
+                <div class="container-fluid px-4 px-md-5">
+                    <a class="navbar-brand py-0" href="../HTML/admin_homepage.html">
+                        <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo" class="img-fluid" style="height: 60px; width: 180px;">
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link" href="../HTML/admin_homepage.html">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">Violations</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="../updated-admin-sanction/admin_sanction.php">Student Sanction</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="../user-management/user_management.php">User Management</a>
+                            </li>
+                        </ul>
+                        <div class="d-flex align-items-center">
+                            <a href="notification.html" class="me-3">
+                                <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications" style="width: 35px; height: 35px;"/>
                             </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link icon-link" href="#">
-                                <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Account">
+                            <a href="admin_account.html">
+                                <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account" style="width: 35px; height: 35px;"/>
                             </a>
-                        </li>
-                    </ul>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </nav>
         </header>
         <div class="container">
             <h1>Student Violation Records</h1>
@@ -623,7 +621,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
                             $params[] = $filterCategory; $paramTypes .= "i";
                         }
                         $finalWhereClauses = [];
-                        $finalWhereClauses[] = "v_main.violation_id IS NOT NULL"; 
+                        $finalWhereClauses[] = "v_main.violation_id IS NOT NULL";
                         foreach ($filter_whereClauses as $clause) {
                             $finalWhereClauses[] = $clause;
                         }
@@ -676,7 +674,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
                                     $hasSanction = false;
                                     if ($total_individual_violations > 0) {
                                         foreach ($violations_by_type_count as $count) {
-                                            if ($count >= 2) { 
+                                            if ($count >= 2) {
                                                 $hasSanction = true;
                                                 break;
                                             }
@@ -990,7 +988,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
                 </div>
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <script src="./admin_violation_page.js"></script>
     </body>
 </html>

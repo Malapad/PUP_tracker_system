@@ -9,67 +9,68 @@ html, body {
 
 body {
     background-color: #f4f7f6; /* Confirmed and explicitly set as desired */
+    padding-top: 80px; /* Adjusted to account for fixed Bootstrap header height */
 }
 
-/* Removed old header styles that conflict with new Bootstrap-based header */
-/*
-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: white;
-    padding: 10px 20px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+/* Styles from header.css for the Bootstrap header */
+/* Variables from header.css, now integrated or adapted */
+:root {
+    --primary-color: #af1414;
+    --primary-hover-color: #bd2727;
+    /* Other existing variables in admin_violation.css will take precedence or be merged */
 }
 
-.logo img {
-    width: 50px;
-    margin-left: 70px;
+/* Specific adjustments for Bootstrap's .navbar, using your header's provided styles */
+.navbar {
+    height: 80px; /* Matches your defined --header-height */
 }
 
-nav {
-    display: flex;
-    gap: 20px;
+.navbar-brand .img-fluid { /* Specific for the image within navbar-brand */
+    height: 60px;
+    width: 180px;
 }
 
-nav a {
-    text-decoration: none;
+.navbar-nav .nav-link {
     font-weight: bold;
     color: black;
     padding: 8px 10px;
     border-radius: 3px;
     transition: color 0.3s ease;
+    position: relative;
 }
 
-nav a:hover {
-    color: #AF1414;
+.navbar-nav .nav-link:hover {
+    color: var(--primary-color);
 }
 
-nav a:focus {
-    color: #AF1414;
-    outline: 2px solid #AF1414;
-    outline-offset: 2px;
+.navbar-nav .nav-link.active {
+    color: var(--primary-color);
 }
 
-nav a.active {
-    color: #AF1414;
+.navbar-nav .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 5px;
+    right: 5px;
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
 }
 
-.admin-icons {
-    display: flex;
-    gap: 15px;
-    font-size: 15px;
-    margin-right: 55px;
-}
-
-.admin-icons img {
+.d-flex img { /* For the notification and admin icons */
     width: 35px;
+    height: 35px;
 }
 
-.notification {
-    width: 34px;
+@media (min-width: 992px) {
+    .container-fluid {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
 }
-*/
+/* End of Bootstrap header-specific CSS */
+
 
 /* Adjusted container margins to align with header content */
 .container {
@@ -77,13 +78,13 @@ nav a.active {
     padding: 20px;
     border-radius: 8px;
     /* Calculate left margin: Bootstrap's default gutter (0.75rem = 12px) + your custom logo margin (70px) */
-    margin-left: calc(var(--bs-gutter-x, 0.75rem) + 70px);
-    /* Calculate right margin: Bootstrap's default gutter (0.75rem = 12px) + your custom icon margin (55px) */
-    margin-right: calc(var(--bs-gutter-x, 0.75rem) + 55px);
+    /* Removed explicit margins and let Bootstrap's container-fluid and general body padding handle it for better responsiveness */
+    margin-left: auto;
+    margin-right: auto;
     margin-top: 20px;
     margin-bottom: 20px;
-    width: auto; /* Allow width to be determined by the new margins */
-    max-width: none; /* Remove explicit max-width as width is now controlled by margins */
+    width: 95%; /* Adjust as needed, or remove for Bootstrap's full control */
+    max-width: 1600px; /* Keeping a max-width for content constraint */
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -97,6 +98,7 @@ h1 {
 
 .clear-filters-container {
     margin-bottom: 15px;
+    text-align: right; /* Changed to right to match admin_sanction_styles.css */
 }
 
 .clear-filters-btn {
@@ -180,46 +182,46 @@ h1 {
 
 .filters-area form {
     display: flex;
-    align-items: center; 
+    align-items: center;
     gap: 15px;
-    flex-wrap: wrap; 
-    width: 100%; 
+    flex-wrap: wrap;
+    width: 100%;
     justify-content: flex-start;
 }
 
 .filter-select {
-    padding: 8px 10px; 
+    padding: 8px 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     font-size: 0.9em;
-    height: 38px; 
+    height: 38px;
     box-sizing: border-box;
-    flex-grow: 0; 
+    flex-grow: 0;
     flex-shrink: 1;
-    flex-basis: 150px; 
-    min-width: 120px; 
+    flex-basis: 150px;
+    min-width: 120px;
 }
 
 .search-group {
-    display: flex; 
+    display: flex;
     align-items: center;
-    flex-grow: 1; 
+    flex-grow: 1;
     flex-shrink: 1;
-    flex-basis: 250px; 
-    min-width: 180px; 
+    flex-basis: 250px;
+    min-width: 180px;
 }
 
 .search-input {
-    padding: 8px 10px; 
+    padding: 8px 10px;
     border: 1px solid #ccc;
-    border-radius: 5px 0 0 5px; 
+    border-radius: 5px 0 0 5px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     font-size: 0.9em;
-    height: 38px; 
+    height: 38px;
     box-sizing: border-box;
-    flex-grow: 1; 
-    border-right: none; 
+    flex-grow: 1;
+    border-right: none;
 }
 
 .search-input::placeholder { color: #757575; opacity: 1; }
@@ -233,8 +235,8 @@ h1 {
     border-color: #af1414;
     box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.25);
     outline: none;
-    border-right: none; 
-    position: relative; 
+    border-right: none;
+    position: relative;
     z-index: 1;
 }
 
@@ -248,7 +250,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex-shrink: 0; 
+    flex-shrink: 0;
 }
 
 button {
@@ -270,8 +272,8 @@ button i, .more-details-btn i, .clear-filters-btn i {
 }
 
 .search-button {
-    padding: 8px 12px; 
-    border: 1px solid #af1414; 
+    padding: 8px 12px;
+    border: 1px solid #af1414;
     background-color: #af1414;
     color: white;
     cursor: pointer;
@@ -281,16 +283,16 @@ button i, .more-details-btn i, .clear-filters-btn i {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 38px; 
+    height: 38px;
     box-sizing: border-box;
-    flex-shrink: 0; 
+    flex-shrink: 0;
 }
 .search-button:hover { background-color: #bd2727; }
 .search-button:focus {
     background-color: #bd2727;
     box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.35);
     outline: none;
-    z-index: 1; 
+    z-index: 1;
 }
 
 
@@ -319,10 +321,10 @@ button i, .more-details-btn i, .clear-filters-btn i {
 
 .refresh-button,
 .add-violation-button {
-    padding: 8px 12px; 
+    padding: 8px 12px;
     font-size: 0.85em;
     border-radius: 5px;
-    height: 38px; 
+    height: 38px;
     box-sizing: border-box;
     flex-grow: 0;
     flex-shrink: 0;
@@ -988,9 +990,9 @@ tbody td {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .filter-select, .search-group, .refresh-button, .add-violation-button {
-        flex-basis: auto; 
+        flex-basis: auto;
         width: 100%;
         margin-bottom: 10px;
     }
@@ -1031,16 +1033,16 @@ tbody td {
         min-width: unset;
         flex: 1 1 100%;
     }
-    
+
     .modal .form-container .column.full-width div[style*="display: flex"] {
-        flex-direction: column; 
+        flex-direction: column;
     }
     .modal .form-container .column.full-width div[style*="display: flex"] input,
     .modal .form-container .column.full-width div[style*="display: flex"] button {
         width: 100%;
     }
      .modal .form-container .column.full-width .modal-button-search {
-        min-width: auto; 
+        min-width: auto;
         padding: 10px;
      }
 
@@ -1089,37 +1091,11 @@ tbody td {
 }
 
 @media (max-width: 768px) {
-    /* Main header style in smaller screens */
-    header {
-        flex-direction: column;
-        padding: 10px;
-    }
-
-    /* Keep Bootstrap's navbar-brand for logo margin handling for small screens */
-    .custom-navbar .navbar-brand {
-        margin-left: 0; /* Override general header margin */
-        margin-bottom: 10px; /* Add space below logo */
-    }
-
-    .custom-navbar .navbar-collapse {
-        text-align: center; /* Ensure collapsed menu is centered */
-    }
-    .custom-navbar .navbar-nav.mx-auto {
-        margin-left: auto !important; /* Ensure centering works for collapsed menu */
-        margin-right: auto !important;
-    }
-
-    .custom-navbar .icon-nav {
-        margin-right: 0; /* Override */
-        justify-content: center; /* Center icons when collapsed */
-        width: 100%;
-    }
-
     /* Adjust container margins for smaller screens to match header responsiveness */
     .container {
-        margin-left: calc(var(--bs-gutter-x, 0.75rem) + 15px); /* From header's smaller screen brand margin */
-        margin-right: calc(var(--bs-gutter-x, 0.75rem) + 15px); /* From header's smaller screen icon margin */
-        width: auto;
+        margin-left: auto; /* Re-center */
+        margin-right: auto; /* Re-center */
+        width: 95%; /* Keep it flexible */
     }
 
     h1 {
@@ -1210,88 +1186,3 @@ tbody td {
         transform: translateX(0);
     }
 }
-
-/* START OF INJECTED HEADER CSS FROM header.css */
-/* Custom Navbar Styles from header.css */
-.custom-navbar {
-    background-color: #ffffff; 
-    border-bottom: 2px solid #d1cece;
-    padding-top: 8px;
-    padding-bottom: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    align-items: center;
-}
-
-/* Note: 'header {}' padding: 1px from header.css. The .custom-navbar above sets more specific padding. */
-header {
-    padding: 1px; /* This is from the original header.css and targets the <header> element. */
-}
-
-/* Logo specific margin */
-.custom-navbar .navbar-brand {
-    margin-left: 70px; /* Specific margin for the logo */
-    margin-right: auto;
-}
-
-.custom-navbar .navbar-brand img {
-    width: 170px;  
-    height: 70px;
-}
-
-.custom-navbar .nav-link {
-    color: #333333; /* Darker text for links */
-    font-weight: 500;
-    padding: 0.5rem 1rem; /* Adjust padding for spacing */
-    position: relative; /* Needed for the underline effect */
-    transition: color 0.3s ease;
-}
-
-.custom-navbar .nav-link:hover {
-    color: #000000; /* Darker on hover */
-}
-
-.custom-navbar .nav-link.active {
-    color: #a00000; /* Red color for active tab */
-    font-weight: 600;
-}
-
-.custom-navbar .nav-link.active::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0; /* Position the underline at the bottom of the link */
-    height: 2px;
-    background-color: #a00000; /* Red underline for active tab */
-}
-
-/* Icon specific width and right margin */
-.custom-navbar .icon-nav {
-    margin-right: 55px; 
-}
-
-.custom-navbar .icon-nav .nav-link img {
-    width: 40px;  /* Set icon width to 80px */
-    height: auto; /* Maintain aspect ratio */
-    vertical-align: middle; /* Align icons vertically in the middle */
-}
-
-/* Responsive adjustments for smaller screens from header.css */
-@media (max-width: 991.98px) { /* Bootstrap's 'lg' breakpoint */
-    .custom-navbar .navbar-brand {
-        margin-left: 15px; /* Adjust margin for smaller screens */
-    }
-    .custom-navbar .icon-nav {
-        margin-right: 15px; /* Adjust margin for smaller screens */
-        width: 100%; /* Icons take full width below breakpoint */
-        justify-content: flex-end; /* Push icons to the right on small screens */
-    }
-    .custom-navbar .navbar-collapse {
-        text-align: center; /* Center items when collapsed */
-    }
-    .custom-navbar .navbar-nav.mx-auto {
-        margin-left: auto !important; /* Ensure centering works for collapsed menu */
-        margin-right: auto !important;
-    }
-}
-/* END OF INJECTED HEADER CSS FROM header.css */
