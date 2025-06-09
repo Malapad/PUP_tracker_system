@@ -2,41 +2,36 @@
     --header-height: 80px;
     --primary-color: #af1414;
     --primary-hover-color: #bd2727;
-    /* Keeping your original variables, though some might be less used with Bootstrap */
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: var(--font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif); /* Fallback font family */
+    font-family: var(--font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif); 
 }
 
 body {
-    padding-top: var(--header-height); /* Ensure content doesn't go under fixed header */
+    padding-top: var(--header-height);
     background-color: #f4f7f6;
     font-family: var(--font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
 }
 
-/* Custom adjustments for Bootstrap components */
-
 .navbar {
     height: var(--header-height);
-    /* Bootstrap's .fixed-top handles position, top, and width */
 }
 
 .navbar-brand {
-    /* Logo sizing is handled directly in HTML with inline style or a specific class */
-    height: 60px; /* From your original logo img */
+    height: 60px; 
 }
 
 .navbar-nav .nav-link {
     font-weight: bold;
-    color: black; /* Default link color */
+    color: black; 
     padding: 8px 10px;
     border-radius: 3px;
     transition: color 0.3s ease;
-    position: relative; /* For the active state underline */
+    position: relative;
 }
 
 .navbar-nav .nav-link:hover {
@@ -45,10 +40,8 @@ body {
 
 .navbar-nav .nav-link.active {
     color: var(--primary-color);
-    /* Bootstrap's .active class will apply a color, you can override it */
 }
 
-/* Custom active state underline using pseudo-element */
 .navbar-nav .nav-link.active::after {
     content: '';
     position: absolute;
@@ -61,13 +54,11 @@ body {
 }
 
 .d-flex img {
-    /* For admin-icons images */
     width: 35px;
-    height: 35px; /* Ensure images are square */
+    height: 35px; 
 }
 
-/* Adjustments for container responsiveness */
-@media (min-width: 992px) { /* Adjust 'lg' breakpoint as needed */
+@media (min-width: 992px) { 
     .container-fluid {
         padding-left: 20px;
         padding-right: 20px;

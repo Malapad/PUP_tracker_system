@@ -27,57 +27,38 @@ body {
     padding-top: var(--header-height); 
 }
 
-header {
-    display: flex;
-    justify-content: center; /* Center the content wrapper */
-    background: white;
-    padding: 0 20px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+/* Styles from header.css, adjusted for Bootstrap integration */
+.navbar {
     height: var(--header-height);
-    position: fixed; /* Changed to fixed for simplicity over sticky */
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
 }
 
-.header-content-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 1600px; /* Max width for content */
+.navbar-brand {
+    height: 60px; 
 }
 
-.logo img {
-    width: 180px;
+.navbar-brand img {
     height: 60px;
+    width: 180px;
 }
 
-nav {
-    flex-grow: 1; /* Allows nav to take up space */
-    display: flex;
-    justify-content: center; /* Center the nav links */
-    gap: 20px;
-}
-
-nav a {
-    text-decoration: none;
+.navbar-nav .nav-link {
     font-weight: bold;
-    color: black;
+    color: black; 
     padding: 8px 10px;
     border-radius: 3px;
     transition: color 0.3s ease;
     position: relative;
 }
 
-nav a:hover {
+.navbar-nav .nav-link:hover {
     color: var(--primary-color);
 }
-nav a.active {
+
+.navbar-nav .nav-link.active {
     color: var(--primary-color);
 }
-nav a.active::after { /* Underline for active link */
+
+.navbar-nav .nav-link.active::after { 
     content: '';
     position: absolute;
     bottom: -5px;
@@ -88,16 +69,19 @@ nav a.active::after { /* Underline for active link */
     border-radius: 2px;
 }
 
-
-.admin-icons {
-    display: flex;
-    gap: 15px;
-    font-size: 15px;
-}
-
-.admin-icons img {
+.d-flex img {
     width: 35px;
+    height: 35px; 
 }
+
+@media (min-width: 992px) { 
+    .container-fluid {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+/* End of header.css styles */
+
 
 .container {
     background: white;

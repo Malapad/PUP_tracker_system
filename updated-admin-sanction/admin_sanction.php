@@ -1,9 +1,9 @@
 <?php
-include '../PHP/dbcon.php'; 
+include '../PHP/dbcon.php';    
 
 // IMPORTANT: Replace with actual admin session ID and name
 // For demonstration, using a placeholder. In a real system, this would come from session variables.
-$admin_id = 1; 
+$admin_id = 1;  
 $admin_name = "System Admin"; // This should come from a session, e.g., $_SESSION['admin_name']
 
 $DEFAULT_TAB = 'sanction-request';
@@ -405,33 +405,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Sanction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="./admin_sanction_styles.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <div id="toast-notification" class="toast"></div>
+    
     <header>
-        <div class="header-content-wrapper">
-            <div class="logo">
-                <a href="../HTML/admin_homepage.html">
-                    <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top py-0">
+            <div class="container-fluid px-4 px-md-5">
+                <a class="navbar-brand py-0" href="../HTML/admin_homepage.html">
+                    <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo" class="img-fluid" style="height: 60px; width: 180px;">
                 </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="../HTML/admin_homepage.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../updated-admin-violation/admin-violationpage.php">Violations</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">Student Sanction</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../user-management/user_management.php">User Management</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center">
+                        <a href="notification.html" class="me-3">
+                            <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications" style="width: 35px; height: 35px;"/>
+                        </a>
+                        <a href="admin_account.html">
+                            <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account" style="width: 35px; height: 35px;"/>
+                        </a>
+                    </div>
+                </div>
             </div>
-            <nav>
-                <a href="../HTML/admin_homepage.html">Home</a>
-                <a href="../updated-admin-violation/admin-violationpage.php">Violations</a>
-                <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="active">Student Sanction</a>
-                <a href="../user-management/user_management.php">User Management</a>
-            </nav>
-            <div class="admin-icons">
-                <a href="notification.html" class="notification">
-                    <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/></a>
-                <a href="admin_account.html" class="admin">
-                    <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account"/></a>
-            </div>
-        </div>
+        </nav>
     </header>
-
     <div class="container">
         <?php if ($active_view === 'history'): ?>
             <div class="history-header">
@@ -701,9 +717,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                                         $offense_level_display = '';
                                         if ($row['offense_level_num'] !== null) {
                                             $offense_level_display = $row['offense_level_num'] . 
-                                                                     (in_array($row['offense_level_num'] % 10, [1]) && ($row['offense_level_num'] % 100 < 11 || $row['offense_level_num'] % 100 > 13) ? 'st' : 
-                                                                     (in_array($row['offense_level_num'] % 10, [2]) && ($row['offense_level_num'] % 100 < 11 || $row['offense_level_num'] % 100 > 13) ? 'nd' : 
-                                                                     (in_array($row['offense_level_num'] % 10, [3]) && ($row['offense_level_num'] % 100 < 11 || $row['offense_level_num'] % 100 > 13) ? 'rd' : 'th'))) . ' Offense';
+                                                                        (in_array($row['offense_level_num'] % 10, [1]) && ($row['offense_level_num'] % 100 < 11 || $row['offense_level_num'] % 100 > 13) ? 'st' : 
+                                                                        (in_array($row['offense_level_num'] % 10, [2]) && ($row['offense_level_num'] % 100 < 11 || $row['offense_level_num'] % 100 > 13) ? 'nd' : 
+                                                                        (in_array($row['offense_level_num'] % 10, [3]) && ($row['offense_level_num'] % 100 < 11 || $row['offense_level_num'] % 100 > 13) ? 'rd' : 'th'))) . ' Offense';
                                         } else {
                                             $offense_level_display = 'N/A';
                                         }
@@ -720,16 +736,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                                         echo "<td>" . htmlspecialchars(date("F j, Y", strtotime($row['violation_date']))) . "</td>";
                                         echo "<td class='action-buttons-cell'>";
                                         echo "<button class='view-manage-btn'
-                                                        data-student-number='" . htmlspecialchars($row['student_number']) . "'
-                                                        data-student-name='" . $student_full_name . "'
-                                                        data-course-year-section='" . $course_year_section . "'
-                                                        data-violation-id='" . htmlspecialchars($row['violation_id']) . "'
-                                                        data-violation-type='" . htmlspecialchars($row['violation_type']) . "'
-                                                        data-disciplinary-sanction='" . htmlspecialchars($row['disciplinary_sanction'] ?? 'No sanction defined for this offense level.') . "'
-                                                        data-offense-level='" . htmlspecialchars($offense_level_display) . "'
-                                                        data-date-requested='" . htmlspecialchars(date("F j, Y", strtotime($row['violation_date']))) . "'
-                                                        data-assigned-sanction-id='" . htmlspecialchars($row['disciplinary_sanction_id'] ?? '') . "'
-                                                        ><i class='fas fa-eye'></i> Manage</button>";
+                                                     data-student-number='" . htmlspecialchars($row['student_number']) . "'
+                                                     data-student-name='" . $student_full_name . "'
+                                                     data-course-year-section='" . $course_year_section . "'
+                                                     data-violation-id='" . htmlspecialchars($row['violation_id']) . "'
+                                                     data-violation-type='" . htmlspecialchars($row['violation_type']) . "'
+                                                     data-disciplinary-sanction='" . htmlspecialchars($row['disciplinary_sanction'] ?? 'No sanction defined for this offense level.') . "'
+                                                     data-offense-level='" . htmlspecialchars($offense_level_display) . "'
+                                                     data-date-requested='" . htmlspecialchars(date("F j, Y", strtotime($row['violation_date']))) . "'
+                                                     data-assigned-sanction-id='" . htmlspecialchars($row['disciplinary_sanction_id'] ?? '') . "'
+                                                     ><i class='fas fa-eye'></i> Manage</button>";
                                         echo "</td>";
                                         echo "</tr>";
                                     }
@@ -778,19 +794,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                         <tbody>
                             <?php
                             $sql_compliance = "SELECT
-                                                    ssr.record_id, ssr.status, ssr.deadline_date, ssr.date_completed,
-                                                    u.student_number, u.first_name, u.middle_name, u.last_name,
-                                                    c.course_name, y.year, s.section_name,
-                                                    vt.violation_type,
-                                                    ds.disciplinary_sanction, ds.offense_level
-                                                FROM student_sanction_records_tbl ssr
-                                                JOIN users_tbl u ON ssr.student_number = u.student_number
-                                                JOIN violation_tbl v ON ssr.violation_id = v.violation_id
-                                                JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                                                LEFT JOIN disciplinary_sanctions ds ON ssr.assigned_sanction_id = ds.disciplinary_sanction_id
-                                                LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                                                LEFT JOIN year_tbl y ON u.year_id = y.year_id
-                                                LEFT JOIN section_tbl s ON u.section_id = s.section_id";
+                                                     ssr.record_id, ssr.status, ssr.deadline_date, ssr.date_completed,
+                                                     u.student_number, u.first_name, u.middle_name, u.last_name,
+                                                     c.course_name, y.year, s.section_name,
+                                                     vt.violation_type,
+                                                     ds.disciplinary_sanction, ds.offense_level
+                                                   FROM student_sanction_records_tbl ssr
+                                                   JOIN users_tbl u ON ssr.student_number = u.student_number
+                                                   JOIN violation_tbl v ON ssr.violation_id = v.violation_id
+                                                   JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                                                   LEFT JOIN disciplinary_sanctions ds ON ssr.assigned_sanction_id = ds.disciplinary_sanction_id
+                                                   LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                                                   LEFT JOIN year_tbl y ON u.year_id = y.year_id
+                                                   LEFT JOIN section_tbl s ON u.section_id = s.section_id";
                             
                             $compliance_params = [];
                             $compliance_paramTypes = "";
@@ -821,16 +837,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                                         $course_year_section = htmlspecialchars(($row['course_name'] ?? 'N/A') . ' | ' . ($row['year'] ?? 'N/A') . ' - ' . ($row['section_name'] ?? 'N/A'));
 
                                         echo "<tr class='compliance-row-data' 
-                                                data-record-id='" . htmlspecialchars($row['record_id']) . "'
-                                                data-student-number='" . htmlspecialchars($row['student_number']) . "'
-                                                data-student-name='" . $student_full_name . "'
-                                                data-course-year-section='" . $course_year_section . "'
-                                                data-violation-type='" . htmlspecialchars($row['violation_type']) . "'
-                                                data-disciplinary-sanction='" . htmlspecialchars($row['disciplinary_sanction'] ?? 'N/A') . "'
-                                                data-offense-level='" . htmlspecialchars($row['offense_level'] ?? 'N/A') . "'
-                                                data-date-of-compliance='" . htmlspecialchars(date("F j, Y", strtotime($row['deadline_date']))) . "'
-                                                data-status='" . htmlspecialchars($row['status']) . "'
-                                              >";
+                                                      data-record-id='" . htmlspecialchars($row['record_id']) . "'
+                                                      data-student-number='" . htmlspecialchars($row['student_number']) . "'
+                                                      data-student-name='" . $student_full_name . "'
+                                                      data-course-year-section='" . $course_year_section . "'
+                                                      data-violation-type='" . htmlspecialchars($row['violation_type']) . "'
+                                                      data-disciplinary-sanction='" . htmlspecialchars($row['disciplinary_sanction'] ?? 'N/A') . "'
+                                                      data-offense-level='" . htmlspecialchars($row['offense_level'] ?? 'N/A') . "'
+                                                      data-date-of-compliance='" . htmlspecialchars(date("F j, Y", strtotime($row['deadline_date']))) . "'
+                                                      data-status='" . htmlspecialchars($row['status']) . "'
+                                                    >";
                                         echo "<td>" . htmlspecialchars($row['student_number']) . "</td>";
                                         echo "<td class='text-wrap-content'>" . $student_full_name . "</td>";
                                         echo "<td>" . htmlspecialchars($row['course_name'] ?? 'N/A') . "</td>";
@@ -1080,6 +1096,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="./admin_sanction.js"></script>
 </body>
 </html>
