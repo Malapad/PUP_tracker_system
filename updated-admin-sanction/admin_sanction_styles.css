@@ -27,7 +27,7 @@ body {
     padding-top: var(--header-height); 
 }
 
-/* Styles from header.css, adjusted for Bootstrap integration */
+/*Header*/
 .navbar {
     height: var(--header-height);
 }
@@ -80,7 +80,7 @@ body {
         padding-right: 20px;
     }
 }
-/* End of header.css styles */
+/* End of header */
 
 
 .container {

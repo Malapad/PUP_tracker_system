@@ -1,17 +1,14 @@
 <?php
 include '../PHP/dbcon.php';    
 
-// IMPORTANT: Replace with actual admin session ID and name
-// For demonstration, using a placeholder. In a real system, this would come from session variables.
 $admin_id = 1;  
-$admin_name = "System Admin"; // This should come from a session, e.g., $_SESSION['admin_name']
+$admin_name = "System Admin"; // This should come from a session, 
 
 $DEFAULT_TAB = 'sanction-request';
 $active_tab = $_GET['tab'] ?? $DEFAULT_TAB;
-$active_view = $_GET['view'] ?? 'list'; // 'list' for main table, 'history' for compliance history, 'sanction_config_history' for sanction config history
+$active_view = $_GET['view'] ?? 'list'; 
 
-// --- AJAX Actions for Sanction Request Tab ---
-// Handle "Approve Sanction" from modal
+// AJAX Actions for Sanction Request Tab
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['approve_sanction'])) {
     $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
     header('Content-Type: application/json');
@@ -76,7 +73,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['approve_sanction'])) {
     exit;
 }
 
-// --- Handle marking sanction status (Completed/Pending) ---
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status'])) {
     $response = ['success' => false, 'message' => 'An error occurred.'];
     header('Content-Type: application/json');
@@ -939,7 +935,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                     </div>
                 </div>
             </div>
-        <?php endif; ?> </div>
+        <?php endif; ?> </div> <!-- Container-->
 
     <div id="viewSanctionDetailsModal" class="modal" style="display:none;">
         <div class="modal-content">
