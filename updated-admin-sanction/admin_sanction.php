@@ -4,7 +4,7 @@ include '../PHP/dbcon.php';
 // IMPORTANT: Replace with actual admin session ID and name
 // For demonstration, using a placeholder. In a real system, this would come from session variables.
 $admin_id = 1; 
-$admin_name = "System Admin";
+$admin_name = "System Admin"; // This should come from a session, e.g., $_SESSION['admin_name']
 
 $DEFAULT_TAB = 'sanction-request';
 $active_tab = $_GET['tab'] ?? $DEFAULT_TAB;
@@ -27,25 +27,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['approve_sanction'])) {
         exit;
     }
 
-    $stmt = $conn->prepare(
-        "INSERT INTO student_sanction_records_tbl (student_number, violation_id, assigned_sanction_id, deadline_date, assigned_by_admin_id, status) VALUES (?, ?, ?, ?, ?, 'Pending')"
-    );
+    $conn->begin_transaction();
+    try {
+        // Insert into student_sanction_records_tbl
+        $stmt = $conn->prepare(
+            "INSERT INTO student_sanction_records_tbl (student_number, violation_id, assigned_sanction_id, deadline_date, assigned_by_admin_id, status) VALUES (?, ?, ?, ?, ?, 'Pending')"
+        );
 
-    if ($stmt) {
+        if (!$stmt) {
+            throw new mysqli_sql_exception('Database prepare error for insert: ' . htmlspecialchars($conn->error));
+        }
+
         $stmt->bind_param("siisi", $student_number, $violation_id, $assigned_sanction_id, $deadline_date, $admin_id);
-        if ($stmt->execute()) {
-            if ($stmt->affected_rows > 0) {
-                $response['success'] = true;
-                $response['message'] = 'Sanction approved and assigned successfully!';
-            } else {
-                $response['message'] = 'Failed to assign sanction. Please try again.';
+        if (!$stmt->execute()) {
+            throw new mysqli_sql_exception('Database execution error for insert: ' . htmlspecialchars($stmt->error));
+        }
+
+        if ($stmt->affected_rows > 0) {
+            // Update the sanction_requests_tbl to mark it as inactive (or delete if preferred)
+            // For now, let's mark it inactive, assuming it's linked to a violation that is now sanctioned.
+            // If sanction_requests_tbl is specifically for *pending* requests that get moved,
+            // you might delete the row from that table instead.
+            // Based on the SQL schema, violation_tbl has no status, so we handle it by checking ssr.
+            // If the violation_tbl is also a 'request' table, uncomment the below:
+            /*
+            $stmt_update_request = $conn->prepare("UPDATE sanction_requests_tbl SET is_active = 0 WHERE student_number = ? AND violation_id = ?"); // Assuming violation_id is in sanction_requests_tbl
+            if ($stmt_update_request) {
+                $stmt_update_request->bind_param("si", $student_number, $violation_id);
+                $stmt_update_request->execute();
+                $stmt_update_request->close();
             }
+            */
+            
+            $response['success'] = true;
+            $response['message'] = 'Sanction approved and assigned successfully!';
         } else {
-            $response['message'] = 'Database execution error: ' . htmlspecialchars($stmt->error);
+            $response['message'] = 'Failed to assign sanction. Please try again.';
         }
         $stmt->close();
-    } else {
-        $response['message'] = 'Database prepare error: ' . htmlspecialchars($conn->error);
+
+        $conn->commit();
+    } catch (mysqli_sql_exception $exception) {
+        $conn->rollback();
+        $response['message'] = 'Database transaction failed: ' . $exception->getMessage();
     }
 
     echo json_encode($response);
@@ -527,7 +551,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                 if ($active_tab == 'sanction-request' && (!empty($filterViolation) || !empty($search) || !empty($filterCourse) || !empty($filterYear) || !empty($filterSection))) {
                     $baseUrl = strtok($_SERVER["REQUEST_URI"], '?');
                     echo '<div class="clear-filters-container">';
-                    echo '      <a href="' . htmlspecialchars($baseUrl) . '?tab=sanction-request" class="clear-filters-btn"><i class="fas fa-eraser"></i> Clear Filters</a>';
+                    echo '       <a href="' . htmlspecialchars($baseUrl) . '?tab=sanction-request" class="clear-filters-btn"><i class="fas fa-eraser"></i> Clear Filters</a>';
                     echo '</div>';
                 }
                 ?>
@@ -609,29 +633,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                         <thead>
                             <tr>
                                 <th>Student Number</th>
-                                <th>Student Name</th>
+                                <th class="text-wrap-header">Student Name</th>
                                 <th>Course</th>
-                                <th>Year</th>
-                                <th>Date of Request</th>
-                                <th>Violation Type</th>
+                                <th>Year & Section</th>
+                                <th class="text-wrap-header">Violation Type</th>
+                                <th class="text-wrap-header">Disciplinary Sanction</th>
                                 <th>Offense Level</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th>Date Requested</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php
                             $sql = "SELECT
-                                        u.student_number, u.first_name, u.middle_name, u.last_name,
+                                        v.violation_id, v.violation_date, v.student_number,
+                                        u.first_name, u.middle_name, u.last_name,
                                         c.course_name, y.year, s.section_name,
-                                        v.violation_id, v.violation_date, vt.violation_type,
-                                        (SELECT COUNT(*) FROM violation_tbl WHERE student_number = u.student_number AND violation_type = v.violation_type) as offense_level
+                                        vt.violation_type_id, vt.violation_type,
+                                        (SELECT COUNT(*) FROM violation_tbl WHERE student_number = u.student_number AND violation_type = vt.violation_type_id) as offense_level_count,
+                                        ds.disciplinary_sanction_id, ds.disciplinary_sanction, ds.offense_level
                                     FROM violation_tbl v
                                     JOIN users_tbl u ON v.student_number = u.student_number
                                     JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
                                     LEFT JOIN course_tbl c ON u.course_id = c.course_id
                                     LEFT JOIN year_tbl y ON u.year_id = y.year_id
                                     LEFT JOIN section_tbl s ON u.section_id = s.section_id
+                                    LEFT JOIN disciplinary_sanctions ds ON vt.violation_type_id = ds.violation_type_id AND ds.offense_level = (SELECT COUNT(*) FROM violation_tbl WHERE student_number = u.student_number AND violation_type = vt.violation_type_id)
                                     WHERE NOT EXISTS (
                                         SELECT 1 FROM student_sanction_records_tbl ssr WHERE ssr.violation_id = v.violation_id
                                     )";
@@ -662,22 +689,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                                 if ($result->num_rows > 0) {
                                     while ($row = $result->fetch_assoc()) {
                                         $student_full_name = htmlspecialchars($row['first_name'] . ' ' . ($row['middle_name'] ? $row['middle_name'][0] . '. ' : '') . $row['last_name']);
+                                        $course_year_section = htmlspecialchars(($row['course_name'] ?? 'N/A') . ' | ' . ($row['year'] ?? 'N/A') . ' - ' . ($row['section_name'] ?? 'N/A'));
+                                        
                                         echo "<tr>";
                                         echo "<td>" . htmlspecialchars($row['student_number']) . "</td>";
-                                        echo "<td>" . $student_full_name . "</td>";
+                                        echo "<td class='text-wrap-content'>" . $student_full_name . "</td>";
                                         echo "<td>" . htmlspecialchars($row['course_name'] ?? 'N/A') . "</td>";
-                                        echo "<td>" . htmlspecialchars($row['year'] ?? 'N/A') . "</td>";
+                                        echo "<td>" . htmlspecialchars(($row['year'] ?? 'N/A') . ' - ' . ($row['section_name'] ?? 'N/A')) . "</td>";
+                                        echo "<td class='text-wrap-content'>" . htmlspecialchars($row['violation_type']) . "</td>";
+                                        echo "<td class='text-wrap-content'>" . htmlspecialchars($row['disciplinary_sanction'] ?? 'No sanction defined for this offense level.') . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['offense_level'] ?? 'N/A') . "</td>";
                                         echo "<td>" . htmlspecialchars(date("F j, Y", strtotime($row['violation_date']))) . "</td>";
-                                        echo "<td>" . htmlspecialchars($row['violation_type']) . "</td>";
-                                        echo "<td>" . htmlspecialchars($row['offense_level']) . "</td>";
-                                        echo "<td><button class='sanction-request-btn'>Sanction</button></td>";
                                         echo "<td class='action-buttons-cell'>";
                                         echo "<button class='view-manage-btn'
-                                                    data-student-number='" . htmlspecialchars($row['student_number']) . "'
-                                                    data-student-name='" . $student_full_name . "'
-                                                    data-violation-id='" . htmlspecialchars($row['violation_id']) . "'
-                                                    data-violation-type='" . htmlspecialchars($row['violation_type']) . "'
-                                                    ><i class='fas fa-eye'></i> Manage</button>";
+                                                        data-student-number='" . htmlspecialchars($row['student_number']) . "'
+                                                        data-student-name='" . $student_full_name . "'
+                                                        data-course-year-section='" . $course_year_section . "'
+                                                        data-violation-id='" . htmlspecialchars($row['violation_id']) . "'
+                                                        data-violation-type='" . htmlspecialchars($row['violation_type']) . "'
+                                                        data-disciplinary-sanction='" . htmlspecialchars($row['disciplinary_sanction'] ?? '') . "'
+                                                        data-offense-level='" . htmlspecialchars($row['offense_level'] ?? '') . "'
+                                                        data-date-requested='" . htmlspecialchars(date("F j, Y", strtotime($row['violation_date']))) . "'
+                                                        data-assigned-sanction-id='" . htmlspecialchars($row['disciplinary_sanction_id'] ?? '') . "'
+                                                        ><i class='fas fa-eye'></i> Manage</button>";
                                         echo "</td>";
                                         echo "</tr>";
                                     }
@@ -695,10 +729,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
             </div>
 
             <div id="sanction-compliance" class="tab-content" style="<?php echo ($active_tab == 'sanction-compliance' ? 'display: block;' : 'display: none;'); ?>">
+                <?php $filterComplianceStatus = $_GET['status_filter'] ?? 'All'; ?>
                 <div class="compliance-controls">
                     <div class="compliance-filter-tabs">
-                        <a href="?tab=sanction-compliance&status_filter=Pending" class="filter-tab-btn <?php echo ((($_GET['status_filter'] ?? 'Pending') == 'Pending') ? 'active' : ''); ?>">Pending</a>
-                        <a href="?tab=sanction-compliance&status_filter=Completed" class="filter-tab-btn <?php echo ((($_GET['status_filter'] ?? 'Pending') == 'Completed') ? 'active' : ''); ?>">Completed</a>
+                        <a href="?tab=sanction-compliance&status_filter=All" class="filter-tab-btn <?php echo (($filterComplianceStatus == 'All') ? 'active' : ''); ?>">All</a>
+                        <a href="?tab=sanction-compliance&status_filter=Pending" class="filter-tab-btn <?php echo (($filterComplianceStatus == 'Pending') ? 'active' : ''); ?>">Pending</a>
+                        <a href="?tab=sanction-compliance&status_filter=Completed" class="filter-tab-btn <?php echo (($filterComplianceStatus == 'Completed') ? 'active' : ''); ?>">Completed</a>
                     </div>
                     <a href="?tab=sanction-compliance&view=history" class="view-history-btn">
                         <i class="fas fa-history"></i> View History
@@ -710,63 +746,91 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                         <thead>
                             <tr>
                                 <th>Student Number</th>
-                                <th>Student Name</th>
-                                <th>Violation Type</th>
-                                <th>Assigned Sanction</th>
-                                <th>Deadline of Compliance</th>
+                                <th class="text-wrap-header">Student Name</th>
+                                <th>Course</th>
+                                <th>Year & Section</th>
+                                <th class="text-wrap-header">Violation Type</th>
+                                <th class="text-wrap-header">Disciplinary Sanction</th>
+                                <th>Offense Level</th>
+                                <th>Date of Compliance</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th class="action-column <?php echo ($filterComplianceStatus == 'All' ? 'hidden' : ''); ?>">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php
-                            $filterComplianceStatus = $_GET['status_filter'] ?? 'Pending';
-                            $sql_ongoing = "SELECT
-                                                ssr.record_id, ssr.status, ssr.deadline_date,
-                                                u.student_number, u.first_name, u.middle_name, u.last_name,
-                                                vt.violation_type,
-                                                st.sanction_name
-                                            FROM student_sanction_records_tbl ssr
-                                            JOIN users_tbl u ON ssr.student_number = u.student_number
-                                            JOIN violation_tbl v ON ssr.violation_id = v.violation_id
-                                            JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                                            JOIN sanction_type_tbl st ON ssr.assigned_sanction_id = st.sanction_id
-                                            WHERE ssr.status = ?
-                                            ORDER BY ssr.deadline_date ASC";
-
-                            $stmt_ongoing = $conn->prepare($sql_ongoing);
-                            $stmt_ongoing->bind_param("s", $filterComplianceStatus);
-                            $stmt_ongoing->execute();
-                            $result_ongoing = $stmt_ongoing->get_result();
+                            $sql_compliance = "SELECT
+                                                    ssr.record_id, ssr.status, ssr.deadline_date, ssr.date_completed,
+                                                    u.student_number, u.first_name, u.middle_name, u.last_name,
+                                                    c.course_name, y.year, s.section_name,
+                                                    vt.violation_type,
+                                                    ds.disciplinary_sanction, ds.offense_level
+                                                FROM student_sanction_records_tbl ssr
+                                                JOIN users_tbl u ON ssr.student_number = u.student_number
+                                                JOIN violation_tbl v ON ssr.violation_id = v.violation_id
+                                                JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                                                LEFT JOIN disciplinary_sanctions ds ON ssr.assigned_sanction_id = ds.disciplinary_sanction_id
+                                                LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                                                LEFT JOIN year_tbl y ON u.year_id = y.year_id
+                                                LEFT JOIN section_tbl s ON u.section_id = s.section_id";
                             
-                            if ($result_ongoing && $result_ongoing->num_rows > 0) {
-                                while ($row = $result_ongoing->fetch_assoc()) {
-                                    $status_class = 'status-default';
-                                    if ($row['status'] == 'Pending') $status_class = 'status-pending';
-                                    if ($row['status'] == 'Completed') $status_class = 'status-completed';
+                            $compliance_params = [];
+                            $compliance_paramTypes = "";
 
-                                    echo "<tr>";
-                                    echo "<td>" . htmlspecialchars($row['student_number']) . "</td>";
-                                    echo "<td>" . htmlspecialchars($row['first_name'] . ' ' . ($row['middle_name'] ? $row['middle_name'][0] . '. ' : '') . $row['last_name']) . "</td>";
-                                    echo "<td>" . htmlspecialchars($row['violation_type']) . "</td>";
-                                    echo "<td>" . htmlspecialchars($row['sanction_name']) . "</td>";
-                                    echo "<td>" . htmlspecialchars(date("F j, Y", strtotime($row['deadline_date']))) . "</td>";
-                                    echo "<td><span class='status-badge " . $status_class . "'>" . htmlspecialchars($row['status']) . "</span></td>";
-                                    
-                                    // MODIFIED: Action button now toggles status
-                                    echo "<td class='action-buttons-cell'>";
-                                    if ($row['status'] == 'Pending') {
-                                        echo "<button class='update-status-btn status-completed-btn' data-record-id='" . htmlspecialchars($row['record_id']) . "' data-student-number='" . htmlspecialchars($row['student_number']) . "' data-new-status='Completed'><i class='fas fa-check-circle'></i> Mark Completed</button>";
-                                    } else {
-                                        echo "<button class='update-status-btn status-pending-btn' data-record-id='" . htmlspecialchars($row['record_id']) . "' data-student-number='" . htmlspecialchars($row['student_number']) . "' data-new-status='Pending'><i class='fas fa-undo'></i> Mark as Pending</button>";
-                                    }
-                                    echo "</td>";
-                                    echo "</tr>";
-                                }
-                            } else {
-                                echo "<tr><td colspan='7' class='no-records-cell'>No " . strtolower(htmlspecialchars($filterComplianceStatus)) . " sanctions found.</td></tr>";
+                            if ($filterComplianceStatus != 'All') {
+                                $sql_compliance .= " WHERE ssr.status = ?";
+                                $compliance_params[] = $filterComplianceStatus;
+                                $compliance_paramTypes .= "s";
                             }
-                            $stmt_ongoing->close();
+                            
+                            $sql_compliance .= " ORDER BY ssr.date_assigned DESC";
+
+                            $stmt_compliance = $conn->prepare($sql_compliance);
+                            if ($stmt_compliance) {
+                                if (!empty($compliance_params)) {
+                                    $stmt_compliance->bind_param($compliance_paramTypes, ...$compliance_params);
+                                }
+                                $stmt_compliance->execute();
+                                $result_compliance = $stmt_compliance->get_result();
+                                
+                                if ($result_compliance && $result_compliance->num_rows > 0) {
+                                    while ($row = $result_compliance->fetch_assoc()) {
+                                        $status_class = 'status-default';
+                                        if ($row['status'] == 'Pending') $status_class = 'status-pending';
+                                        if ($row['status'] == 'Completed') $status_class = 'status-completed';
+
+                                        $student_full_name = htmlspecialchars($row['first_name'] . ' ' . ($row['middle_name'] ? $row['middle_name'][0] . '. ' : '') . $row['last_name']);
+                                        $course_year_section = htmlspecialchars(($row['course_name'] ?? 'N/A') . ' | ' . ($row['year'] ?? 'N/A') . ' - ' . ($row['section_name'] ?? 'N/A'));
+
+                                        echo "<tr>";
+                                        echo "<td>" . htmlspecialchars($row['student_number']) . "</td>";
+                                        echo "<td class='text-wrap-content'>" . $student_full_name . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['course_name'] ?? 'N/A') . "</td>";
+                                        echo "<td>" . htmlspecialchars(($row['year'] ?? 'N/A') . ' - ' . ($row['section_name'] ?? 'N/A')) . "</td>";
+                                        echo "<td class='text-wrap-content'>" . htmlspecialchars($row['violation_type']) . "</td>";
+                                        echo "<td class='text-wrap-content'>" . htmlspecialchars($row['disciplinary_sanction'] ?? 'N/A') . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['offense_level'] ?? 'N/A') . "</td>";
+                                        echo "<td>" . htmlspecialchars(date("F j, Y", strtotime($row['deadline_date']))) . "</td>";
+                                        echo "<td><span class='status-badge " . $status_class . "'>" . htmlspecialchars($row['status']) . "</span></td>";
+                                        
+                                        echo "<td class='action-buttons-cell action-column " . ($filterComplianceStatus == 'All' ? 'hidden' : '') . "'>";
+                                        if ($row['status'] == 'Pending') {
+                                            echo "<button class='update-status-btn status-completed-btn' data-record-id='" . htmlspecialchars($row['record_id']) . "' data-student-number='" . htmlspecialchars($row['student_number']) . "' data-new-status='Completed'><i class='fas fa-check-circle'></i> Mark Completed</button>";
+                                        } else {
+                                            echo "<button class='update-status-btn status-pending-btn' data-record-id='" . htmlspecialchars($row['record_id']) . "' data-student-number='" . htmlspecialchars($row['student_number']) . "' data-new-status='Pending'><i class='fas fa-undo'></i> Mark as Pending</button>";
+                                        }
+                                        echo "</td>";
+                                        echo "</tr>";
+                                    }
+                                } else {
+                                    $colspan = ($filterComplianceStatus == 'All' ? '9' : '10');
+                                    echo "<tr><td colspan='" . $colspan . "' class='no-records-cell'>No " . strtolower(htmlspecialchars($filterComplianceStatus)) . " sanctions found.</td></tr>";
+                                }
+                                $stmt_compliance->close();
+                            } else {
+                                $colspan = ($filterComplianceStatus == 'All' ? '9' : '10');
+                                echo "<tr><td colspan='" . $colspan . "' class='no-records-cell'>Database query error.</td></tr>";
+                            }
                             ?>
                         </tbody>
                     </table>
@@ -836,7 +900,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
     <div id="viewSanctionDetailsModal" class="modal" style="display:none;">
         <div class="modal-content">
             <div class="head-modal">
-                <h3>Manage Sanction Request</h3>
+                <h3>Sanction Request Management</h3>
                 <span class="close-modal-button" data-modal="viewSanctionDetailsModal">&times;</span>
             </div>
             <div id="approveSanctionModalMessage" class="modal-message" style="display: none;"></div>
@@ -844,32 +908,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                 <input type="hidden" name="approve_sanction" value="1">
                 <input type="hidden" id="approveStudentNumber" name="student_number">
                 <input type="hidden" id="approveViolationId" name="violation_id">
+                <input type="hidden" id="approveAssignedSanctionId" name="assigned_sanction_id">
+                
 
                 <div class="details-content">
-                    <p><strong>Student Number:</strong> <span id="detailStudentNumber"></span></p>
                     <p><strong>Student Name:</strong> <span id="detailStudentName"></span></p>
+                    <p><strong>Student Number:</strong> <span id="detailStudentNumber"></span></p>
+                    <p><strong>Course | Year & Section:</strong> <span id="detailCourseYearSection"></span></p>
+                    <br>
                     <p><strong>Violation Type:</strong> <span id="detailViolationType"></span></p>
+                    <p><strong>Disciplinary Sanction:</strong> <span id="detailDisciplinarySanction"></span></p>
+                    <p><strong>Offense Level:</strong> <span id="detailOffenseLevel"></span></p>
+                    <br>
+                    <p><strong>Date Requested:</strong> <span id="detailDateRequested"></span></p>
                 </div>
 
                 <div class="row">
                     <div class="column full-width">
-                        <label for="assignedSanction">Assign Sanction:</label>
-                        <select id="assignedSanction" name="assigned_sanction_id" class="modal-select" required>
-                            <option value="" disabled selected>Choose a sanction...</option>
-                            <?php
-                            $sanctions_result = $conn->query("SELECT sanction_id, sanction_name FROM sanction_type_tbl ORDER BY sanction_name ASC");
-                            if ($sanctions_result) {
-                                while ($sanc_row = $sanctions_result->fetch_assoc()) {
-                                    echo "<option value='" . htmlspecialchars($sanc_row['sanction_id']) . "'>" . htmlspecialchars($sanc_row['sanction_name']) . "</option>";
-                                }
-                            }
-                            ?>
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="column full-width">
-                        <label for="deadlineDate">Set Deadline:</label>
+                        <label for="deadlineDate">Set Starting Date for Compliance:</label>
                         <input type="date" id="deadlineDate" name="deadline_date" class="modal-input" required>
                     </div>
                 </div>

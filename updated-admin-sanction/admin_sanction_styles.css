@@ -285,6 +285,22 @@ tbody td {
     border-bottom: 1px solid #eee;
 }
 
+/* NEW: for text wrapping in table headers and cells */
+.text-wrap-header {
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+.text-wrap-content {
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+/* NEW: hide action column for 'All' tab in compliance */
+.action-column.hidden {
+    display: none;
+}
+
 .status-badge {
     padding: 4px 10px;
     border-radius: 12px;
@@ -300,7 +316,7 @@ tbody td {
 .status-warning { background-color: #ff9800; color: #333; }
 .status-default { background-color: #6c757d; }
 
-.sanction-request-btn {
+.sanction-request-btn { /* This seems to be a placeholder/old style, not used in the new "Manage" button */
     background-color: #ffc107;
     color: #333;
     border: none;
@@ -374,6 +390,7 @@ tbody td {
     font-weight: 600;
     text-decoration: none;
     transition: all 0.2s ease-in-out;
+    color: #555; /* Default color for all filter tabs */
 }
 
 .filter-tab-btn:not(:last-child) {
@@ -386,14 +403,13 @@ tbody td {
 
 .filter-tab-btn.active {
     background-color: var(--primary-color);
-    color: white !important;
+    color: white !important; /* Force white for active tab */
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.filter-tab-btn:not(.active) { color: #555; }
-.filter-tab-btn:first-of-type.active { color: white; }
-.filter-tab-btn:first-of-type:not(.active) { color: var(--status-pending-color); }
-.filter-tab-btn:last-of-type:not(.active) { color: var(--status-completed-color); }
+/* Specific color for Pending/Completed when not active to provide visual hint */
+.filter-tab-btn[href*="status_filter=Pending"]:not(.active) { color: var(--status-pending-color); }
+.filter-tab-btn[href*="status_filter=Completed"]:not(.active) { color: var(--status-completed-color); }
 
 
 /* View History Button */
@@ -552,6 +568,7 @@ tbody td {
 }
 
 /* Consolidated modal button style for Add/Edit actions */
+.modal-button-publish, /* renamed from original request but matching screenshot */
 .modal-button-add-edit { 
     background-color: #28a745; /* Green */
     padding: 10px 20px;
@@ -565,9 +582,11 @@ tbody td {
     align-items: center;
     justify-content: center;
 }
+.modal-button-publish:hover,
 .modal-button-add-edit:hover {
     background-color: #218838; /* Darker green on hover */
 }
+.modal-button-publish:focus,
 .modal-button-add-edit:focus {
     box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.35); /* Green glow on focus */
     outline: none;
@@ -585,7 +604,7 @@ tbody td {
 .details-content p strong { color: #000; }
 
 /* Generic & Action Buttons */
-.button, .btn-danger, .btn-secondary, .modal-button-cancel, .view-manage-btn, .update-status-btn {
+.button, .btn-danger, .btn-secondary, .modal-button-cancel, .view-manage-btn, .update-status-btn, .btn-confirm-delete { /* Added .btn-confirm-delete */
     padding: 6px 14px;
     border: none;
     color: white;
@@ -598,7 +617,7 @@ tbody td {
     justify-content: center;
     text-decoration: none;
 }
-.button i, .btn-danger i, .btn-secondary i, .view-manage-btn i, .update-status-btn i { margin-right: 6px; }
+.button i, .btn-danger i, .btn-secondary i, .view-manage-btn i, .update-status-btn i, .btn-confirm-delete i { margin-right: 6px; } /* Added .btn-confirm-delete i */
 
 .view-manage-btn { background-color: var(--secondary-color); }
 .view-manage-btn:hover { background-color: var(--secondary-hover-color); }
@@ -614,6 +633,15 @@ tbody td {
 
 .btn-secondary { background-color: #007bff; }
 .btn-secondary:hover { background-color: #0069d9; }
+
+/* Confirm Delete button color */
+.btn-confirm-delete {
+    background-color: #dc3545; /* Red */
+}
+.btn-confirm-delete:hover {
+    background-color: #c82333; /* Darker red on hover */
+}
+
 
 /* Toast */
 .toast {
@@ -633,7 +661,11 @@ tbody td {
 }
 
 .toast.top-center { top: 20px; }
-.toast.show { opacity: 1; visibility: visible; top: 90px; }
+.toast.bottom-center { bottom: 20px; top: unset;} /* Added for bottom-center toast */
+.toast.show { opacity: 1; visibility: visible; top: 90px; } /* This affects top-center */
+.toast.show.bottom-center { bottom: 90px; top: unset; } /* Specific for bottom-center */
+
+
 .toast.success { background-color: #28a745; }
 .toast.error { background-color: #dc3545; }
 

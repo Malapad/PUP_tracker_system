@@ -104,6 +104,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
+    // Helper to clear modal message
+    const clearModalMessage = (modalMessageDiv) => {
+        if (modalMessageDiv) {
+            modalMessageDiv.textContent = '';
+            modalMessageDiv.style.display = 'none';
+        }
+    };
+
+
     // --- Global Modal Close Listener (for clicks outside modal and close buttons) ---
     document.body.addEventListener('click', function(e) {
         // Handle all close buttons
@@ -143,31 +152,77 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            // Remove active from all tabs and add to clicked tab
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
 
+            // Hide all tab contents and show the target one
             tabContents.forEach(content => {
                 content.style.display = (content.id === targetTab) ? 'block' : 'none';
             });
 
+            // Update URL without reloading
             currentUrl.searchParams.set('tab', targetTab);
             currentUrl.searchParams.delete('view'); // Clear view param when switching main tabs
+            currentUrl.searchParams.delete('status_filter'); // Clear status filter when switching main tabs
+            if (targetTab === 'sanction-compliance') {
+                currentUrl.searchParams.set('status_filter', 'All'); // Default to 'All' for compliance tab
+            }
             window.history.pushState({ path: currentUrl.href }, '', currentUrl.href);
+
+            // Special handling for Sanction Compliance tab's action column visibility
+            updateComplianceTableActionColumnVisibility();
         });
     });
+
+    // Function to update the visibility of the action column in Sanction Compliance tab
+    function updateComplianceTableActionColumnVisibility() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab');
+        const statusFilter = urlParams.get('status_filter');
+        const actionColumns = document.querySelectorAll('#sanction-compliance .action-column');
+        
+        if (activeTab === 'sanction-compliance') {
+            if (statusFilter === 'All') {
+                actionColumns.forEach(col => col.classList.add('hidden'));
+            } else {
+                actionColumns.forEach(col => col.classList.remove('hidden'));
+            }
+        }
+    }
+
+    // Call on load to ensure correct visibility based on initial URL
+    updateComplianceTableActionColumnVisibility();
+
 
     // --- Sanction Request Tab Logic ---
     document.querySelector('#sanction-request')?.addEventListener('click', (e) => {
         const viewBtn = e.target.closest('.view-manage-btn');
         if (viewBtn) {
+            // Populate modal fields from data attributes
             document.getElementById('detailStudentNumber').textContent = viewBtn.dataset.studentNumber;
             document.getElementById('detailStudentName').textContent = viewBtn.dataset.studentName;
+            document.getElementById('detailCourseYearSection').textContent = viewBtn.dataset.courseYearSection; // New
             document.getElementById('detailViolationType').textContent = viewBtn.dataset.violationType;
+            document.getElementById('detailDisciplinarySanction').textContent = viewBtn.dataset.disciplinarySanction || 'N/A'; // New
+            document.getElementById('detailOffenseLevel').textContent = viewBtn.dataset.offenseLevel || 'N/A'; // New
+            document.getElementById('detailDateRequested').textContent = viewBtn.dataset.dateRequested; // New
+
+            // Set hidden inputs for form submission
             document.getElementById('approveStudentNumber').value = viewBtn.dataset.studentNumber;
             document.getElementById('approveViolationId').value = viewBtn.dataset.violationId;
+            // IMPORTANT: The assigned_sanction_id should ideally come from the selected disciplinary_sanction_id
+            // If the disciplinary sanction is pre-determined by offense level, we can pass its ID.
+            // For now, I'm assuming data-assigned-sanction-id holds this.
+            document.getElementById('approveAssignedSanctionId').value = viewBtn.dataset.assignedSanctionId; // New
+            
+            // Set min date for deadline
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('deadlineDate').setAttribute('min', today);
+            document.getElementById('deadlineDate').value = today; // Pre-fill with today
+
             openModal(viewSanctionDetailsModal);
+            clearModalMessage(approveSanctionModalMessage); // Clear previous messages
         }
     });
 
@@ -175,24 +230,32 @@ document.addEventListener("DOMContentLoaded", () => {
         approveSanctionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitButton = approveSanctionForm.querySelector('button[type="submit"]');
+            const originalButtonContent = submitButton.innerHTML;
+            
             submitButton.disabled = true;
             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Approving...';
+            
+            clearModalMessage(approveSanctionModalMessage); // Clear previous messages
+
             try {
                 const formData = new FormData(approveSanctionForm);
                 const response = await fetch(approveSanctionForm.action, { method: 'POST', body: formData });
                 const result = await response.json();
+
                 if (result.success) {
                     closeModal(viewSanctionDetailsModal, approveSanctionModalMessage, approveSanctionForm);
                     showToast(result.message, 'success');
-                    setTimeout(() => window.location.href = window.location.pathname + '?tab=sanction-compliance', 1500);
+                    // Redirect to sanction compliance tab, filtered by Pending to see the newly added sanction
+                    setTimeout(() => window.location.href = window.location.pathname + '?tab=sanction-compliance&status_filter=Pending', 1500);
                 } else {
                     displayModalMessage(approveSanctionModalMessage, result.message || 'An unknown error occurred.', 'error');
                 }
             } catch (error) {
+                console.error('Approval form submission error:', error);
                 displayModalMessage(approveSanctionModalMessage, 'A network error occurred. Please try again.', 'error');
             } finally {
                 submitButton.disabled = false;
-                submitButton.innerHTML = '<i class="fas fa-check"></i> Approve';
+                submitButton.innerHTML = originalButtonContent;
             }
         });
     }
@@ -206,7 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const recordId = updateBtn.dataset.recordId;
         const newStatus = updateBtn.dataset.newStatus;
         const studentNumber = updateBtn.dataset.studentNumber;
-        const originalBtnHTML = updateBtn.innerHTML;
+        const originalButtonContent = updateBtn.innerHTML;
 
         updateBtn.disabled = true;
         updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
@@ -216,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
             formData.append('update_sanction_status', '1');
             formData.append('record_id', recordId);
             formData.append('new_status', newStatus);
-            formData.append('student_number', studentNumber);
+            formData.append('student_number', studentNumber); // For logging
 
             const response = await fetch(window.location.pathname, {
                 method: 'POST',
@@ -236,11 +299,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         // Check if table is empty after removal
                         const tableBody = document.querySelector('#sanction-compliance tbody');
                         if (tableBody && tableBody.rows.length === 0) {
+                            // Determine current filter to display correct 'no records' message
+                            const currentUrl = new URL(window.location.href);
+                            const statusFilter = currentUrl.searchParams.get('status_filter') || 'All'; // Default to 'All'
                             const colCount = document.querySelector('#sanction-compliance thead th').length;
-                            const statusFilter = new URL(window.location.href).searchParams.get('status_filter') || 'Pending';
-                            tableBody.innerHTML = `<tr><td colspan="${colCount}" class="no-records-cell">No ${statusFilter} sanctions found.</td></tr>`;
+                            tableBody.innerHTML = `<tr><td colspan="${colCount}" class="no-records-cell">No ${statusFilter === 'All' ? '' : statusFilter.toLowerCase()} sanctions found.</td></tr>`;
                         }
-                    }, 400);
+                    }, 400); // Match CSS transition duration
                 }
             } else {
                 showToast(result.message, 'error');
@@ -248,6 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 updateBtn.innerHTML = originalButtonContent;
             }
         } catch (error) {
+            console.error('Update status submission error:', error);
             showToast('A network error occurred.', 'error');
             updateBtn.disabled = false;
             updateBtn.innerHTML = originalButtonContent;
@@ -365,7 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             row.innerHTML = `
                 <td>${sanction.offense_level || 'N/A'}</td>
-                <td>${sanction.disciplinary_sanction || 'N/A'}</td>
+                <td class="text-wrap-content">${sanction.disciplinary_sanction || 'N/A'}</td>
                 <td class="action-buttons-cell">
                     <div class="action-buttons-container" style="display: none;">
                         <button class='edit-sanction-btn btn-secondary' data-id='${sanction.disciplinary_sanction_id}'><i class='fas fa-edit'></i> Update</button>
