@@ -1,13 +1,40 @@
 <?php
-require_once "./dbcon.php"; 
+require_once "../PHP/dbcon.php";
 session_start();
-require_once __DIR__ . '/../vendor/autoload.php'; 
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-ini_set('display_errors', 0); 
+function createPasswordResetEmailBody($recipientName, $resetLink, $userType = 'user') {
+    $emailSubject = ($userType === 'admin' ? 'Admin' : '') . ' Password Reset';
+    $accountType = ($userType === 'admin' ? 'admin' : '') . ' account';
+
+    $emailBody = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>'.htmlspecialchars($emailSubject).'</title></head><body style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, Helvetica, sans-serif;">';
+    $emailBody .= '<div style="max-width:600px; margin:20px auto; background-color:#ffffff; border:1px solid #dddddd; border-radius:8px; overflow:hidden;">';
+    $emailBody .= '<div style="background-color:#8a1c1c; color:#ffffff; padding:20px; text-align:center;">';
+    $emailBody .= '<img src="https://insync.ojt-ims-bsit.net/assets/PUP_logo.png" alt="PUPT Logo" style="max-width:80px; margin-bottom:10px;">';
+    $emailBody .= '<h1 style="margin:0; font-size:24px;">PUPT Tracker System</h1>';
+    $emailBody .= '</div>';
+    $emailBody .= '<div style="padding:20px 30px; color:#333333; line-height:1.6;">';
+    $emailBody .= "<p>Hello " . htmlspecialchars($recipientName) . ",</p>";
+    $emailBody .= "<p>A password reset was requested for your ".htmlspecialchars($accountType)." on the PUPT Tracker System.</p>";
+    $emailBody .= "<p>Please click the button below to reset your password:</p>";
+    $emailBody .= "<p style=\"text-align:center;\"><a href='" . $resetLink . "' style='display:inline-block; background-color:#8a1c1c; color:#ffffff; padding:12px 25px; text-decoration:none; border-radius:5px; font-size:16px;'>Reset Your Password</a></p>";
+    $emailBody .= "<p>If the button above doesn't work, copy and paste this link into your browser:<br><a href='" . $resetLink . "'>" . $resetLink . "</a></p>";
+    $emailBody .= "<p>This link will expire in 1 hour. If you did not request this password reset, please ignore this email.</p>";
+    $emailBody .= "<p>Regards,<br>System Administration</p>";
+    $emailBody .= '</div>';
+    $emailBody .= '<div style="background-color:#f0f0f0; padding:15px 30px; text-align:center; font-size:12px; color:#777777;">';
+    $emailBody .= '&copy; ' . date("Y") . ' PUPT Tracker System. All rights reserved.';
+    $emailBody .= '</div>';
+    $emailBody .= '</div></body></html>';
+    
+    return $emailBody;
+}
+
+ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 $message = "";
@@ -40,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $admin_first_name = $admin['firstname'];
 
                     $token = bin2hex(random_bytes(50));
-                    $token_hash = password_hash($token, PASSWORD_DEFAULT);
+                    $token_hash = hash('sha256', $token);
                     $expires_at = date("Y-m-d H:i:s", time() + 3600);
 
                     $update_sql = "UPDATE admins SET reset_token_hash = ?, reset_token_expires_at = ? WHERE id = ?";
@@ -66,29 +93,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 $path = dirname($_SERVER['PHP_SELF']);
                                 $reset_link = "{$protocol}://{$host}{$path}/admin_reset_password_form.php?token=" . $token;
                                 
-                                $emailBody = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Admin Password Reset</title></head><body style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, Helvetica, sans-serif;">';
-                                $emailBody .= '<div style="max-width:600px; margin:20px auto; background-color:#ffffff; border:1px solid #dddddd; border-radius:8px; overflow:hidden;">';
-                                $emailBody .= '<div style="background-color:#8a1c1c; color:#ffffff; padding:20px; text-align:center;">';
-                                $emailBody .= '<img src="https://insync.ojt-ims-bsit.net/assets/PUP_logo.png" alt="PUPT Logo" style="max-width:80px; margin-bottom:10px;">';
-                                $emailBody .= '<h1 style="margin:0; font-size:24px;">PUPT Tracker System</h1>';
-                                $emailBody .= '</div>';
-                                $emailBody .= '<div style="padding:20px 30px; color:#333333; line-height:1.6;">';
-                                $emailBody .= "<p>Hello " . htmlspecialchars($admin_first_name) . ",</p>";
-                                $emailBody .= "<p>A password reset was requested for your admin account on the PUPT Tracker System.</p>";
-                                $emailBody .= "<p>Please click the button below to reset your password:</p>";
-                                $emailBody .= "<p style=\"text-align:center;\"><a href='" . $reset_link . "' style='display:inline-block; background-color:#8a1c1c; color:#ffffff; padding:12px 25px; text-decoration:none; border-radius:5px; font-size:16px;'>Reset Your Password</a></p>";
-                                $emailBody .= "<p>If the button above doesn't work, copy and paste this link into your browser:<br><a href='" . $reset_link . "'>" . $reset_link . "</a></p>";
-                                $emailBody .= "<p>This link will expire in 1 hour. If you did not request this password reset, please ignore this email.</p>";
-                                $emailBody .= "<p>Regards,<br>System Administration</p>";
-                                $emailBody .= '</div>';
-                                $emailBody .= '<div style="background-color:#f0f0f0; padding:15px 30px; text-align:center; font-size:12px; color:#777777;">';
-                                $emailBody .= '&copy; ' . date("Y") . ' PUPT Tracker System. All rights reserved.';
-                                $emailBody .= '</div>';
-                                $emailBody .= '</div></body></html>';
-
                                 $mail->isHTML(true);
                                 $mail->Subject = 'Admin Password Reset Request - PUPT Tracker System';
-                                $mail->Body    = $emailBody;
+                                $mail->Body    = createPasswordResetEmailBody($admin_first_name, $reset_link, 'admin');
                                 $mail->AltBody = "Hello " . htmlspecialchars($admin_first_name) . ",\n\nA password reset was requested for your admin account. Please visit the following link to reset your password: " . $reset_link . "\n\nThis link will expire in 1 hour. If you did not request this, please ignore this email.\n\nRegards,\nSystem Administration";
                                 
                                 $mail->send();
@@ -131,7 +138,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Request Password Reset</title>
-    <link rel="stylesheet" href="../CSS/admin_login_style.css">
+    <link rel="stylesheet" href="./admin_login_style.css">
     <style>
         .right-panel form p.message { padding: 10px; margin-bottom: 15px; border-radius: 5px; text-align: center; }
         .right-panel form p.message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
@@ -139,7 +146,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
-    <div class="container"> 
+    <div class="container">
         <div class="left-panel">
             <h2>Admin Password</h2>
             <p>Enter your admin email address to receive a password reset link.</p>

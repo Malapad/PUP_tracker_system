@@ -7,6 +7,27 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
+function createPasswordConfirmationEmailBody($recipientName, $userType = 'user') {
+    $accountType = ($userType === 'admin' ? 'admin' : 'PUPT Tracker System');
+    $emailBody = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Password Changed</title></head><body style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, Helvetica, sans-serif;">';
+    $emailBody .= '<div style="max-width:600px; margin:20px auto; background-color:#ffffff; border:1px solid #dddddd; border-radius:8px; overflow:hidden;">';
+    $emailBody .= '<div style="background-color:#8a1c1c; color:#ffffff; padding:20px; text-align:center;">';
+    $emailBody .= '<img src="https://insync.ojt-ims-bsit.net/assets/PUP_logo.png" alt="PUPT Logo" style="max-width:80px; margin-bottom:10px;">';
+    $emailBody .= '<h1 style="margin:0; font-size:24px;">PUPT Tracker System</h1>';
+    $emailBody .= '</div>';
+    $emailBody .= '<div style="padding:20px 30px; color:#333333; line-height:1.6;">';
+    $emailBody .= "<p>Hello " . htmlspecialchars($recipientName) . ",</p>";
+    $emailBody .= "<p>This is a confirmation that the password for your " . htmlspecialchars($accountType) . " account has been successfully changed.</p>";
+    $emailBody .= "<p>If you did not authorize this change, please contact support immediately.</p>";
+    $emailBody .= "<p>Regards,<br>System Administration</p>";
+    $emailBody .= '</div>';
+    $emailBody .= '<div style="background-color:#f0f0f0; padding:15px 30px; text-align:center; font-size:12px; color:#777777;">';
+    $emailBody .= '&copy; ' . date("Y") . ' PUPT Tracker System. All rights reserved.';
+    $emailBody .= '</div>';
+    $emailBody .= '</div></body></html>';
+    return $emailBody;
+}
+
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
@@ -19,30 +40,37 @@ $admin_first_name_for_notification = null;
 
 if (isset($_GET['token'])) {
     $received_token = $_GET['token'];
+    $token_hash = hash('sha256', $received_token);
+
     if (!$conn) {
         $message = "Database connection failed.";
         $message_type = "error";
         error_log("DB Connection Error in admin_reset_password_form.php: " . (is_object($conn) ? $conn->connect_error : "Conn not object"));
     } else {
-        $sql_find_token = "SELECT a.id, ai.firstname, a.email, a.reset_token_hash, a.reset_token_expires_at 
-                           FROM admins a 
-                           JOIN admin_info_tbl ai ON a.id = ai.admin_id 
-                           WHERE a.reset_token_hash IS NOT NULL AND a.reset_token_expires_at > NOW()";
+        $sql = "SELECT a.id, ai.firstname, a.email, a.reset_token_expires_at 
+                FROM admins a 
+                JOIN admin_info_tbl ai ON a.id = ai.admin_id 
+                WHERE a.reset_token_hash = ? LIMIT 1";
         
-        $result_tokens = $conn->query($sql_find_token);
-        if ($result_tokens) {
-            while ($admin_row = $result_tokens->fetch_assoc()) {
-                if (password_verify($received_token, $admin_row['reset_token_hash'])) {
+        if ($stmt = $conn->prepare($sql)) {
+            $stmt->bind_param("s", $token_hash);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows == 1) {
+                $admin_row = $result->fetch_assoc();
+                if (strtotime($admin_row['reset_token_expires_at']) > time()) {
                     $token_valid = true;
                     $admin_id_to_reset = $admin_row['id'];
                     $admin_email_for_notification = $admin_row['email'];
                     $admin_first_name_for_notification = $admin_row['firstname'];
-                    break; 
                 }
             }
+            $stmt->close();
         } else {
             error_log("DB Query Error (sql_find_token) in admin_reset_password_form.php: " . $conn->error);
         }
+
         if (!$token_valid && empty($message)) {
             $message = "Invalid or expired password reset link.";
             $message_type = "error";
@@ -68,16 +96,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valid && isset($_POST['passwo
         $message_type = "error";
     } else {
         if (!$conn) {
-            $db_host = 'localhost'; 
-            $db_user = 'root';   
-            $db_pass = '';         
-            $db_name = 'pup_trackersys';
-            $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
-             if ($conn->connect_error) {
-                $message = "Database reconnection failed. Cannot reset password.";
-                $message_type = "error";
-                error_log("DB Reconnection Error in admin_reset_password_form.php: " . $conn->connect_error);
-             }
+            $message = "Database reconnection failed. Cannot reset password.";
+            $message_type = "error";
+            error_log("DB Reconnection Error in admin_reset_password_form.php");
         }
         
         if ($conn && $message_type !== "error") {
@@ -100,27 +121,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valid && isset($_POST['passwo
 
                         $mail->setFrom('pupinsync@gmail.com', 'PUPT Tracker System Admin');
                         $mail->addAddress($admin_email_for_notification, $admin_first_name_for_notification);
-
-                        $emailBody = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Admin Password Changed</title></head><body style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, Helvetica, sans-serif;">';
-                        $emailBody .= '<div style="max-width:600px; margin:20px auto; background-color:#ffffff; border:1px solid #dddddd; border-radius:8px; overflow:hidden;">';
-                        $emailBody .= '<div style="background-color:#8a1c1c; color:#ffffff; padding:20px; text-align:center;">';
-                        $emailBody .= '<img src="https://insync.ojt-ims-bsit.net/assets/PUP_logo.png" alt="PUPT Logo" style="max-width:80px; margin-bottom:10px;">';
-                        $emailBody .= '<h1 style="margin:0; font-size:24px;">PUPT Tracker System</h1>';
-                        $emailBody .= '</div>';
-                        $emailBody .= '<div style="padding:20px 30px; color:#333333; line-height:1.6;">';
-                        $emailBody .= "<p>Hello " . htmlspecialchars($admin_first_name_for_notification) . ",</p>";
-                        $emailBody .= "<p>This is a confirmation that the password for your admin account on the PUPT Tracker System has been successfully changed.</p>";
-                        $emailBody .= "<p>If you did not authorize this change, please contact the super administrator immediately.</p>";
-                        $emailBody .= "<p>Regards,<br>System Administration</p>";
-                        $emailBody .= '</div>';
-                        $emailBody .= '<div style="background-color:#f0f0f0; padding:15px 30px; text-align:center; font-size:12px; color:#777777;">';
-                        $emailBody .= '&copy; ' . date("Y") . ' PUPT Tracker System. All rights reserved.';
-                        $emailBody .= '</div>';
-                        $emailBody .= '</div></body></html>';
                         
                         $mail->isHTML(true);
                         $mail->Subject = 'Your Admin Password Has Been Changed - PUPT Tracker System';
-                        $mail->Body    = $emailBody;
+                        $mail->Body    = createPasswordConfirmationEmailBody($admin_first_name_for_notification, 'admin');
                         $mail->AltBody = "Hello " . htmlspecialchars($admin_first_name_for_notification) . ",\n\nThis is a confirmation that the password for your admin account has been changed.\nIf you did not authorize this, contact the super administrator.\n\nRegards,\nSystem Administration";
                         $mail->send();
                     } catch (Exception $e) {
@@ -146,9 +150,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valid && isset($_POST['passwo
     }
 }
 
-if ($conn && $_SERVER["REQUEST_METHOD"] != "POST") { 
-    $conn->close();
-} elseif ($conn && $_SERVER["REQUEST_METHOD"] == "POST" && !empty($message_type) && $message_type == "error" ) {
+if ($conn && ($_SERVER["REQUEST_METHOD"] != "POST" || !empty($message_type) && $message_type == "error") ) {
     $conn->close();
 }
 ?>

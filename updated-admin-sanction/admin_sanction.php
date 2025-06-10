@@ -1,24 +1,20 @@
 <?php
-include '../PHP/dbcon.php'; // Assuming dbcon.php handles the database connection
+include '../PHP/dbcon.php';
 
-// --- NEW: Central Admin Info (replace with your session logic) ---
-$admin_id = 1; // HARDCODED: Replace with actual logged-in admin ID from session
-$admin_name = "System Admin"; // Example admin name
+$admin_id = 1;
+$admin_name = "System Admin";
 
-// Active tab determination
 $DEFAULT_TAB = 'sanction-request';
 $active_tab = $_GET['tab'] ?? $DEFAULT_TAB;
-$active_view = $_GET['view'] ?? 'list'; // 'list' or 'history'
+$active_view = $_GET['view'] ?? 'list';
 
-// Filter and Search parameters
 $filterViolation = $_GET['violation_type'] ?? '';
 $search = trim($_GET['search_student_number'] ?? '');
 $filterCourse = $_GET['filter_course'] ?? '';
 $filterYear = $_GET['filter_year'] ?? '';
 $filterSection = $_GET['filter_section'] ?? '';
-$filterComplianceStatus = $_GET['status_filter'] ?? 'Pending'; // Default to 'Pending' for compliance tab
+$filterComplianceStatus = $_GET['status_filter'] ?? 'Pending';
 
-// --- BACKEND ACTION HANDLERS ---
 
 // Handle "Approve Sanction" from modal
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['approve_sanction'])) {
@@ -236,10 +232,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
                 </a>
             </div>
             <nav>
-                <a href="../HTML/admin_homepage.html">Home</a>
-                <a href="../updated-admin-violation/admin-violationpage.php">Violations</a>
+                <a href="../admin-dashboard/admin_homepage.php">Home</a>
+                <a href="../updated-admin-violation/admin_violation_page.php">Violations</a>
                 <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="active">Student Sanction</a>
                 <a href="../user-management/user_management.php">User Management</a>
+                <a href="../PHP/admin_announcements.php">Announcements</a>
             </nav>
             <div class="admin-icons">
                 <a href="notification.html" class="notification">

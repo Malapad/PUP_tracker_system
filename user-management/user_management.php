@@ -16,10 +16,11 @@ include '../PHP/dbcon.php';
             <img src="../assets/PUP_logo.png" alt="PUP Logo">
         </div>
         <nav>
-            <a href="../HTML/admin_homepage.html">Home</a>
+            <a href="../admin-dashboard/admin_homepage.php">Home</a>
             <a href="../updated-admin-violation/admin_violation_page.php">Violations</a>
-            <a href="../HTML/admin_sanction.html">Student Sanction</a>
+            <a href="../updated-admin-sanction/admin_sanction.php">Student Sanction</a>
             <a href="./user_management.php" class="active">User Management</a>
+            <a href="../PHP/admin_announcements.php">Announcements</a>
         </nav>
         <div class="admin-icons">
             <a href="../HTML/notification.html" class="notification"><img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/></a>

@@ -1,89 +1,106 @@
-/* Base CSS from your request */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+    --header-height: 70px;
+    --pup-maroon: #800000;
+    --secondary-text: #6b7280;
+    --primary-text: #1f2937;
+    --secondary-bg: #ffffff;
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.main-header {
+    background: var(--secondary-bg);
+    box-shadow: var(--shadow-md);
+    height: var(--header-height);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 1050; 
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+}
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+}
+.main-header .logo img {
+    height: 50px;
+}
+.main-nav {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    justify-content: center;
+    gap: 40px;
+}
+.user-icons {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+.main-nav a {
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95em;
+    color: var(--secondary-text);
+    padding: 5px 10px;
+    position: relative;
+    transition: color 0.3s ease;
+}
+.main-nav a:hover {
+    color: var(--pup-maroon);
+}
+.main-nav a.active-nav {
+    color: var(--pup-maroon);
+    font-weight: 700;
+}
+.main-nav a.active-nav::after {
+    content: "";
+    position: absolute;
+    bottom: -24px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--pup-maroon);
+}
+.header-icon {
+    width: 28px;
+    height: 28px;
+    fill: var(--secondary-text);
+    cursor: pointer;
+    transition: fill 0.2s;
+}
+.header-icon:hover {
+    fill: var(--primary-text);
+}
+
 html, body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: Arial, sans-serif;
-    min-height: 100vh; /* Ensures the body (and its background) fills the viewport height */
+    min-height: 100vh;
 }
 
 body {
-    background-color: #f4f7f6; /* Confirmed and explicitly set as desired */
+    background-color: #f4f7f6;
 }
 
-/* Removed old header styles that conflict with new Bootstrap-based header */
-/*
-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: white;
-    padding: 10px 20px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.logo img {
-    width: 50px;
-    margin-left: 70px;
-}
-
-nav {
-    display: flex;
-    gap: 20px;
-}
-
-nav a {
-    text-decoration: none;
-    font-weight: bold;
-    color: black;
-    padding: 8px 10px;
-    border-radius: 3px;
-    transition: color 0.3s ease;
-}
-
-nav a:hover {
-    color: #AF1414;
-}
-
-nav a:focus {
-    color: #AF1414;
-    outline: 2px solid #AF1414;
-    outline-offset: 2px;
-}
-
-nav a.active {
-    color: #AF1414;
-}
-
-.admin-icons {
-    display: flex;
-    gap: 15px;
-    font-size: 15px;
-    margin-right: 55px;
-}
-
-.admin-icons img {
-    width: 35px;
-}
-
-.notification {
-    width: 34px;
-}
-*/
-
-/* Adjusted container margins to align with header content */
 .container {
     background: white;
     padding: 20px;
     border-radius: 8px;
-    /* Calculate left margin: Bootstrap's default gutter (0.75rem = 12px) + your custom logo margin (70px) */
     margin-left: calc(var(--bs-gutter-x, 0.75rem) + 70px);
-    /* Calculate right margin: Bootstrap's default gutter (0.75rem = 12px) + your custom icon margin (55px) */
     margin-right: calc(var(--bs-gutter-x, 0.75rem) + 55px);
     margin-top: 20px;
     margin-bottom: 20px;
-    width: auto; /* Allow width to be determined by the new margins */
-    max-width: none; /* Remove explicit max-width as width is now controlled by margins */
+    width: auto;
+    max-width: none;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -180,46 +197,46 @@ h1 {
 
 .filters-area form {
     display: flex;
-    align-items: center; 
+    align-items: center;
     gap: 15px;
-    flex-wrap: wrap; 
-    width: 100%; 
+    flex-wrap: wrap;
+    width: 100%;
     justify-content: flex-start;
 }
 
 .filter-select {
-    padding: 8px 10px; 
+    padding: 8px 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     font-size: 0.9em;
-    height: 38px; 
+    height: 38px;
     box-sizing: border-box;
-    flex-grow: 0; 
+    flex-grow: 0;
     flex-shrink: 1;
-    flex-basis: 150px; 
-    min-width: 120px; 
+    flex-basis: 150px;
+    min-width: 120px;
 }
 
 .search-group {
-    display: flex; 
+    display: flex;
     align-items: center;
-    flex-grow: 1; 
+    flex-grow: 1;
     flex-shrink: 1;
-    flex-basis: 250px; 
-    min-width: 180px; 
+    flex-basis: 250px;
+    min-width: 180px;
 }
 
 .search-input {
-    padding: 8px 10px; 
+    padding: 8px 10px;
     border: 1px solid #ccc;
-    border-radius: 5px 0 0 5px; 
+    border-radius: 5px 0 0 5px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     font-size: 0.9em;
-    height: 38px; 
+    height: 38px;
     box-sizing: border-box;
-    flex-grow: 1; 
-    border-right: none; 
+    flex-grow: 1;
+    border-right: none;
 }
 
 .search-input::placeholder { color: #757575; opacity: 1; }
@@ -233,8 +250,8 @@ h1 {
     border-color: #af1414;
     box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.25);
     outline: none;
-    border-right: none; 
-    position: relative; 
+    border-right: none;
+    position: relative;
     z-index: 1;
 }
 
@@ -248,7 +265,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex-shrink: 0; 
+    flex-shrink: 0;
 }
 
 button {
@@ -270,27 +287,27 @@ button i, .more-details-btn i, .clear-filters-btn i {
 }
 
 .search-button {
-    padding: 8px 12px; 
-    border: 1px solid #af1414; 
+    padding: 8px 12px;
+    border: 1px solid #af1414;
     background-color: #af1414;
     color: white;
     cursor: pointer;
-    border-radius: 0 55px 55px 0; /* Updated border-radius for search button */
+    border-radius: 0 55px 55px 0;
     font-size: 0.85em;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 38px; 
+    height: 38px;
     box-sizing: border-box;
-    flex-shrink: 0; 
+    flex-shrink: 0;
 }
 .search-button:hover { background-color: #bd2727; }
 .search-button:focus {
     background-color: #bd2727;
     box-shadow: 0 0 0 0.2rem rgba(175, 20, 20, 0.35);
     outline: none;
-    z-index: 1; 
+    z-index: 1;
 }
 
 
@@ -319,10 +336,10 @@ button i, .more-details-btn i, .clear-filters-btn i {
 
 .refresh-button,
 .add-violation-button {
-    padding: 8px 12px; 
+    padding: 8px 12px;
     font-size: 0.85em;
     border-radius: 5px;
-    height: 38px; 
+    height: 38px;
     box-sizing: border-box;
     flex-grow: 0;
     flex-shrink: 0;
@@ -993,7 +1010,7 @@ tbody td {
     }
     
     .filter-select, .search-group, .refresh-button, .add-violation-button {
-        flex-basis: auto; 
+        flex-basis: auto;
         width: 100%;
         margin-bottom: 10px;
     }
@@ -1036,14 +1053,14 @@ tbody td {
     }
     
     .modal .form-container .column.full-width div[style*="display: flex"] {
-        flex-direction: column; 
+        flex-direction: column;
     }
     .modal .form-container .column.full-width div[style*="display: flex"] input,
     .modal .form-container .column.full-width div[style*="display: flex"] button {
         width: 100%;
     }
      .modal .form-container .column.full-width .modal-button-search {
-        min-width: auto; 
+        min-width: auto;
         padding: 10px;
      }
 
@@ -1092,36 +1109,33 @@ tbody td {
 }
 
 @media (max-width: 768px) {
-    /* Main header style in smaller screens */
     header {
         flex-direction: column;
         padding: 10px;
     }
 
-    /* Keep Bootstrap's navbar-brand for logo margin handling for small screens */
     .custom-navbar .navbar-brand {
-        margin-left: 0; /* Override general header margin */
-        margin-bottom: 10px; /* Add space below logo */
+        margin-left: 0;
+        margin-bottom: 10px;
     }
 
     .custom-navbar .navbar-collapse {
-        text-align: center; /* Ensure collapsed menu is centered */
+        text-align: center;
     }
     .custom-navbar .navbar-nav.mx-auto {
-        margin-left: auto !important; /* Ensure centering works for collapsed menu */
+        margin-left: auto !important;
         margin-right: auto !important;
     }
 
     .custom-navbar .icon-nav {
-        margin-right: 0; /* Override */
-        justify-content: center; /* Center icons when collapsed */
+        margin-right: 0;
+        justify-content: center;
         width: 100%;
     }
 
-    /* Adjust container margins for smaller screens to match header responsiveness */
     .container {
-        margin-left: calc(var(--bs-gutter-x, 0.75rem) + 15px); /* From header's smaller screen brand margin */
-        margin-right: calc(var(--bs-gutter-x, 0.75rem) + 15px); /* From header's smaller screen icon margin */
+        margin-left: calc(var(--bs-gutter-x, 0.75rem) + 15px);
+        margin-right: calc(var(--bs-gutter-x, 0.75rem) + 15px);
         width: auto;
     }
 
@@ -1214,10 +1228,8 @@ tbody td {
     }
 }
 
-/* START OF INJECTED HEADER CSS FROM header.css */
-/* Custom Navbar Styles from header.css */
 .custom-navbar {
-    background-color: #ffffff; 
+    background-color: #ffffff;
     border-bottom: 2px solid #d1cece;
     padding-top: 8px;
     padding-bottom: 8px;
@@ -1225,36 +1237,34 @@ tbody td {
     align-items: center;
 }
 
-/* Note: 'header {}' padding: 1px from header.css. The .custom-navbar above sets more specific padding. */
 header {
-    padding: 1px; /* This is from the original header.css and targets the <header> element. */
+    padding: 1px;
 }
 
-/* Logo specific margin */
 .custom-navbar .navbar-brand {
-    margin-left: 70px; /* Specific margin for the logo */
+    margin-left: 70px;
     margin-right: auto;
 }
 
 .custom-navbar .navbar-brand img {
-    width: 170px;  
+    width: 170px;
     height: 70px;
 }
 
 .custom-navbar .nav-link {
-    color: #333333; /* Darker text for links */
+    color: #333333;
     font-weight: 500;
-    padding: 0.5rem 1rem; /* Adjust padding for spacing */
-    position: relative; /* Needed for the underline effect */
+    padding: 0.5rem 1rem;
+    position: relative;
     transition: color 0.3s ease;
 }
 
 .custom-navbar .nav-link:hover {
-    color: #000000; /* Darker on hover */
+    color: #000000;
 }
 
 .custom-navbar .nav-link.active {
-    color: #a00000; /* Red color for active tab */
+    color: #a00000;
     font-weight: 600;
 }
 
@@ -1263,38 +1273,35 @@ header {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0; /* Position the underline at the bottom of the link */
+    bottom: 0;
     height: 2px;
-    background-color: #a00000; /* Red underline for active tab */
+    background-color: #a00000;
 }
 
-/* Icon specific width and right margin */
 .custom-navbar .icon-nav {
-    margin-right: 55px; 
+    margin-right: 55px;
 }
 
 .custom-navbar .icon-nav .nav-link img {
-    width: 40px;  /* Set icon width to 80px */
-    height: auto; /* Maintain aspect ratio */
-    vertical-align: middle; /* Align icons vertically in the middle */
+    width: 40px;
+    height: auto;
+    vertical-align: middle;
 }
 
-/* Responsive adjustments for smaller screens from header.css */
-@media (max-width: 991.98px) { /* Bootstrap's 'lg' breakpoint */
+@media (max-width: 991.98px) {
     .custom-navbar .navbar-brand {
-        margin-left: 15px; /* Adjust margin for smaller screens */
+        margin-left: 15px;
     }
     .custom-navbar .icon-nav {
-        margin-right: 15px; /* Adjust margin for smaller screens */
-        width: 100%; /* Icons take full width below breakpoint */
-        justify-content: flex-end; /* Push icons to the right on small screens */
+        margin-right: 15px;
+        width: 100%;
+        justify-content: flex-end;
     }
     .custom-navbar .navbar-collapse {
-        text-align: center; /* Center items when collapsed */
+        text-align: center;
     }
     .custom-navbar .navbar-nav.mx-auto {
-        margin-left: auto !important; /* Ensure centering works for collapsed menu */
+        margin-left: auto !important;
         margin-right: auto !important;
     }
 }
-/* END OF INJECTED HEADER CSS FROM header.css */

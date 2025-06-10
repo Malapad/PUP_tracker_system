@@ -1,8 +1,10 @@
 <?php
 require_once "../PHP/dbcon.php";
-session_start();
 
-// --- NEW: AJAX HANDLER FOR SANCTION REQUEST ---
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 if (isset($_POST['action']) && $_POST['action'] == 'request_sanction') {
     header('Content-Type: application/json');
     $response = ['success' => false, 'message' => 'Authentication failed. Please log in again.'];
@@ -10,7 +12,6 @@ if (isset($_POST['action']) && $_POST['action'] == 'request_sanction') {
     if (isset($_SESSION['user_student_number']) && isset($conn)) {
         $student_number = $_SESSION['user_student_number'];
 
-        // Check for an existing active request to prevent duplicates
         $check_stmt = $conn->prepare("SELECT request_id FROM sanction_requests_tbl WHERE student_number = ? AND is_active = 1");
         $check_stmt->bind_param("s", $student_number);
         $check_stmt->execute();
@@ -21,7 +22,6 @@ if (isset($_POST['action']) && $_POST['action'] == 'request_sanction') {
             $response['success'] = false;
             $response['message'] = 'You already have a pending sanction request.';
         } else {
-            // Insert the new request
             $insert_stmt = $conn->prepare("INSERT INTO sanction_requests_tbl (student_number) VALUES (?)");
             if ($insert_stmt) {
                 $insert_stmt->bind_param("s", $student_number);
@@ -33,15 +33,13 @@ if (isset($_POST['action']) && $_POST['action'] == 'request_sanction') {
                 }
                 $insert_stmt->close();
             } else {
-                 $response['message'] = 'Database error: Could not prepare the request.';
+                   $response['message'] = 'Database error: Could not prepare the request.';
             }
         }
     }
     echo json_encode($response);
-    exit; // Stop further script execution for AJAX requests
+    exit;
 }
-// --- END OF AJAX HANDLER ---
-
 
 if (!isset($_SESSION["current_user_id"]) || !isset($_SESSION["user_student_number"])) {
     header("Location: student_login.php");
@@ -57,12 +55,8 @@ if (isset($_GET['notif_id']) && is_numeric($_GET['notif_id']) && isset($conn)) {
                         WHERE notification_id = ? AND student_number = ?";
     if ($stmt_mark_direct = $conn->prepare($sql_mark_direct)) {
         $stmt_mark_direct->bind_param("is", $notification_id_to_mark, $student_stud_number_from_session);
-        if (!$stmt_mark_direct->execute()) {
-            error_log("Error marking direct notification as read in " . basename(__FILE__) . ": " . $stmt_mark_direct->error);
-        }
+        $stmt_mark_direct->execute();
         $stmt_mark_direct->close();
-    } else {
-        error_log("Error preparing direct mark_read query in " . basename(__FILE__) . ": " . $conn->error);
     }
 }
 
@@ -82,8 +76,6 @@ if (isset($conn)) {
             $unread_notifications_header[] = $row_notif_h;
         }
         $stmt_notifications_list_header->close();
-    } else {
-        error_log("Error preparing notification header list query in " . basename(__FILE__) . ": " . $conn->error);
     }
 
     $sql_notifications_count_header = "SELECT COUNT(*) as total_unread 
@@ -95,11 +87,7 @@ if (isset($conn)) {
         $result_count_h = $stmt_notifications_count_header->get_result()->fetch_assoc();
         $unread_notification_count_header = $result_count_h['total_unread'] ?? 0;
         $stmt_notifications_count_header->close();
-    } else {
-        error_log("Error preparing notification count query in " . basename(__FILE__) . ": " . $conn->error);
     }
-} else {
-    error_log("Database connection not available in " . basename(__FILE__) . " for fetching header notifications.");
 }
 
 $student_details = null;
@@ -111,10 +99,10 @@ $page_error = null;
 
 $sql_student_info = "SELECT u.first_name, u.middle_name, u.last_name, u.student_number, u.year_id,
                             c.course_name, s.section_name
-                     FROM users_tbl u
-                     LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                     LEFT JOIN section_tbl s ON u.section_id = s.section_id
-                     WHERE u.user_id = ?";
+                       FROM users_tbl u
+                       LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                       LEFT JOIN section_tbl s ON u.section_id = s.section_id
+                       WHERE u.user_id = ?";
 
 if (isset($conn) && $stmt_info = $conn->prepare($sql_student_info)) {
     $stmt_info->bind_param("i", $session_user_id);
@@ -124,10 +112,6 @@ if (isset($conn) && $stmt_info = $conn->prepare($sql_student_info)) {
         $student_details = $result_info->fetch_assoc();
         $student_stud_number_for_page_violations = $student_details['student_number'];
         
-        if ($student_stud_number_from_session !== $student_stud_number_for_page_violations) {
-            error_log("Session student number mismatch in student_record.php. Session: $student_stud_number_from_session, DB: $student_stud_number_for_page_violations for user_id: $session_user_id");
-        }
-
         if (isset($student_details['year_id']) && !empty($student_details['year_id'])) {
             $year_details_sql = "SELECT year FROM year_tbl WHERE year_id = ?";
             if($stmt_year = $conn->prepare($year_details_sql)){
@@ -138,8 +122,6 @@ if (isset($conn) && $stmt_info = $conn->prepare($sql_student_info)) {
                     $year_display = $year_row['year'];
                 }
                 $stmt_year->close();
-            } else {
-                error_log("Error preparing year details query: " . $conn->error);
             }
         }
         $student_details['FirstNameDisplay'] = htmlspecialchars($student_details['first_name'] ?? '');
@@ -152,7 +134,6 @@ if (isset($conn) && $stmt_info = $conn->prepare($sql_student_info)) {
     }
     $stmt_info->close();
 } else {
-    error_log("Error preparing student details query (or DB connection issue): " . (isset($conn) ? $conn->error : 'DB connection not set'));
     $page_error = "Could not load student details. Please try again later.";
 }
 
@@ -178,7 +159,6 @@ if (isset($conn) && !empty($student_stud_number_for_page_violations)) {
             $typeName = $row['violation_type'];
             $categoryName = $row['category_name'] ?? 'Uncategorized';
             $remark_from_db = trim($row['remarks'] ?? '');
-
             $key = $categoryName . "||" . $typeName; 
 
             if (!isset($temp_summary_data[$key])) {
@@ -213,7 +193,6 @@ if (isset($conn) && !empty($student_stud_number_for_page_violations)) {
         });
 
     } else {
-        error_log("Error preparing violation records query: " . $conn->error);
         if (!$page_error) $page_error = "Could not load violation records.";
     }
 }
@@ -229,189 +208,186 @@ $button_disabled = !$has_sanctionable_offense;
     <title>Student Violation Record</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="../student-page/student_record_style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./student_style.css">
 </head>
 <body>
     <header class="main-header">
         <div class="header-content">
-            <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
+            <div class="logo">
+                <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo">
+            </div>
             <nav class="main-nav">
                 <a href="./student_dashboard.php">Home</a>
                 <a href="./student_record.php" class="active-nav">Record</a>
+                <a href="./student_announcements.php">Announcements</a>
             </nav>
             <div class="user-icons">
                 <div class="notification-icon-area">
                     <a href="#" class="notification" id="notificationLinkToggle">
-                        <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/>
+                        <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg>
                         <?php if ($unread_notification_count_header > 0): ?>
                             <span class="notification-count"><?php echo $unread_notification_count_header; ?></span>
                         <?php endif; ?>
                     </a>
                     <div class="notifications-dropdown" id="notificationsDropdownContent">
-                        <ul>
+                        <div class="notification-header">
+                            <h3>Notifications</h3>
+                            <button id="mark-all-read-btn">Mark all as read</button>
+                        </div>
+                        <ul class="notification-list">
                             <?php if (!empty($unread_notifications_header)): ?>
                                 <?php foreach ($unread_notifications_header as $notification_h): ?>
                                     <li class="notification-item">
-                                        <a href="<?php echo !empty($notification_h['link']) ? htmlspecialchars($notification_h['link']) . (strpos($notification_h['link'], '?') === false ? '?' : '&') . 'notif_id=' . $notification_h['notification_id'] : '#'; ?>"
-                                           class="notification-message-link"
-                                           data-notification-id="<?php echo $notification_h['notification_id']; ?>">
-                                            <?php echo htmlspecialchars($notification_h['message']); ?>
+                                        <div class="notification-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.103 0-2 .897-2 2v18l4-4h14c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2zm-3 9h-4v4h-2v-4H7V9h4V5h2v4h4v2z"/></svg>
+                                        </div>
+                                        <div class="notification-details">
+                                            <p class="notification-message"><?php echo htmlspecialchars($notification_h['message']); ?></p>
                                             <small class="notification-timestamp"><?php echo date("M d, Y h:i A", strtotime($notification_h['created_at'])); ?></small>
+                                        </div>
+                                        <a href="./mark_notification_read.php?id=<?php echo $notification_h['notification_id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="mark-as-read-btn" title="Mark as read">
+                                            <span class="read-dot-icon"></span>
                                         </a>
-                                        <a href="./mark_notification_read.php?id=<?php echo $notification_h['notification_id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="mark-as-read-link">Mark read</a>
                                     </li>
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <li class="no-notifications">No new notifications.</li>
                             <?php endif; ?>
-                            <li class="view-all-container">
-                                <a href="./all_notifications.php" class="view-all-notifications-link">View All Notifications</a>
-                            </li>
                         </ul>
+                        <div class="notification-footer">
+                            <a href="./all_notifications.php" class="view-all-notifications-link">View All Notifications</a>
+                        </div>
                     </div>
                 </div>
-                <a href="./student_account.php" class="profile-icon admin"><img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Account"/></a>
+                <a href="./student_account.php" class="profile-icon admin">
+                     <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                </a>
             </div>
         </div>
     </header>
 
-    <div class="breadcrumb-container">
-        <a href="./student_dashboard.php"><i class="fas fa-home"></i> Home</a>
-        <span class="separator"><i class="fas fa-angle-right"></i></span>
-        <span><i class="fas fa-file-alt"></i> Record</span>
-    </div>
-
 <main>
+    <div class="record-wrapper">
     <?php if (isset($page_error)): ?>
-        <div class="content-wrapper-wide">
-            <p class="error-message" style="color: red; text-align:center; padding: 20px; background-color: #ffebee; border: 1px solid red; border-radius: 4px;">
-                <?php echo htmlspecialchars($page_error); ?>
+        <p class="error-message"><?php echo htmlspecialchars($page_error); ?></p>
+    <?php elseif ($student_details): ?>
+        <h1 class="page-main-title">Violation Record</h1>
+        <div class="info-block">
+            <p class="student-name">
+                <?php echo $student_details['FirstNameDisplay'] . " " . $student_details['MiddleNameDisplay'] . " " . $student_details['LastNameDisplay']; ?>
+            </p>
+            <p class="meta-text"><strong>Student Number:</strong> <?php echo $student_details['StudNumberDisplay']; ?></p>
+            <p class="meta-text">
+                <strong>Course:</strong> <?php echo $student_details['CourseNameDisplay']; ?> |
+                <strong>Year:</strong> <?php echo $student_details['YearDisplay']; ?> |
+                <strong>Section:</strong> <?php echo $student_details['SectionNameDisplay']; ?>
             </p>
         </div>
-    <?php elseif ($student_details): ?>
-        <div class="content-wrapper-wide">
-            <h1 class="page-main-title">Violation Record</h1>
-            <div class="info-block-wide">
-                <p class="student-name-prominent">
-                    <?php echo $student_details['FirstNameDisplay'] . " " . $student_details['MiddleNameDisplay'] . " " . $student_details['LastNameDisplay']; ?>
-                </p>
-                <p class="meta-text-wide"><strong>Student Number:</strong> <?php echo $student_details['StudNumberDisplay']; ?></p>
-                <p class="meta-text-wide">
-                    <strong>Course:</strong> <?php echo $student_details['CourseNameDisplay']; ?> |
-                    <strong>Year:</strong> <?php echo $student_details['YearDisplay']; ?> |
-                    <strong>Section:</strong> <?php echo $student_details['SectionNameDisplay']; ?>
-                </p>
-            </div>
-            
-            <hr class="divider-red-wide">
-
-            <div class="highlight-panel-wide">
-                <p>Total Violations Committed: <strong><?php echo $total_individual_violations; ?></strong></p>
-            </div>
-            
-            <div class="scrollable-tables-area">
-                <h3 class="section-title-styled">Summary by Violation</h3>
-                <div class="table-container-wide">
-                    <table class="data-table-wide" id="summaryViolationTable">
-                        <thead>
-                            <tr>
-                                <th>Category</th>
-                                <th>Violation Type</th>
-                                <th>Number of commits</th>
-                                <th>Offense</th>
-                                <th>Remarks (for single instance)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($violation_summary)): ?>
-                                <?php foreach ($violation_summary as $summary_item): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($summary_item['category']); ?></td>
-                                        <td><?php echo htmlspecialchars($summary_item['type']); ?></td>
-                                        <td style="text-align: center;"><?php echo $summary_item['count']; ?></td>
-                                        <td style="text-align: center;">
-                                            <?php
-                                            $typeOffenseStatus = ($summary_item['count'] >= 2) ? 'Sanction' : 'Warning';
-                                            $typeOffenseClass = ($summary_item['count'] >= 2) ? 'offense-tag-look offense-tag-look-sanction' : 'offense-tag-look offense-tag-look-warning';
-                                            echo "<span class='" . $typeOffenseClass . "'>" . htmlspecialchars($typeOffenseStatus) . "</span>";
-                                            ?>
-                                        </td>
-                                        <td><?php echo nl2br(htmlspecialchars($summary_item['remark_display'])); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="5" class="no-records-message">No violation records found to summarize.</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3 class="section-title-styled">Individual Violations Log</h3>
-                <div class="log-table-scroll-container">
-                    <table class="data-table-wide" id="individualViolationsTable">
-                        <thead>
-                            <tr>
-                                <th>Category</th>
-                                <th>Violation Type</th>
-                                <th>Date of Violation</th>
-                                <th>Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($violations_log)): ?>
-                                <?php foreach ($violations_log as $record): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($record['category_name'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($record['violation_type']); ?></td>
-                                        <td><?php echo htmlspecialchars(date("M d, Y, h:i a", strtotime($record['violation_date']))); ?></td>
-                                        <td><?php echo nl2br(htmlspecialchars(trim($record['remarks'] ?? '') === '' ? 'No remarks' : $record['remarks'])); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="4" class="no-records-message">No individual violation records found.</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="student-actions-panel-wide">
-                <p class="reminder-paragraph-wide">
-                    Please be reminded to take your sanction before the graduation. If you want to take your sanction kindly click the
-                    ‘Request Sanction’ button to directly request to the Head of Office of Student Services (OSS) or go to the Building B Office.
-                </p>
-                <div class="sanction-request-bar-wide">
-                    <p class="instance-count-display-wide">Total Individual Violation Instances: <strong><?php echo $total_individual_violations; ?></strong></p>
-                    <button id="requestSanctionButtonWide" class="button-green-wide" <?php if ($button_disabled) echo 'disabled'; ?>>
-                        Request Sanction
-                    </button>
-                </div>
-            </div>
-
+        
+        <div class="highlight-panel">
+            <p>Total Violations Committed: <strong><?php echo $total_individual_violations; ?></strong></p>
         </div>
-    <?php else: ?>
-        <div class="content-wrapper-wide">
-            <div class="info-block-wide">
-                    <h2 class="student-name-prominent">Student Details Not Found</h2>
-                    <p class="meta-text-wide">There might be an issue with your session or the user ID. Please try logging out and logging back in. If the problem persists, contact support.</p>
+        
+        <div class="scrollable-tables-area">
+            <h3 class="section-title">Summary by Violation</h3>
+            <div class="table-container">
+                <table class="data-table" id="summaryViolationTable">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Violation Type</th>
+                            <th>Commits</th>
+                            <th>Offense</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($violation_summary)): ?>
+                            <?php foreach ($violation_summary as $summary_item): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($summary_item['category']); ?></td>
+                                    <td><?php echo htmlspecialchars($summary_item['type']); ?></td>
+                                    <td><?php echo $summary_item['count']; ?></td>
+                                    <td>
+                                        <?php
+                                        $typeOffenseStatus = ($summary_item['count'] >= 2) ? 'Sanction' : 'Warning';
+                                        $typeOffenseClass = ($summary_item['count'] >= 2) ? 'offense-tag-sanction' : 'offense-tag-warning';
+                                        echo "<span class='offense-tag " . $typeOffenseClass . "'>" . htmlspecialchars($typeOffenseStatus) . "</span>";
+                                        ?>
+                                    </td>
+                                    <td><?php echo nl2br(htmlspecialchars($summary_item['remark_display'])); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="5" class="no-records-message">No violation records found to summarize.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
+
+            <h3 class="section-title">Individual Violations Log</h3>
+            <div class="table-container">
+                <table class="data-table" id="individualViolationsTable">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Violation Type</th>
+                            <th>Date of Violation</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($violations_log)): ?>
+                            <?php foreach ($violations_log as $record): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($record['category_name'] ?? 'N/A'); ?></td>
+                                    <td><?php echo htmlspecialchars($record['violation_type']); ?></td>
+                                    <td><?php echo htmlspecialchars(date("M d, Y, h:i a", strtotime($record['violation_date']))); ?></td>
+                                    <td><?php echo nl2br(htmlspecialchars(trim($record['remarks'] ?? '') === '' ? 'No remarks' : $record['remarks'])); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="4" class="no-records-message">No individual violation records found.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="actions-panel">
+            <p class="reminder-paragraph">
+                Please be reminded to take your sanction before the graduation. If you want to take your sanction kindly click the
+                ‘Request Sanction’ button to directly request to the Head of Office of Student Services (OSS) or go to the Building B Office.
+            </p>
+            <div class="sanction-request-bar">
+                <p>Total Individual Violation Instances: <strong><?php echo $total_individual_violations; ?></strong></p>
+                <button id="requestSanctionButton" class="action-button" <?php if ($button_disabled) echo 'disabled'; ?>>
+                    Request Sanction
+                </button>
+            </div>
+        </div>
+
+    <?php else: ?>
+        <div class="info-block">
+            <h2 class="student-name">Student Details Not Found</h2>
+            <p class="meta-text">There might be an issue with your session or the user ID. Please try logging out and logging back in.</p>
         </div>
     <?php endif; ?>
+    </div>
 
-    <div id="confirmationOverlayWide" class="overlay-container-wide" style="display:none;">
-        <div class="dialog-content-wide">
+    <div id="confirmationOverlay" class="overlay-container" style="display:none;">
+        <div class="dialog-content">
             <p>Successfully Requested</p>
-            <button id="closeOverlayButtonWide" class="button-grey-wide">Close</button>
+            <button id="closeOverlayButton" class="button-grey">Close</button>
         </div>
     </div>
 </main>
-<script src="./student_record.js" defer></script>
+<script src="./student_scripts.js"></script>
     <?php
         if (isset($conn)) {
             $conn->close();

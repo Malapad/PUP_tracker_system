@@ -1,7 +1,7 @@
 <?php
+session_start();
 include '../PHP/dbcon.php';
 
-// Get the current script name to determine which tab should be active in the header
 $current_page_filename = basename($_SERVER['PHP_SELF']);
 
 if (isset($_GET['action']) && $_GET['action'] == 'search_student_for_violation' && isset($_GET['student_search_number'])) {
@@ -14,14 +14,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'search_student_for_violation' 
         exit;
     }
     $sql_search_student = "SELECT u.student_number, u.first_name, u.middle_name, u.last_name,
-                                 COALESCE(c.course_name, 'N/A') as course_name, 
-                                 COALESCE(y.year, 'N/A') as year, 
-                                 COALESCE(s.section_name, 'N/A') as section_name
-                            FROM users_tbl u
-                            LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                            LEFT JOIN year_tbl y ON u.year_id = y.year_id
-                            LEFT JOIN section_tbl s ON u.section_id = s.section_id
-                            WHERE u.student_number = ? LIMIT 1";
+                                  COALESCE(c.course_name, 'N/A') as course_name,
+                                  COALESCE(y.year, 'N/A') as year,
+                                  COALESCE(s.section_name, 'N/A') as section_name
+                           FROM users_tbl u
+                           LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                           LEFT JOIN year_tbl y ON u.year_id = y.year_id
+                           LEFT JOIN section_tbl s ON u.section_id = s.section_id
+                           WHERE u.student_number = ? LIMIT 1";
     $stmt_search_student = $conn->prepare($sql_search_student);
     if ($stmt_search_student) {
         $stmt_search_student->bind_param("s", $studentNumberInput);
@@ -95,6 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
     $studentNumber = trim($_POST['studentNumber'] ?? '');
     $violationTypeId = trim($_POST['violationType'] ?? '');
     $violationRemarks = trim($_POST['violationRemarks'] ?? '');
+    $recorder_id = $_SESSION['admin_id'] ?? null;
 
     if (empty($studentNumber) || empty($violationTypeId)) {
         $response['message'] = 'Student Number and Violation Type are required.';
@@ -102,6 +103,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
         echo json_encode($response);
         exit;
     }
+
+    if (is_null($recorder_id)) {
+        $response['message'] = 'Could not identify the recording admin. Please log in again.';
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
+
     $checkStudentSql = "SELECT student_number FROM users_tbl WHERE student_number = ?";
     $checkStmt = $conn->prepare($checkStudentSql);
     if ($checkStmt) {
@@ -109,9 +118,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
         $checkStmt->execute();
         $checkResult = $checkStmt->get_result();
         if ($checkResult->num_rows > 0) {
-            $stmt = $conn->prepare("INSERT INTO violation_tbl (student_number, violation_type, violation_date, description) VALUES (?, ?, NOW(), ?)");
+            $stmt = $conn->prepare("INSERT INTO violation_tbl (student_number, violation_type, violation_date, description, recorder_id) VALUES (?, ?, NOW(), ?, ?)");
             if ($stmt) {
-                $stmt->bind_param("sis", $studentNumber, $violationTypeId, $violationRemarks);
+                $stmt->bind_param("sisi", $studentNumber, $violationTypeId, $violationRemarks, $recorder_id);
                 if ($stmt->execute()) {
                     $response['success'] = true;
                     $response['message'] = 'Violation added successfully.';
@@ -132,7 +141,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['studentNumber'])) {
                     if(!empty($violationRemarks)){
                         $notification_message .= " (Remarks: " . htmlspecialchars($violationRemarks) . ")";
                     }
-                    $notification_link = "./student_record.php"; 
+                    $notification_link = "./student_record.php";
                     $sql_notify = "INSERT INTO notifications_tbl (student_number, message, link) VALUES (?, ?, ?)";
                     if ($stmt_notify = $conn->prepare($sql_notify)) {
                         $stmt_notify->bind_param("sss", $studentNumber, $notification_message, $notification_link);
@@ -441,9 +450,9 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
         exit;
     }
     $sql_details = "SELECT vt.violation_type_id, vt.violation_type, vt.resolution_number, vt.violation_description, vc.category_name
-                            FROM violation_type_tbl vt
-                            LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id
-                            WHERE vt.violation_type_id = ?";
+                                 FROM violation_type_tbl vt
+                                 LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id
+                                 WHERE vt.violation_type_id = ?";
     $stmt_details = $conn->prepare($sql_details);
     if ($stmt_details) {
         $stmt_details->bind_param("i", $violation_type_id);
@@ -462,6 +471,25 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
     echo json_encode($response);
     exit;
 }
+
+function getIconForCategory($categoryName) {
+    switch (strtoupper(trim($categoryName))) {
+        case 'ACADEMIC INTEGRITY':
+            return 'fas fa-graduation-cap';
+        case 'ID VIOLATION':
+            return 'fas fa-id-card';
+        case 'DRESS CODE POLICY':
+            return 'fas fa-user-tie';
+        case 'EVENTS AND VISITORS':
+            return 'fas fa-calendar-check';
+        case 'STUDENT CONDUCT':
+            return 'fas fa-gavel';
+        case 'UNIVERSITY PROPERTY AND FACILITIES':
+            return 'fas fa-building';
+        default:
+            return 'fas fa-exclamation-circle';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -472,48 +500,141 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
         <link rel="stylesheet" href="./admin_violation.css?v=<?php echo time(); ?>" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            .badge-pill {
+                padding: 0.4em 0.7em;
+                border-radius: 10rem;
+                font-size: 0.85em;
+                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4em;
+                line-height: 1;
+            }
+            .status-sanction {
+                background-color: #9d1313;
+                color: white;
+            }
+            .status-warning {
+                background-color: #ffc107;
+                color: #212529;
+            }
+            .offense-level-badge {
+                background-color: #6c757d;
+                color: white;
+            }
+            .summary-badge {
+                font-size: 0.8em;
+                margin-left: 0.5rem;
+            }
+            tbody#violationTableBody tr {
+                transition: background-color 0.2s ease;
+            }
+            .student-summary-row {
+                cursor: pointer;
+                border-top: 2px solid #dee2e6;
+            }
+            .student-summary-row:first-child {
+                border-top: none;
+            }
+            .student-summary-row:hover {
+                background-color: #f1f3f5;
+            }
+            .violation-detail-row {
+                display: none;
+            }
+            .violation-detail-row.active {
+                display: table-row;
+            }
+            .details-container-cell {
+                padding: 0 !important;
+                background: #fff;
+                box-shadow: inset 0 6px 8px -6px rgba(0,0,0,0.15);
+            }
+             .details-container-cell.group-border-sanction {
+                 border-left: 4px solid #9d1313;
+            }
+            .details-container-cell.group-border-warning {
+                 border-left: 4px solid #ffc107;
+            }
+            .details-wrapper {
+                padding: 0.5rem 1.5rem;
+            }
+            .violation-entry {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                gap: 1rem;
+                align-items: start;
+                padding: 1rem 0;
+                border-bottom: 1px solid #e9ecef;
+            }
+            .violation-entry:last-child {
+                border-bottom: none;
+            }
+            .violation-main .violation-type {
+                font-weight: 600;
+                font-size: 1.05em;
+                color: #212529;
+            }
+            .violation-main .violation-context {
+                font-size: 0.85em;
+                color: #6c757d;
+                margin-top: 0.25rem;
+            }
+            .violation-main .violation-context .fa-calendar-alt {
+                margin-right: 0.3em;
+            }
+            .violation-main .violation-context .violation-remarks {
+                font-style: italic;
+                display: block;
+                margin-top: 0.25rem;
+            }
+             .violation-main .violation-context .no-remarks {
+                font-style: italic;
+                color: #adb5bd;
+            }
+            .violation-actions {
+                display: flex;
+                gap: 0.75rem;
+                align-items: center;
+                padding-top: 4px;
+            }
+            .expand-icon {
+                font-size: 0.9em;
+                transition: transform 0.3s ease-in-out;
+                width: 25px;
+                display: inline-block;
+                text-align: center;
+                color: #6c757d;
+                font-weight: bold;
+            }
+            .student-summary-row.expanded .expand-icon {
+                transform: rotate(90deg);
+            }
+            .student-summary-row.expanded {
+                background-color: #e9ecef;
+            }
+        </style>
     </head>
     <body>
         <div id="toast-notification" class="toast"></div>
-        
-        <header class="navbar navbar-expand-lg custom-navbar">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#">
-                    <img src="../IMAGE/Tracker_logo.png" alt="Logo" width="40" height="40" class="d-inline-block align-text-top">
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav mx-auto">
-                        <li class="nav-item">
-                            <a class="nav-link <?php echo ($current_page_filename == 'admin_homepage.html' ? 'active' : ''); ?>" aria-current="page" href="../HTML/admin_homepage.html" data-tab="home"><strong>Home</strong></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?php echo ($current_page_filename == 'admin_violation_page.php' ? 'active' : ''); ?>" href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" data-tab="violations"><strong>Violations</strong></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?php echo ($current_page_filename == 'admin_sanction.php' ? 'active' : ''); ?>" href="../updated-admin-sanction/admin_sanction.php" data-tab="student-sanction"><strong>Student Sanction</strong></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?php echo ($current_page_filename == 'user_management.php' ? 'active' : ''); ?>" href="../user-management/user_management.php" data-tab="user-management"><strong>User Management</strong></a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav icon-nav">
-                        <li class="nav-item">
-                            <a class="nav-link icon-link" href="#">
-                                <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notification">
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link icon-link" href="#">
-                                <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Account">
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </header>
+
+        <header class="main-header">
+     <div class="header-content">
+        <div class="logo"><img src="../assets/PUPLogo.png" alt="PUP Logo"></div>
+        <nav class="main-nav">
+            <a href="../admin-dashboard/admin_homepage.php">Home</a>
+            <a href="admin_violation_page.php" class="active-nav">Violations</a>
+            <a href="../updated-admin-sanction/admin_sanction.php">Student Sanction</a>
+            <a href="../user-management/user_management.php">User Management</a>
+            <a href="../PHP/admin_announcements.php">Announcements</a>
+        </nav>
+        <div class="user-icons">
+            <a href="notification.html" class="notification"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg></a>
+            <a href="../PHP/admin_account.php" class="admin-profile"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
+        </div>
+    </div>
+</header>
         <div class="container">
             <h1>Student Violation Records</h1>
             <div class="tabs">
@@ -585,118 +706,150 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
                     <table>
                         <thead>
                             <tr>
-                                <th>Student Number</th>
-                                <th>First Name</th>
-                                <th>Middle Name</th>
-                                <th>Last Name</th>
-                                <th>Course</th>
-                                <th>Year</th>
-                                <th>Section</th>
-                                <th>Violation Categories</th>
-                                <th>Violation Count</th>
-                                <th>Offense</th>
-                                <th>Action</th>
+                                <th style="width:18%">Student Number</th>
+                                <th style="width:12%">First Name</th>
+                                <th style="width:12%">Middle Name</th>
+                                <th style="width:12%">Last Name</th>
+                                <th style="width:8%">Course</th>
+                                <th style="width:8%">Year</th>
+                                <th style="width:8%">Section</th>
+                                <th style="width:22%" class="text-center">Violation Summary</th>
                             </tr>
                         </thead>
                         <tbody id="violationTableBody">
                         <?php
-                        $sql = "SELECT u.student_number, u.first_name, u.middle_name, u.last_name, c.course_name, y.year, s.section_name, GROUP_CONCAT(DISTINCT COALESCE(vc.category_name, 'Uncategorized') ORDER BY vc.category_name SEPARATOR '; ') AS violations_committed_categories FROM users_tbl u LEFT JOIN course_tbl c ON u.course_id = c.course_id LEFT JOIN year_tbl y ON u.year_id = y.year_id LEFT JOIN section_tbl s ON u.section_id = s.section_id LEFT JOIN violation_tbl v_main ON u.student_number = v_main.student_number LEFT JOIN violation_type_tbl vt_main ON v_main.violation_type = vt_main.violation_type_id LEFT JOIN violation_category_tbl vc ON vt_main.violation_category_id = vc.violation_category_id";
-                        $filter_whereClauses = [];
-                        $params = [];
-                        $paramTypes = "";
-                        if (!empty($search)) {
-                            $filter_whereClauses[] = "(u.student_number LIKE ? OR u.last_name LIKE ? OR u.first_name LIKE ?)";
-                            $searchTerm = "%{$search}%";
-                            $params[] = $searchTerm; $params[] = $searchTerm; $params[] = $searchTerm;
-                            $paramTypes .= "sss";
-                        }
-                        if (!empty($filterCourse)) {
-                            $filter_whereClauses[] = "u.course_id = ?";
-                            $params[] = $filterCourse; $paramTypes .= "i";
-                        }
-                        if (!empty($filterYear)) {
-                            $filter_whereClauses[] = "u.year_id = ?";
-                            $params[] = $filterYear; $paramTypes .= "i";
-                        }
-                        if (!empty($filterCategory)) {
-                            $filter_whereClauses[] = "EXISTS (SELECT 1 FROM violation_tbl v_filter_cat JOIN violation_type_tbl vt_filter_cat ON v_filter_cat.violation_type = vt_filter_cat.violation_type_id WHERE v_filter_cat.student_number = u.student_number AND vt_filter_cat.violation_category_id = ?)";
-                            $params[] = $filterCategory; $paramTypes .= "i";
-                        }
-                        $finalWhereClauses = [];
-                        $finalWhereClauses[] = "v_main.violation_id IS NOT NULL"; 
-                        foreach ($filter_whereClauses as $clause) {
-                            $finalWhereClauses[] = $clause;
-                        }
-                        if (count($finalWhereClauses) > 0) {
-                            $sql .= " WHERE " . implode(" AND ", $finalWhereClauses);
-                        }
-                        $sql .= " GROUP BY u.student_number, u.first_name, u.middle_name, u.last_name, c.course_name, y.year, s.section_name ORDER BY u.last_name ASC, u.first_name ASC";
-                        $stmt_main = $conn->prepare($sql);
-                        if ($stmt_main) {
-                            if (!empty($params)) {
-                                $stmt_main->bind_param($paramTypes, ...$params);
+                            $sql = "
+                                SELECT
+                                    u.student_number, u.first_name, u.middle_name, u.last_name,
+                                    c.course_name, y.year, s.section_name,
+                                    vt.violation_type, v.violation_type as violation_type_id,
+                                    vc.category_name,
+                                    COUNT(v.violation_id) as offense_count,
+                                    MAX(v.violation_date) as latest_date,
+                                    SUBSTRING_INDEX(GROUP_CONCAT(v.description ORDER BY v.violation_date DESC SEPARATOR '|||'), '|||', 1) as latest_description
+                                FROM violation_tbl v
+                                INNER JOIN users_tbl u ON v.student_number = u.student_number
+                                LEFT JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                                LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id
+                                LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                                LEFT JOIN year_tbl y ON u.year_id = y.year_id
+                                LEFT JOIN section_tbl s ON u.section_id = s.section_id
+                            ";
+                            $filter_whereClauses = []; $params = []; $paramTypes = "";
+                            if (!empty($search)) {
+                                $filter_whereClauses[] = "(u.student_number LIKE ? OR u.last_name LIKE ? OR u.first_name LIKE ?)";
+                                $searchTerm = "%{$search}%"; array_push($params, $searchTerm, $searchTerm, $searchTerm); $paramTypes .= "sss";
                             }
-                            $stmt_main->execute();
-                            $result = $stmt_main->get_result();
-                            if ($result->num_rows > 0) {
-                                while ($row = $result->fetch_assoc()) {
-                                    echo "<tr>";
-                                    echo "    <td>" . htmlspecialchars($row['student_number']) . "</td>";
-                                    echo "    <td>" . htmlspecialchars($row['first_name']) . "</td>";
-                                    echo "    <td>" . htmlspecialchars($row['middle_name'] ?? '') . "</td>";
-                                    echo "    <td>" . htmlspecialchars($row['last_name']) . "</td>";
-                                    echo "    <td>" . htmlspecialchars($row['course_name'] ?? 'N/A') . "</td>";
-                                    echo "    <td>" . htmlspecialchars($row['year'] ?? 'N/A') . "</td>";
-                                    echo "    <td>" . htmlspecialchars($row['section_name'] ?? 'N/A') . "</td>";
-                                    echo "    <td>" . htmlspecialchars($row['violations_committed_categories'] ?? 'No Categories') . "</td>";
-                                    $student_number_for_detail = $row['student_number'];
-                                    $detail_sql = "SELECT vt.violation_type_id FROM violation_tbl v_detail JOIN violation_type_tbl vt ON v_detail.violation_type = vt.violation_type_id WHERE v_detail.student_number = ?";
-                                    $violations_by_type_count = [];
-                                    $total_individual_violations = 0;
-                                    $detail_stmt = $conn->prepare($detail_sql);
-                                    if ($detail_stmt) {
-                                        $detail_stmt->bind_param("s", $student_number_for_detail);
-                                        $detail_stmt->execute();
-                                        $detail_result = $detail_stmt->get_result();
-                                        while ($detail_row = $detail_result->fetch_assoc()) {
-                                            $type_id_key = $detail_row['violation_type_id'];
-                                            if (!isset($violations_by_type_count[$type_id_key])) {
-                                                $violations_by_type_count[$type_id_key] = 0;
-                                            }
-                                            $violations_by_type_count[$type_id_key]++;
-                                            $total_individual_violations++;
-                                        }
-                                        $detail_stmt->close();
-                                    } else {
-                                        error_log("Failed to prepare detail statement for student: " . $student_number_for_detail . " - " . $conn->error);
-                                    }
-                                    echo "    <td>" . htmlspecialchars($total_individual_violations) . "</td>";
-                                    $offenseText = ($total_individual_violations > 0) ? 'Warning' : '-';
-                                    $offenseClass = ($total_individual_violations > 0) ? 'offense-text-warning' : 'offense-text-default';
-                                    $hasSanction = false;
-                                    if ($total_individual_violations > 0) {
-                                        foreach ($violations_by_type_count as $count) {
-                                            if ($count >= 2) { 
-                                                $hasSanction = true;
-                                                break;
-                                            }
-                                        }
-                                        if ($hasSanction) {
-                                            $offenseText = 'Sanction';
-                                            $offenseClass = 'offense-text-sanction';
-                                        }
-                                    }
-                                    echo "    <td><span class='" . $offenseClass . "'>" . htmlspecialchars($offenseText) . "</span></td>";
-                                    echo "    <td><a href='student_violation_details.php?student_number=" . urlencode($row['student_number']) . "' class='more-details-btn'><i class='fas fa-info-circle'></i> More Details</a></td>";
-                                    echo "</tr>\n";
+                            if (!empty($filterCourse)) { $filter_whereClauses[] = "u.course_id = ?"; $params[] = $filterCourse; $paramTypes .= "i"; }
+                            if (!empty($filterYear)) { $filter_whereClauses[] = "u.year_id = ?"; $params[] = $filterYear; $paramTypes .= "i"; }
+                            if (!empty($filterCategory)) {
+                                $filter_whereClauses[] = "vt.violation_category_id = ?"; $params[] = $filterCategory; $paramTypes .= "i";
+                            }
+                            if (!empty($filter_whereClauses)) { $sql .= " WHERE " . implode(" AND ", $filter_whereClauses); }
+                            $sql .= "
+                                GROUP BY u.student_number, u.first_name, u.middle_name, u.last_name, c.course_name, y.year, s.section_name, v.violation_type, vt.violation_type, vc.category_name
+                                ORDER BY u.last_name ASC, u.first_name ASC, latest_date DESC";
+
+                            $stmt_main = $conn->prepare($sql);
+                            if ($stmt_main) {
+                                if (!empty($params)) { $stmt_main->bind_param($paramTypes, ...$params); }
+                                $stmt_main->execute();
+                                $result = $stmt_main->get_result();
+                                $violations_data = [];
+                                while ($row = $result->fetch_assoc()) { $violations_data[] = $row; }
+                                $grouped_violations = [];
+                                foreach ($violations_data as $violation) {
+                                    $grouped_violations[$violation['student_number']]['info'] = $violation;
+                                    $grouped_violations[$violation['student_number']]['violations'][] = $violation;
                                 }
+
+                                if (count($grouped_violations) > 0) {
+                                    $sanction_sql = "SELECT disciplinary_sanction FROM disciplinary_sanctions WHERE violation_type_id = ? AND offense_level = ?";
+                                    $stmt_sanction = $conn->prepare($sanction_sql);
+
+                                    foreach ($grouped_violations as $student_number => $student_data) {
+                                        $student_info = $student_data['info'];
+                                        $violations = $student_data['violations'];
+                                        $total_violations = count($violations);
+                                        $student_id_safe = preg_replace('/[^a-zA-Z0-9_-]/', '-', $student_info['student_number']);
+
+                                        $sanction_count = 0;
+                                        $warning_count = 0;
+                                        if ($stmt_sanction) {
+                                            foreach ($violations as $v_check) {
+                                                $oc = $v_check['offense_count']; $vt_id = $v_check['violation_type_id'];
+                                                $ol_str = ($oc == 1) ? '1st Offense' : (($oc == 2) ? '2nd Offense' : (($oc == 3) ? '3rd Offense' : $oc . 'th Offense'));
+                                                $stmt_sanction->bind_param("is", $vt_id, $ol_str); $stmt_sanction->execute();
+                                                $res = $stmt_sanction->get_result();
+                                                if ($s_row = $res->fetch_assoc()) {
+                                                    if (!empty($s_row['disciplinary_sanction']) && stripos($s_row['disciplinary_sanction'], 'warning') === false) {
+                                                        $sanction_count++;
+                                                    } else { $warning_count++; }
+                                                } else { $warning_count++; }
+                                            }
+                                        }
+                                        $group_border_class = $sanction_count > 0 ? 'group-border-sanction' : 'group-border-warning';
+
+                                        echo "<tr class='student-summary-row' data-target='details-for-{$student_id_safe}'>";
+                                        echo "<td><i class='fas fa-chevron-right expand-icon'></i> " . htmlspecialchars($student_info['student_number']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($student_info['first_name']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($student_info['middle_name'] ?? '') . "</td>";
+                                        echo "<td>" . htmlspecialchars($student_info['last_name']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($student_info['course_name'] ?? 'N/A') . "</td>";
+                                        echo "<td>" . htmlspecialchars($student_info['year'] ?? 'N/A') . "</td>";
+                                        echo "<td>" . htmlspecialchars($student_info['section_name'] ?? 'N/A') . "</td>";
+                                        echo "<td class='text-center'>{$total_violations} Types <span class='badge-pill status-sanction summary-badge'>{$sanction_count}</span> <span class='badge-pill status-warning summary-badge'>{$warning_count}</span></td>";
+                                        echo "</tr>";
+
+                                        echo "<tr class='violation-detail-row' id='details-for-{$student_id_safe}'><td colspan='8' class='details-container-cell " . $group_border_class . "'><div class='details-wrapper'>";
+                                        foreach ($violations as $violation_row) {
+                                            $offense_count = $violation_row['offense_count'];
+                                            $violation_type_id = $violation_row['violation_type_id'];
+                                            $offense_level_display_str = ($offense_count == 1) ? '1st Offense' : (($offense_count == 2) ? '2nd Offense' : (($offense_count == 3) ? '3rd Offense' : $offense_count . 'th Offense'));
+
+                                            $status_text = 'Warning'; $status_class = 'status-warning'; $status_icon = 'fa-exclamation-triangle';
+                                            if ($stmt_sanction) {
+                                                $stmt_sanction->bind_param("is", $violation_type_id, $offense_level_display_str); $stmt_sanction->execute();
+                                                $sanction_result = $stmt_sanction->get_result(); $sanction_found = false; $db_sanction_text = '';
+                                                if ($sanction_row = $sanction_result->fetch_assoc()) {
+                                                    if (!empty($sanction_row['disciplinary_sanction'])) { $sanction_found = true; $db_sanction_text = $sanction_row['disciplinary_sanction']; }
+                                                } else if ($offense_count > 2) {
+                                                    $generic_lookup_levels = ['More than 3 Offenses', 'More than 2 Offenses', '4th and subsequent similar offense', 'Any Offense'];
+                                                    foreach($generic_lookup_levels as $generic_lookup){
+                                                        $stmt_sanction->bind_param("is", $violation_type_id, $generic_lookup); $stmt_sanction->execute();
+                                                        $generic_sanction_result = $stmt_sanction->get_result();
+                                                        if ($generic_sanction_row = $generic_sanction_result->fetch_assoc()) {
+                                                            if (!empty($generic_sanction_row['disciplinary_sanction'])) { $sanction_found = true; $db_sanction_text = $generic_sanction_row['disciplinary_sanction']; break; }
+                                                        }
+                                                    }
+                                                }
+                                                if ($sanction_found && stripos($db_sanction_text, 'warning') === false) { $status_text = 'Sanction'; $status_class = 'status-sanction'; $status_icon = 'fa-gavel'; }
+                                            }
+
+                                            echo "<div class='violation-entry'>";
+                                            echo "<div class='violation-main'><span class='violation-type'><i class='" . getIconForCategory($violation_row['category_name']) . "'></i> " . htmlspecialchars($violation_row['violation_type'] ?? 'Unknown Type') . "</span><div class='violation-context'><span class='violation-date'><i class='fas fa-calendar-alt'></i> " . htmlspecialchars(date("F j, Y, g:i a", strtotime($violation_row['latest_date']))) . "</span>";
+                                            if (!empty($violation_row['latest_description'])) {
+                                                echo "<span class='violation-remarks'>Remarks: " . htmlspecialchars($violation_row['latest_description']) . "</span>";
+                                            } else {
+                                                echo "<span class='violation-remarks no-remarks'>No remarks provided</span>";
+                                            }
+                                            echo "</div></div>";
+                                            echo "<div class='violation-actions'>";
+                                            echo "<span class='badge-pill offense-level-badge'>" . htmlspecialchars($offense_level_display_str) . "</span>";
+                                            echo "<span class='badge-pill " . $status_class . "'><i class='fas " . $status_icon . "'></i> " . htmlspecialchars($status_text) . "</span>";
+                                            echo "<a href='student_violation_details.php?student_number=" . urlencode($violation_row['student_number']) . "' class='more-details-btn'><i class='fas fa-info-circle'></i> More Details</a>";
+                                            echo "</div></div>";
+                                        }
+                                        echo "</div></td></tr>";
+                                    }
+                                    if($stmt_sanction) { $stmt_sanction->close(); }
+                                } else {
+                                    echo "<tr><td colspan='8' class='no-records-cell'>No student violations match your current selection. <br>Please try adjusting your search or filter criteria.</td></tr>";
+                                }
+                                $stmt_main->close();
                             } else {
-                                echo "<tr><td colspan='11' class='no-records-cell'>No student violations match your current selection. <br>Please try adjusting your search or filter criteria.</td></tr>";
+                                echo "<tr><td colspan='8' class='no-records-cell'>Query Error: " . htmlspecialchars($conn->error) . "</td></tr>";
                             }
-                            $stmt_main->close();
-                        } else {
-                            echo "<tr><td colspan='11' class='no-records-cell'>Query Error: " . htmlspecialchars($conn->error) . "</td></tr>";
-                        }
                         ?>
                         </tbody>
                     </table>
@@ -991,6 +1144,23 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_violation_type_details' &&
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const violationTableBody = document.getElementById('violationTableBody');
+                if (violationTableBody) {
+                    violationTableBody.addEventListener('click', function (e) {
+                        const summaryRow = e.target.closest('.student-summary-row');
+                        if (summaryRow) {
+                            summaryRow.classList.toggle('expanded');
+                            const detailRow = document.getElementById(summaryRow.dataset.target);
+                            if (detailRow) {
+                                detailRow.classList.toggle('active');
+                            }
+                        }
+                    });
+                }
+            });
+        </script>
         <script src="./admin_violation_page.js"></script>
     </body>
 </html>

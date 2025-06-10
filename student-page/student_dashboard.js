@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    document.addEventListener('click', function(event) {s
+    document.addEventListener('click', function(event) {
         if (notificationsDropdownContent && notificationLinkToggle) {
             if (!notificationLinkToggle.contains(event.target) && !notificationsDropdownContent.contains(event.target)) {
                 notificationsDropdownContent.classList.remove('show');
@@ -17,56 +17,80 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    const handbookSearchInputElem = document.getElementById('handbookSearchInput');
-    if (handbookSearchInputElem) {
-        handbookSearchInputElem.addEventListener('input', handbookSearch);
-        
-        const handbookSearchForm = document.getElementById('handbookSearchForm');
-        if (handbookSearchForm) {
-            handbookSearchForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                handbookSearch();
+    const searchInput = document.getElementById('handbook-search-input');
+    const accordionItems = document.querySelectorAll('.accordion-container .accordion-item');
+    const noResultsMessage = document.getElementById('no-results-message');
+
+    if (searchInput && accordionItems.length > 0) {
+        const originalContent = new Map();
+        accordionItems.forEach(item => {
+            const elementsToSearch = [item.querySelector('.accordion-header span'), ...item.querySelectorAll('.accordion-content li')];
+            elementsToSearch.forEach(el => {
+                if(el) originalContent.set(el, el.textContent);
             });
+        });
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.trim();
+            let resultsFound = false;
+
+            accordionItems.forEach(item => {
+                const headerSpan = item.querySelector('.accordion-header span');
+                const listItems = item.querySelectorAll('.accordion-content li');
+                let isMatch = false;
+                
+                const highlight = (element) => {
+                    const originalText = originalContent.get(element) || '';
+                    if (searchTerm && originalText.toLowerCase().includes(searchTerm.toLowerCase())) {
+                        isMatch = true;
+                        const regex = new RegExp(searchTerm, 'gi');
+                        element.innerHTML = originalText.replace(regex, match => `<mark>${match}</mark>`);
+                    } else {
+                        element.innerHTML = originalText;
+                    }
+                };
+
+                highlight(headerSpan);
+                listItems.forEach(li => highlight(li));
+
+                if (isMatch || !searchTerm) {
+                    item.style.display = 'block';
+                    resultsFound = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            noResultsMessage.style.display = resultsFound ? 'none' : 'block';
+        });
+    }
+
+    const themeToggle = document.getElementById('theme-checkbox');
+    const currentTheme = localStorage.getItem('theme');
+
+    function applyTheme(theme) {
+        if (theme === 'dark-mode') {
+            document.body.classList.add('dark-mode');
+            themeToggle.checked = true;
+        } else {
+            document.body.classList.remove('dark-mode');
+            themeToggle.checked = false;
         }
     }
-});
 
-function handbookSearch() {
-    const searchTerm = document.getElementById('handbookSearchInput').value.toLowerCase();
-    const list = document.getElementById('handbookViolationList');
-    const listItems = list.querySelectorAll('li.handbook-item');
-    let foundItems = 0;
+    if (currentTheme) {
+        applyTheme(currentTheme);
+    } else {
+        applyTheme('light-mode');
+    }
 
-    listItems.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        if (text.includes(searchTerm)) {
-            item.style.display = '';
-            foundItems++;
+    themeToggle.addEventListener('change', function() {
+        if (this.checked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark-mode');
         } else {
-            item.style.display = 'none';
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light-mode');
         }
     });
-
-    let noResultsMessage = list.querySelector('.no-handbook-items-message.search-specific');
-    const originalNoItemsMessage = list.querySelector('.no-handbook-items-message:not(.search-specific)');
-
-    if (foundItems === 0 && searchTerm) {
-        if (!noResultsMessage) {
-            noResultsMessage = document.createElement('li');
-            noResultsMessage.className = 'no-handbook-items-message search-specific';
-            list.appendChild(noResultsMessage);
-        }
-        noResultsMessage.textContent = 'No violation types match your search.';
-        noResultsMessage.style.display = '';
-        if (originalNoItemsMessage) originalNoItemsMessage.style.display = 'none';
-    } else {
-        if (noResultsMessage) {
-            noResultsMessage.style.display = 'none';
-        }
-        if (!searchTerm && originalNoItemsMessage && listItems.length === 0) {
-             originalNoItemsMessage.style.display = '';
-        } else if (!searchTerm && originalNoItemsMessage && listItems.length > 0) {
-            originalNoItemsMessage.style.display = 'none';
-        }
-    }
-}
+});
