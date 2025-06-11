@@ -15,7 +15,7 @@
             <div class="login-buttons">
                 <a href="./student-page/student_login.php" class="student-btn">Student</a>
                 <a href="./admin-login/admin_login.php" class="admin-btn">Admin</a>
-                <a href="./PHP/security_login.php" class="security-btn">Security Personnel</a>
+                <a href="./security-page/security_login.php" class="security-btn">Security Personnel</a>
             </div>
             <div class="terms">
                 <a href="#">Privacy Terms and Condition</a>

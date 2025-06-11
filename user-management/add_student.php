@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $mail->isHTML(true);
                         $mail->Subject = 'Welcome! Your Account for PUPT Tracker System';
                         
-                        $student_login_url = "https://insync.ojt-ims-bsit.net/PHP/student_login.php";
+                        $student_login_url = "https://insync.ojt-ims-bsit.net/student-page/student_login.php";
 
                         $emailBody = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Student Account Created</title></head><body style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, Helvetica, sans-serif;">';
                         $emailBody .= '<div style="max-width:600px; margin:20px auto; background-color:#ffffff; border:1px solid #dddddd; border-radius:8px; overflow:hidden;">';
