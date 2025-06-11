@@ -12,7 +12,6 @@
     --card-border-color: #eaeaea;
     --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     --table-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-    --header-height: 80px; /* Added for consistency with other files */
 }
 
 * {
@@ -24,68 +23,19 @@
 
 body {
     background-color: #f4f7f6;
-    padding-top: var(--header-height);  
 }
 
-/* header */
-.navbar {
-    height: var(--header-height); 
+main {
+    padding: 24px;
 }
-
-.navbar-brand .img-fluid { 
-    height: 60px;
-    width: 180px;
-}
-
-.navbar-nav .nav-link {
-    font-weight: bold;
-    color: black;
-    padding: 8px 10px;
-    border-radius: 3px;
-    transition: color 0.3s ease;
-    position: relative;
-}
-
-.navbar-nav .nav-link:hover {
-    color: var(--primary-color);
-}
-
-.navbar-nav .nav-link.active {
-    color: var(--primary-color);
-}
-
-.navbar-nav .nav-link.active::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 5px;
-    right: 5px;
-    height: 3px;
-    background-color: var(--primary-color);
-    border-radius: 2px;
-}
-
-.d-flex img { /* For the notification and admin icons */
-    width: 35px;
-    height: 35px;
-}
-
-@media (min-width: 992px) {
-    .container-fluid {
-        padding-left: 20px;
-        padding-right: 20px;
-    }
-}
-/* End of header */
-
 
 .container {
     background: white;
     padding: 25px;
     border-radius: 8px;
-    width: 95%;
-    max-width: 1600px; 
-    margin: 20px auto;
+    width: 100%;
+    max-width: 1752px; 
+    margin: 0 auto;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 

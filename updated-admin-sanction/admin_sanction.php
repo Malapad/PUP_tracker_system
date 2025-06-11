@@ -16,7 +16,6 @@ $filterSection = $_GET['filter_section'] ?? '';
 $filterComplianceStatus = $_GET['status_filter'] ?? 'Pending';
 
 
-// Handle "Approve Sanction" from modal
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['approve_sanction'])) {
     $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
     header('Content-Type: application/json');
@@ -57,7 +56,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['approve_sanction'])) {
     exit;
 }
 
-// --- NEW: Handle marking sanction status (Completed/Pending) ---
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status'])) {
     $response = ['success' => false, 'message' => 'An error occurred.'];
     header('Content-Type: application/json');
@@ -79,7 +77,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
         $stmt_update->bind_param("ssi", $new_status, $date_completed, $record_id);
         $stmt_update->execute();
 
-        // Log the action to history table
         $stmt_history = $conn->prepare("INSERT INTO sanction_compliance_history (record_id, student_number, performed_by_admin_name, `action`, details) VALUES (?, ?, ?, ?, ?)");
         $action = "Marked as " . $new_status;
         $details = "Admin '$admin_name' updated sanction status for student $student_number.";
@@ -100,7 +97,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_sanction_status
 }
 
 
-// Handle adding new sanction type
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_sanction_type'])) {
     $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
     header('Content-Type: application/json');
@@ -143,7 +139,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_sanction_type'])) 
     exit;
 }
 
-// Handle deleting sanction type
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_sanction_id'])) {
     $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
     header('Content-Type: application/json');
@@ -172,7 +167,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_sanction_id']))
     exit;
 }
 
-// Handle updating sanction type
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_submit'])) {
     $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
     header('Content-Type: application/json');
@@ -219,34 +213,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Sanction</title>
+    <link rel="stylesheet" href="../admin-dashboard/admin_style.css">
     <link rel="stylesheet" href="./admin_sanction_styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <div id="toast-notification" class="toast"></div>
-    <header>
-        <div class="header-content-wrapper">
-            <div class="logo">
-                <a href="../HTML/admin_homepage.html">
-                    <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo">
-                </a>
-            </div>
-            <nav>
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
+            <nav class="main-nav">
                 <a href="../admin-dashboard/admin_homepage.php">Home</a>
                 <a href="../updated-admin-violation/admin_violation_page.php">Violations</a>
-                <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="active">Student Sanction</a>
+                <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="active-nav">Student Sanction</a>
                 <a href="../user-management/user_management.php">User Management</a>
                 <a href="../PHP/admin_announcements.php">Announcements</a>
             </nav>
-            <div class="admin-icons">
-                <a href="notification.html" class="notification">
-                    <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/></a>
-                <a href="admin_account.html" class="admin">
-                    <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account"/></a>
+            <div class="user-icons">
+                <a href="../admin-dashboard/notification.html" class="notification"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg></a>
+                <a href="../PHP/admin_account.php" class="admin-profile"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
             </div>
         </div>
     </header>
-
+<main>
     <div class="container">
         <?php if ($active_view === 'history'): ?>
             <div class="history-header">
@@ -446,7 +435,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
                                         echo "<td>" . htmlspecialchars(date("F j, Y", strtotime($row['violation_date']))) . "</td>";
                                         echo "<td>" . htmlspecialchars($row['violation_type']) . "</td>";
                                         echo "<td>" . htmlspecialchars($row['offense_level']) . "</td>";
-                                        // MODIFIED: Status column now shows a button
                                         echo "<td><button class='sanction-request-btn'>Sanction</button></td>";
                                         echo "<td class='action-buttons-cell'>";
                                         echo "<button class='view-manage-btn'
@@ -497,7 +485,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
                         </thead>
                         <tbody>
                             <?php
-                            // MODIFIED: Query now filters by status
                             $sql_ongoing = "SELECT
                                                 ssr.record_id, ssr.status, ssr.deadline_date,
                                                 u.student_number, u.first_name, u.middle_name, u.last_name,
@@ -530,7 +517,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
                                     echo "<td>" . htmlspecialchars(date("F j, Y", strtotime($row['deadline_date']))) . "</td>";
                                     echo "<td><span class='status-badge " . $status_class . "'>" . htmlspecialchars($row['status']) . "</span></td>";
                                     
-                                    // MODIFIED: Action button now toggles status
                                     echo "<td class='action-buttons-cell'>";
                                     if ($row['status'] == 'Pending') {
                                         echo "<button class='update-status-btn status-completed-btn' data-record-id='" . htmlspecialchars($row['record_id']) . "' data-student-number='" . htmlspecialchars($row['student_number']) . "' data-new-status='Completed'><i class='fas fa-check-circle'></i> Mark Completed</button>";
@@ -598,9 +584,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
             </div>
              <div id="approveSanctionModalMessage" class="modal-message" style="display: none;"></div>
             <form id="approveSanctionForm" method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
-                 <input type="hidden" name="approve_sanction" value="1">
-                 <input type="hidden" id="approveStudentNumber" name="student_number">
-                 <input type="hidden" id="approveViolationId" name="violation_id">
+                <input type="hidden" name="approve_sanction" value="1">
+                <input type="hidden" id="approveStudentNumber" name="student_number">
+                <input type="hidden" id="approveViolationId" name="violation_id">
 
                 <div class="details-content">
                     <p><strong>Student Number:</strong> <span id="detailStudentNumber"></span></p>
@@ -730,7 +716,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_sanction_type_sub
             </div>
         </div>
     </div>
-
+</main>
     <script src="./admin_sanction.js"></script>
 </body>
 </html>

@@ -16,12 +16,12 @@ if (isset($_GET['student_number'])) {
 
     if (!empty($student_number_from_get)) {
         $stmt_student = $conn->prepare("SELECT u.student_number, u.first_name, u.middle_name, u.last_name,
-                                               c.course_name, y.year, s.section_name
-                                        FROM users_tbl u
-                                        LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                                        LEFT JOIN year_tbl y ON u.year_id = y.year_id
-                                        LEFT JOIN section_tbl s ON u.section_id = s.section_id
-                                        WHERE u.student_number = ?");
+                                                c.course_name, y.year, s.section_name
+                                           FROM users_tbl u
+                                           LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                                           LEFT JOIN year_tbl y ON u.year_id = y.year_id
+                                           LEFT JOIN section_tbl s ON u.section_id = s.section_id
+                                           WHERE u.student_number = ?");
         if ($stmt_student) {
             $stmt_student->bind_param("s", $student_number_from_get);
             $stmt_student->execute();
@@ -33,14 +33,14 @@ if (isset($_GET['student_number'])) {
         }
 
         $sql_violations = "SELECT v.violation_id, vt.violation_type_id, vc.category_name, vt.violation_type, v.violation_date, v.description AS remarks,
-                                  CONCAT(ai.firstname, ' ', ai.lastname) AS admin_full_name,
-                                  ai.position
-                           FROM violation_tbl v
-                           JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                           LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id
-                           LEFT JOIN admin_info_tbl ai ON v.recorder_id = ai.admin_id
-                           WHERE v.student_number = ?
-                           ORDER BY v.violation_date DESC";
+                                   CONCAT(ai.firstname, ' ', ai.lastname) AS admin_full_name,
+                                   ai.position
+                              FROM violation_tbl v
+                              JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                              LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id
+                              LEFT JOIN admin_info_tbl ai ON v.recorder_id = ai.admin_id
+                              WHERE v.student_number = ?
+                              ORDER BY v.violation_date DESC";
         $stmt_violations = $conn->prepare($sql_violations);
 
         if ($stmt_violations) {
@@ -98,52 +98,30 @@ function getCategoryClass($categoryName) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Student Violation Details</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../admin-dashboard/admin_style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="./admin_violation.css" />
     <link rel="stylesheet" href="./student_violation_details_style.css" />
 </head>
 <body>
 
-<header class="navbar navbar-expand-lg custom-navbar">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">
-            <img src="../IMAGE/Tracker_logo.png" alt="Logo" width="40" height="40" class="d-inline-block align-text-top">
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav mx-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="../HTML/admin_homepage.html"><strong>Home</strong></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="<?php echo htmlspecialchars($back_link_target); ?>"><strong>Violations</strong></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="../updated-admin-sanction/admin_sanction.php"><strong>Student Sanction</strong></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="../user-management/user_management.php"><strong>User Management</strong></a>
-                </li>
-            </ul>
-            <ul class="navbar-nav icon-nav">
-                <li class="nav-item">
-                    <a class="nav-link icon-link" href="#">
-                        <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notification">
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link icon-link" href="#">
-                        <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Account">
-                    </a>
-                </li>
-            </ul>
+<header class="main-header">
+    <div class="header-content">
+        <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
+        <nav class="main-nav">
+            <a href="../admin-dashboard/admin_homepage.php">Home</a>
+            <a href="<?php echo htmlspecialchars($back_link_target); ?>" class="active-nav">Violations</a>
+            <a href="../updated-admin-sanction/admin_sanction.php">Student Sanction</a>
+            <a href="../user-management/user_management.php">User Management</a>
+            <a href="../PHP/admin_announcements.php">Announcements</a>
+        </nav>
+        <div class="user-icons">
+            <a href="../admin-dashboard/notification.html" class="notification"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg></a>
+            <a href="../PHP/admin_account.php" class="admin-profile"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
         </div>
     </div>
 </header>
-
+<main>
 <div class="details-container">
     <div class="page-header">
         <h2 class="page-title">Violation Record</h2>
@@ -268,7 +246,7 @@ function getCategoryClass($categoryName) {
         <p class="no-records">Student not found or no student number provided.</p>
     <?php endif; ?>
 </div>
-
+</main>
 </body>
 </html>
 <?php $conn->close(); ?>

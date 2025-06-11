@@ -52,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
                             $info_stmt->close();
                         }
                         
-                        header("Location: ../HTML/admin_homepage.html");
+                        header("Location: ../admin-dashboard/admin_homepage.php");
                         exit;
                     } else {
                         $errors['login_error'] = "Incorrect email or password! Please try again.";

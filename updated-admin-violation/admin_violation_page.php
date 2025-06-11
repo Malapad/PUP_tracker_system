@@ -500,128 +500,13 @@ function getIconForCategory($categoryName) {
         <link rel="stylesheet" href="./admin_violation.css?v=<?php echo time(); ?>" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            .badge-pill {
-                padding: 0.4em 0.7em;
-                border-radius: 10rem;
-                font-size: 0.85em;
-                font-weight: 600;
-                display: inline-flex;
-                align-items: center;
-                gap: 0.4em;
-                line-height: 1;
-            }
-            .status-sanction {
-                background-color: #9d1313;
-                color: white;
-            }
-            .status-warning {
-                background-color: #ffc107;
-                color: #212529;
-            }
-            .offense-level-badge {
-                background-color: #6c757d;
-                color: white;
-            }
-            .summary-badge {
-                font-size: 0.8em;
-                margin-left: 0.5rem;
-            }
-            tbody#violationTableBody tr {
-                transition: background-color 0.2s ease;
-            }
-            .student-summary-row {
-                cursor: pointer;
-                border-top: 2px solid #dee2e6;
-            }
-            .student-summary-row:first-child {
-                border-top: none;
-            }
-            .student-summary-row:hover {
-                background-color: #f1f3f5;
-            }
-            .violation-detail-row {
-                display: none;
-            }
-            .violation-detail-row.active {
-                display: table-row;
-            }
-            .details-container-cell {
-                padding: 0 !important;
-                background: #fff;
-                box-shadow: inset 0 6px 8px -6px rgba(0,0,0,0.15);
-            }
-             .details-container-cell.group-border-sanction {
-                 border-left: 4px solid #9d1313;
-            }
-            .details-container-cell.group-border-warning {
-                 border-left: 4px solid #ffc107;
-            }
-            .details-wrapper {
-                padding: 0.5rem 1.5rem;
-            }
-            .violation-entry {
-                display: grid;
-                grid-template-columns: 1fr auto;
-                gap: 1rem;
-                align-items: start;
-                padding: 1rem 0;
-                border-bottom: 1px solid #e9ecef;
-            }
-            .violation-entry:last-child {
-                border-bottom: none;
-            }
-            .violation-main .violation-type {
-                font-weight: 600;
-                font-size: 1.05em;
-                color: #212529;
-            }
-            .violation-main .violation-context {
-                font-size: 0.85em;
-                color: #6c757d;
-                margin-top: 0.25rem;
-            }
-            .violation-main .violation-context .fa-calendar-alt {
-                margin-right: 0.3em;
-            }
-            .violation-main .violation-context .violation-remarks {
-                font-style: italic;
-                display: block;
-                margin-top: 0.25rem;
-            }
-             .violation-main .violation-context .no-remarks {
-                font-style: italic;
-                color: #adb5bd;
-            }
-            .violation-actions {
-                display: flex;
-                gap: 0.75rem;
-                align-items: center;
-                padding-top: 4px;
-            }
-            .expand-icon {
-                font-size: 0.9em;
-                transition: transform 0.3s ease-in-out;
-                width: 25px;
-                display: inline-block;
-                text-align: center;
-                color: #6c757d;
-                font-weight: bold;
-            }
-            .student-summary-row.expanded .expand-icon {
-                transform: rotate(90deg);
-            }
-            .student-summary-row.expanded {
-                background-color: #e9ecef;
-            }
-        </style>
     </head>
     <body>
         <div id="toast-notification" class="toast"></div>
 
         <header class="main-header">
      <div class="header-content">
-        <div class="logo"><img src="../assets/PUPLogo.png" alt="PUP Logo"></div>
+        <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
         <nav class="main-nav">
             <a href="../admin-dashboard/admin_homepage.php">Home</a>
             <a href="admin_violation_page.php" class="active-nav">Violations</a>
