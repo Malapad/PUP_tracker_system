@@ -119,7 +119,7 @@ $announcements_result = $stmt->get_result();
 <body>
     <header class="main-header">
          <div class="header-content">
-            <div class="logo"><img src="../assets/PUPLogo.png" alt="PUP Logo"></div>
+            <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
             <nav class="main-nav">
                 <a href="../admin-dashboard/admin_homepage.php">Home</a>
                 <a href="../updated-admin-violation/admin_violation_page.php">Violations</a>

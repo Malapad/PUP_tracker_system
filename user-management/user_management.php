@@ -6,28 +6,29 @@ include '../PHP/dbcon.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" href="../admin-dashboard/admin_style.css">
     <link rel="stylesheet" href="./user_management.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <title>User Management</title>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <img src="../assets/PUP_logo.png" alt="PUP Logo">
-        </div>
-        <nav>
-            <a href="../admin-dashboard/admin_homepage.php">Home</a>
-            <a href="../updated-admin-violation/admin_violation_page.php">Violations</a>
-            <a href="../updated-admin-sanction/admin_sanction.php">Student Sanction</a>
-            <a href="./user_management.php" class="active">User Management</a>
-            <a href="../PHP/admin_announcements.php">Announcements</a>
-        </nav>
-        <div class="admin-icons">
-            <a href="../HTML/notification.html" class="notification"><img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/></a>
-            <a href="./admin_account.php" class="admin"><img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account"/></a>
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
+            <nav class="main-nav">
+                <a href="../admin-dashboard/admin_homepage.php">Home</a>
+                <a href="../updated-admin-violation/admin_violation_page.php">Violations</a>
+                <a href="../updated-admin-sanction/admin_sanction.php">Student Sanction</a>
+                <a href="./user_management.php" class="active-nav">User Management</a>
+                <a href="../PHP/admin_announcements.php">Announcements</a>
+            </nav>
+            <div class="user-icons">
+                <a href="../admin-dashboard/notification.html" class="notification"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg></a>
+                <a href="../PHP/admin_account.php" class="admin-profile"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
+            </div>
         </div>
     </header>
-
+<main>
     <div class="container">
         <h1>User Management</h1>
         <div class="tabs">
@@ -211,8 +212,8 @@ include '../PHP/dbcon.php';
             <div id="admin-history-view" style="display: none;">
                  <div class="controls"><div class="main-controls-wrapper"><div class="left-control-group"><h3 style="margin: 0;">Admin Action History</h3></div><div class="right-control-group"><button type="button" id="back-to-admin-list-btn" class="secondary-button"><i class="fas fa-arrow-left"></i> Back to Admin List</button></div></div></div>
                 <table id="admin-history-table">
-                     <thead><tr><th>Timestamp</th><th>Performed By</th><th>Action</th><th>Target Admin</th><th>Details</th></tr></thead>
-                     <tbody>
+                    <thead><tr><th>Timestamp</th><th>Performed By</th><th>Action</th><th>Target Admin</th><th>Details</th></tr></thead>
+                    <tbody>
                         <?php
                         if ($conn) {
                             $historyQuery = "SELECT timestamp, performed_by_admin_name, action_type, target_user_identifier, details FROM user_management_history WHERE target_user_type = 'Admin' ORDER BY timestamp DESC LIMIT 200";
@@ -238,7 +239,7 @@ include '../PHP/dbcon.php';
     <div id="edit-admin-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Admin</h3><form id="edit-admin-form"><input type="hidden" id="edit-admin-id" name="admin_id"><div><label>First Name:</label><input type="text" id="edit-admin-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-admin-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-admin-last-name" name="last_name" required></div><div><label>Position:</label><input type="text" id="edit-admin-position" name="position" required></div><div><label>Email:</label><input type="email" id="edit-admin-email" name="email" required></div><div><label>New Password:</label><input type="password" id="edit-admin-password" name="password" placeholder="Leave blank to keep current password"></div><div><label>Status:</label><select id="edit-admin-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP)) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Admin</button></form></div></div>
     <div id="delete-confirm-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h3><p id="delete-confirm-text">Are you sure you want to delete <span id="delete-item-type-placeholder"></span>: <strong id="delete-item-identifier-placeholder"></strong>?</p><div class="delete-confirm-actions"><button type="button" id="confirm-delete-action-btn" class="delete-btn"><i class="fas fa-trash-alt"></i> Confirm Delete</button><button type="button" id="cancel-delete-action-btn" class="edit-btn"><i class="fas fa-times"></i> Cancel</button></div></div></div>
     <div id="custom-toast-notification" class="toast-notification"><span id="toast-notification-message"></span></div>
-
+</main>
     <script src="./user_management.js"></script>
 </body>
 </html>
