@@ -14,7 +14,14 @@ body {
     width: 100%;
     font-family: "Inter", sans-serif;
 }
-.header-content { display: flex; align-items: center; justify-content: space-between; height: 100%; max-width: 1800px; margin: 0 auto; }
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
 .main-header .logo img { height: 50px; }
 .main-nav { display: flex; align-items: center; flex-grow: 1; justify-content: center; gap: 40px; }
 .user-icons { display: flex; align-items: center; gap: 24px; }
@@ -26,7 +33,7 @@ body {
 .header-icon:hover { fill: #1f2937; }
 
 .details-container {
-    width: 90%;
+    width: 95%;
     max-width: 1200px;
     margin: 2rem auto;
 }
@@ -134,15 +141,33 @@ body {
 .details-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
 .details-table th, .details-table td {
-    padding: 1rem 1.25rem;
+    padding: 0.9rem 1rem;
     text-align: left;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     vertical-align: middle;
     color: #495057;
+    white-space: normal;
+    word-break: break-word;
+    hyphens: auto;
 }
+
+.summary-table th:nth-child(1) { width: 15%; }
+.summary-table th:nth-child(2) { width: 18%; }
+.summary-table th:nth-child(3) { width: 12%; }
+.summary-table th:nth-child(4) { width: 10%; }
+.summary-table th:nth-child(5) { width: 20%; }
+.summary-table th:nth-child(6) { width: 25%; }
+
+.table-log th:nth-child(1) { width: 15%; }
+.table-log th:nth-child(2) { width: 18%; }
+.table-log th:nth-child(3) { width: 18%; }
+.table-log th:nth-child(4) { width: 24%; }
+.table-log th:nth-child(5) { width: 15%; }
+.table-log th:nth-child(6) { width: 10%; }
 
 .details-table td:first-child {
     font-weight: 500;
@@ -245,7 +270,7 @@ tr.category-university-property-and-facilities { border-left: 4px solid #795548;
 tr.category-uncategorized { border-left: 4px solid #607D8B; }
 
 tr[class*="category-"] td:first-child {
-    padding-left: calc(1.25rem - 4px);
+    padding-left: calc(1rem - 4px);
 }
 
 

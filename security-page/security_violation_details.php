@@ -25,7 +25,7 @@ if (isset($_GET['student_number'])) {
             $stmt_student->close();
         }
 
-        $sql_violations = "SELECT v.violation_id, vt.violation_type_id, vc.category_name, vt.violation_type, v.violation_date, v.description AS remarks, CONCAT(ai.firstname, ' ', ai.lastname) AS admin_full_name, ai.position FROM violation_tbl v JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id LEFT JOIN admin_info_tbl ai ON v.recorder_id = ai.admin_id WHERE v.student_number = ? ORDER BY v.violation_date DESC";
+        $sql_violations = "SELECT v.violation_id, vt.violation_type_id, vc.category_name, vt.violation_type, v.violation_date, v.description AS remarks, CONCAT(si.firstname, ' ', si.lastname) AS recorder_full_name, si.position FROM violation_tbl v JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id LEFT JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id LEFT JOIN security_info si ON v.recorder_id = si.security_id WHERE v.student_number = ? ORDER BY v.violation_date DESC";
         $stmt_violations = $conn->prepare($sql_violations);
 
         if ($stmt_violations) {
@@ -97,7 +97,7 @@ function getCategoryClass($categoryName) {
         </nav>
         <div class="user-icons">
             <a href="notification.html" class="notification"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg></a>
-            <a href="../PHP/security_account.php" class="admin-profile"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
+            <a href="security_account.php" class="admin-profile"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
         </div>
     </div>
 </header>
@@ -210,7 +210,7 @@ function getCategoryClass($categoryName) {
                                     <td data-label="Violation Type"><?php echo htmlspecialchars($violation['violation_type']); ?></td>
                                     <td data-label="Date"><?php echo htmlspecialchars(date("F j, Y, g:i a", strtotime($violation['violation_date']))); ?></td>
                                     <td data-label="Remarks"><?php echo nl2br(htmlspecialchars(trim($violation['remarks'] ?? '') === '' ? 'No remarks' : $violation['remarks'])); ?></td>
-                                    <td data-label="Recorded By" class="<?php echo ($violation['admin_full_name'] ?? 'N/A') == 'N/A' ? 'data-na' : ''; ?>"><?php echo htmlspecialchars($violation['admin_full_name'] ?? 'N/A'); ?></td>
+                                    <td data-label="Recorded By" class="<?php echo ($violation['recorder_full_name'] ?? 'N/A') == 'N/A' ? 'data-na' : ''; ?>"><?php echo htmlspecialchars($violation['recorder_full_name'] ?? 'N/A'); ?></td>
                                     <td data-label="Position" class="<?php echo ($violation['position'] ?? 'N/A') == 'N/A' ? 'data-na' : ''; ?>"><?php echo htmlspecialchars($violation['position'] ?? 'N/A'); ?></td>
                                 </tr>
                             <?php endforeach; ?>
@@ -229,4 +229,3 @@ function getCategoryClass($categoryName) {
 </main>
 </body>
 </html>
-<?php $conn->close(); ?>
