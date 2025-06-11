@@ -1,6 +1,9 @@
 <?php
 require_once '../PHP/dbcon.php';
-session_start();
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (!isset($_SESSION["current_user_id"]) || !isset($_SESSION["user_student_number"])) {
     header("Location: ./student_login.php");
@@ -9,62 +12,44 @@ if (!isset($_SESSION["current_user_id"]) || !isset($_SESSION["user_student_numbe
 
 $student_stud_number_from_session = $_SESSION["user_student_number"];
 
-$violations = [];
-if (!empty($student_stud_number_from_session)) {
-    $sql_violations = "SELECT v.description, v.violation_date, vt.violation_type
-                       FROM violation_tbl v
-                       LEFT JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                       WHERE v.student_number = ?
-                       ORDER BY v.violation_date DESC";
-    if ($stmt_violations = $conn->prepare($sql_violations)) {
-        $stmt_violations->bind_param("s", $student_stud_number_from_session);
-        $stmt_violations->execute();
-        $result_violations = $stmt_violations->get_result();
-        while ($row = $result_violations->fetch_assoc()) {
-            $violations[] = $row;
+$violations_query = "SELECT vt.violation_category_id, vt.violation_type
+                     FROM violation_tbl v
+                     JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                     WHERE v.student_number = ?";
+
+$violations_by_category = [];
+$total_violations = 0;
+
+if ($stmt_violations = $conn->prepare($violations_query)) {
+    $stmt_violations->bind_param("s", $student_stud_number_from_session);
+    $stmt_violations->execute();
+    $result_violations = $stmt_violations->get_result();
+    while ($row = $result_violations->fetch_assoc()) {
+        $cat_id = $row['violation_category_id'];
+        if (!isset($violations_by_category[$cat_id])) {
+            $violations_by_category[$cat_id] = 0;
         }
-        $stmt_violations->close();
-    } else {
-        echo "Error preparing violation query: " . htmlspecialchars($conn->error);
+        $violations_by_category[$cat_id]++;
+        $total_violations++;
     }
+    $stmt_violations->close();
 }
 
-$total_violations = count($violations);
+
 $offense_status = "Clear";
-$status_color = "green";
+$offense_status_class = "status-clear";
 
 if ($total_violations > 0) {
-    $violation_type_counts = [];
-    foreach ($violations as $v) {
-        $typeName = $v['violation_type'];
-        if (!isset($violation_type_counts[$typeName])) {
-            $violation_type_counts[$typeName] = 0;
-        }
-        $violation_type_counts[$typeName]++;
-    }
-
     $offense_status = "Warning";
-    $status_color = "orange";
-    foreach ($violation_type_counts as $type => $count) {
+    $offense_status_class = "status-warning";
+    
+    foreach ($violations_by_category as $count) {
         if ($count >= 2) {
             $offense_status = "Sanction";
-            $status_color = "#AF1414";
+            $offense_status_class = "status-sanction";
             break;
         }
     }
-}
-
-$handbook_violations = [];
-$sql_handbook = "SELECT violation_type_id, violation_type FROM violation_type_tbl ORDER BY violation_type";
-if ($stmt_handbook = $conn->prepare($sql_handbook)) {
-    $stmt_handbook->execute();
-    $result_handbook = $stmt_handbook->get_result();
-    while ($row_hb = $result_handbook->fetch_assoc()) {
-        $handbook_violations[] = $row_hb;
-    }
-    $stmt_handbook->close();
-} else {
-    echo "Error preparing handbook query: " . htmlspecialchars($conn->error);
 }
 
 $unread_notifications_header = [];
@@ -83,8 +68,6 @@ if (isset($conn)) {
             $unread_notifications_header[] = $row_notif_h;
         }
         $stmt_notifications_list_header->close();
-    } else {
-        error_log("Error preparing notification header list query in " . basename(__FILE__) . ": " . $conn->error);
     }
 
     $sql_notifications_count_header = "SELECT COUNT(*) as total_unread
@@ -96,11 +79,7 @@ if (isset($conn)) {
         $result_count_h = $stmt_notifications_count_header->get_result()->fetch_assoc();
         $unread_notification_count_header = $result_count_h['total_unread'] ?? 0;
         $stmt_notifications_count_header->close();
-    } else {
-        error_log("Error preparing notification count query in " . basename(__FILE__) . ": " . $conn->error);
     }
-} else {
-    error_log("Database connection not available in " . basename(__FILE__) . " for fetching header notifications.");
 }
 ?>
 <!DOCTYPE html>
@@ -109,159 +88,147 @@ if (isset($conn)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard</title>
-    <link rel="stylesheet" href="./student_dashboard_style.css">
-    <link rel="stylesheet" href="violation-config.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./student_style.css">
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <img src="../assets/PUPLogo.png" alt="PUP Logo">
-        </div>
-        <nav>
-            <a href="./student_dashboard.php" class="active-nav">Home</a>
-            <a href="./student_record.php">Record</a>
-        </nav>
-        <div class="user-icons admin-icons">
-            <div class="notification-icon-area">
-                <a href="#" class="notification" id="notificationLinkToggle">
-                    <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications"/>
-                    <?php if ($unread_notification_count_header > 0): ?>
-                        <span class="notification-count"><?php echo $unread_notification_count_header; ?></span>
-                    <?php endif; ?>
-                </a>
-                <div class="notifications-dropdown" id="notificationsDropdownContent">
-                    <ul>
-                        <?php if (!empty($unread_notifications_header)): ?>
-                            <?php foreach ($unread_notifications_header as $notification_h): ?>
-                                <li class="notification-item">
-                                    <a href="<?php echo !empty($notification_h['link']) ? htmlspecialchars($notification_h['link']) . (strpos($notification_h['link'], '?') === false ? '?' : '&') . 'notif_id=' . $notification_h['notification_id'] : '#'; ?>"
-                                       class="notification-message-link"
-                                       data-notification-id="<?php echo $notification_h['notification_id']; ?>">
-                                        <?php echo htmlspecialchars($notification_h['message']); ?>
-                                        <small class="notification-timestamp"><?php echo date("M d, Y h:i A", strtotime($notification_h['created_at'])); ?></small>
-                                    </a>
-                                    <a href="./mark_notification_read.php?id=<?php echo $notification_h['notification_id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="mark-as-read-link">Mark read</a>
-                                </li>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <li class="no-notifications">No new notifications.</li>
-                        <?php endif; ?>
-                        <li class="view-all-container">
-                            <a href="./all_notifications.php" class="view-all-notifications-link">View All Notifications</a>
-                        </li>
-                    </ul>
-                </div>
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="../IMAGE//Tracker-logo.png" alt="PUP Logo">
             </div>
-            <a href="./student_account.php" class="profile-icon admin"><img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Account"/></a>
+            <nav class="main-nav">
+                <a href="./student_dashboard.php" class="active-nav">Home</a>
+                <a href="./student_record.php">Record</a>
+                <a href="./student_announcements.php">Announcements</a>
+            </nav>
+            <div class="user-icons">
+                <div class="notification-icon-area">
+                    <a href="#" class="notification" id="notificationLinkToggle">
+                        <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg>
+                        <?php if ($unread_notification_count_header > 0): ?>
+                            <span class="notification-count"><?php echo $unread_notification_count_header; ?></span>
+                        <?php endif; ?>
+                    </a>
+                    <div class="notifications-dropdown" id="notificationsDropdownContent">
+                        <div class="notification-header">
+                            <h3>Notifications</h3>
+                            <button id="mark-all-read-btn">Mark all as read</button>
+                        </div>
+                        <ul class="notification-list">
+                            <?php if (!empty($unread_notifications_header)): ?>
+                                <?php foreach ($unread_notifications_header as $notification_h): ?>
+                                    <li class="notification-item">
+                                        <div class="notification-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.103 0-2 .897-2 2v18l4-4h14c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2zm-3 9h-4v4h-2v-4H7V9h4V5h2v4h4v2z"/></svg>
+                                        </div>
+                                        <div class="notification-details">
+                                            <p class="notification-message"><?php echo htmlspecialchars($notification_h['message']); ?></p>
+                                            <small class="notification-timestamp"><?php echo date("M d, Y h:i A", strtotime($notification_h['created_at'])); ?></small>
+                                        </div>
+                                        <a href="./mark_notification_read.php?id=<?php echo $notification_h['notification_id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="mark-as-read-btn" title="Mark as read">
+                                            <span class="read-dot-icon"></span>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <li class="no-notifications">No new notifications.</li>
+                            <?php endif; ?>
+                        </ul>
+                        <div class="notification-footer">
+                            <a href="./all_notifications.php" class="view-all-notifications-link">View All Notifications</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="./student_account.php" class="profile-icon admin">
+                     <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                </a>
+            </div>
         </div>
     </header>
 
 <main>
-    <h3 class="dashboard-page-title">Student Dashboard</h3>
-
-    <div class="container">
-        <div class="box">
-            <div class="header">Your Violation Summary</div>
-            <div class="content violation-summary-content">
-                <?php if ($total_violations > 0): ?>
-                    <p><span class="summary-label">Total Violations Committed:</span> <span class="summary-value"><?php echo $total_violations; ?></span></p>
-                    <p>
-                        <span class="summary-label">Offense Status:</span>
-                        <span class="summary-value offense-status-text" style="color: <?php echo $status_color; ?>;">
-                            <?php echo htmlspecialchars($offense_status); ?>
-                        </span>
-                    </p>
-                    <?php if ($offense_status === 'Warning'): ?>
-                        <p class="summary-message">Please review your '<a href="./student_record.php"><strong>Record</strong></a>' for details on your recent violations.</p>
-                    <?php elseif ($offense_status === 'Sanction'): ?>
-                        <p class="summary-message">A '<strong>Sanction</strong>' status indicates repeated violations. See your '<a href="./student_record.php"><strong>Record</strong></a>' for more information.</p>
-                    <?php endif; ?>
-                <?php else: ?>
-                    <p><span class="summary-label">Total Violations Committed:</span> <span class="summary-value">0</span></p>
-                    <p>
-                        <span class="summary-label">Offense Status:</span>
-                        <span class="summary-value offense-status-text" style="color: <?php echo $status_color; ?>;">
-                            <?php echo htmlspecialchars($offense_status); ?>
-                        </span>
-                    </p>
+    <div class="dashboard-wrapper">
+        <h1 class="dashboard-page-title">Student Dashboard</h1>
+        <div class="dashboard-grid">
+            <div class="grid-column summary-column">
+                <h2 class="section-title">Your Violation Summary</h2>
+                <div class="stat-cards-container">
+                    <a href="./student_record.php" class="stat-card-link">
+                        <div class="stat-card">
+                            <div class="stat-card-value"><?php echo $total_violations; ?></div>
+                            <div class="stat-card-label">Total Violations Committed</div>
+                        </div>
+                    </a>
+                    <div class="stat-card <?php echo $offense_status_class; ?>">
+                        <div class="stat-card-value"><?php echo htmlspecialchars($offense_status); ?></div>
+                        <div class="stat-card-label">Offense Status</div>
+                    </div>
+                </div>
+                 <?php if ($total_violations > 0): ?>
+                    <p class="summary-message">Please review your '<a href="./student_record.php"><strong>Record</strong></a>' for details on your recent violations.</p>
+                 <?php else: ?>
                     <p class="no-violations-message">Keep up the good work! No violations recorded.</p>
                 <?php endif; ?>
             </div>
-        </div>
-
-
-
-        <div class="box">
-            <div class="header">Student Handbook - Violation Types</div>
-            <?php
-            $searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
-            ?>
-
-            <div class="search-bar">
-              <form method="GET" action="">
-                <input type="text" name="search" placeholder="Search category or type..." value="<?= htmlspecialchars($searchTerm) ?>">
-                <button type="submit"><i class="fas fa-search"></i> Search</button>
-              </form>
-            </div>
-
-            <div class="accordion-container">
-            <?php
-            $searchSql = "
-              SELECT DISTINCT c.violation_category_id, c.category_name
-              FROM violation_category_tbl c
-              LEFT JOIN violation_type_tbl t ON c.violation_category_id = t.violation_category_id
-              WHERE c.category_name LIKE ? OR t.violation_type LIKE ?
-              ORDER BY c.category_name ASC
-            ";
-
-            $stmt = $conn->prepare($searchSql);
-            $like = '%' . $searchTerm . '%';
-            $stmt->bind_param("ss", $like, $like);
-            $stmt->execute();
-            $categoryResult = $stmt->get_result();
-
-            if ($categoryResult && $categoryResult->num_rows > 0) {
-              while ($category = $categoryResult->fetch_assoc()) {
-                $categoryId = $category['violation_category_id'];
-                $categoryName = $category['category_name'];
-                ?>
-                <div class="accordion-item">
-                  <button class="accordion-header">
-                    <span><?= htmlspecialchars($categoryName) ?></span>
-                    <i class="fas fa-chevron-down accordion-icon"></i>
-                  </button>
-                  <div class="accordion-content">
-                    <ul>
-                      <?php
-                      $typeQuery = "SELECT violation_type FROM violation_type_tbl WHERE violation_category_id = ? AND violation_type LIKE ?";
-                      $stmtType = $conn->prepare($typeQuery);
-                      $stmtType->bind_param("is", $categoryId, $like);
-                      $stmtType->execute();
-                      $typeResult = $stmtType->get_result();
-
-                      if ($typeResult && $typeResult->num_rows > 0) {
-                        while ($type = $typeResult->fetch_assoc()) {
-                          echo "<li>" . htmlspecialchars($type['violation_type']) . "</li>";
-                        }
-                      } else {
-                        echo "<li>No matching types found in this category.</li>";
-                      }
-                      ?>
-                    </ul>
-                  </div>
+            <div class="grid-column handbook-column">
+                <h2 class="section-title">Student Handbook</h2>
+                <div class="search-bar">
+                    <input type="text" id="handbook-search-input" placeholder="Search category or type...">
                 </div>
+                <div class="accordion-container">
                 <?php
-              }
-            } else {
-              echo "<p style='padding: 10px;'>No Record</p>";
-            }
-            ?>
+                $handbookQuery = "SELECT vc.violation_category_id, vc.category_name, vt.violation_type 
+                                  FROM violation_category_tbl vc 
+                                  LEFT JOIN violation_type_tbl vt ON vc.violation_category_id = vt.violation_category_id
+                                  ORDER BY vc.category_name, vt.violation_type";
+                $handbookResult = $conn->query($handbookQuery);
+                $handbookData = [];
+                while($row = $handbookResult->fetch_assoc()) {
+                    $handbookData[$row['category_name']]['id'] = $row['violation_category_id'];
+                    $handbookData[$row['category_name']]['violations'][] = $row['violation_type'];
+                }
+
+                if (!empty($handbookData)) {
+                  foreach ($handbookData as $categoryName => $data) {
+                    $cat_id = $data['id'];
+                    $violations = $data['violations'];
+                    ?>
+                    <details class="accordion-item">
+                      <summary class="accordion-header">
+                        <span><?= htmlspecialchars($categoryName) ?></span>
+                        <?php if (isset($violations_by_category[$cat_id]) && $violations_by_category[$cat_id] > 0): ?>
+                            <span class="violation-count-badge"><?= $violations_by_category[$cat_id] ?></span>
+                        <?php endif; ?>
+                      </summary>
+                      <div class="accordion-content">
+                        <ul>
+                          <?php
+                          if (!empty($violations) && $violations[0] !== null) {
+                            foreach ($violations as $violation) {
+                              echo "<li>" . htmlspecialchars($violation) . "</li>";
+                            }
+                          } else {
+                            echo "<li class='no-match'>No violation types listed.</li>";
+                          }
+                          ?>
+                        </ul>
+                      </div>
+                    </details>
+                    <?php
+                  }
+                } else {
+                  echo "<p class='no-records'>No Handbook Records Found</p>";
+                }
+                ?>
+                <p id="no-results-message" style="display: none;">No matching records found.</p>
+                </div>
             </div>
         </div>
     </div>
 </main>
-<script src="violation-config.js"></script>
-<script src="./student_dashboard.js"></script>
+<script src="./student_scripts.js"></script>
 </body>
 </html>

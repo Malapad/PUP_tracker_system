@@ -8,6 +8,27 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
+function createPasswordConfirmationEmailBody($recipientName, $userType = 'user') {
+    $accountType = ($userType === 'admin' ? 'admin' : 'PUPT Tracker System');
+    $emailBody = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Password Changed</title></head><body style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, Helvetica, sans-serif;">';
+    $emailBody .= '<div style="max-width:600px; margin:20px auto; background-color:#ffffff; border:1px solid #dddddd; border-radius:8px; overflow:hidden;">';
+    $emailBody .= '<div style="background-color:#8a1c1c; color:#ffffff; padding:20px; text-align:center;">';
+    $emailBody .= '<img src="https://insync.ojt-ims-bsit.net/assets/PUP_logo.png" alt="PUPT Logo" style="max-width:80px; margin-bottom:10px;">';
+    $emailBody .= '<h1 style="margin:0; font-size:24px;">PUPT Tracker System</h1>';
+    $emailBody .= '</div>';
+    $emailBody .= '<div style="padding:20px 30px; color:#333333; line-height:1.6;">';
+    $emailBody .= "<p>Hello " . htmlspecialchars($recipientName) . ",</p>";
+    $emailBody .= "<p>This is a confirmation that the password for your " . htmlspecialchars($accountType) . " account has been successfully changed.</p>";
+    $emailBody .= "<p>If you did not authorize this change, please contact support immediately.</p>";
+    $emailBody .= "<p>Regards,<br>System Administration</p>";
+    $emailBody .= '</div>';
+    $emailBody .= '<div style="background-color:#f0f0f0; padding:15px 30px; text-align:center; font-size:12px; color:#777777;">';
+    $emailBody .= '&copy; ' . date("Y") . ' PUPT Tracker System. All rights reserved.';
+    $emailBody .= '</div>';
+    $emailBody .= '</div></body></html>';
+    return $emailBody;
+}
+
 $token_valid = false;
 $message = "";
 $message_type = "";
@@ -17,22 +38,25 @@ $user_first_name_for_notification = null;
 
 if (isset($_GET['token'])) {
     $received_token = $_GET['token'];
+    $token_hash = hash('sha256', $received_token);
 
     if (!$conn) {
         $message = "Database connection failed.";
         $message_type = "error";
     } else {
-        $sql_find_token = "SELECT user_id, email, first_name, reset_token_hash, reset_token_expires_at FROM users_tbl WHERE reset_token_hash IS NOT NULL AND reset_token_expires_at > NOW()";
-        $result_tokens = $conn->query($sql_find_token);
+        $sql = "SELECT user_id, email, first_name, reset_token_expires_at FROM users_tbl WHERE reset_token_hash = ? LIMIT 1";
+        if ($stmt = $conn->prepare($sql)) {
+            $stmt->bind_param("s", $token_hash);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-        if ($result_tokens && $result_tokens->num_rows > 0) {
-            while ($user_row = $result_tokens->fetch_assoc()) {
-                if (password_verify($received_token, $user_row['reset_token_hash'])) {
+            if ($result->num_rows == 1) {
+                $user_row = $result->fetch_assoc();
+                if (strtotime($user_row['reset_token_expires_at']) > time()) {
                     $token_valid = true;
                     $user_id_to_reset = $user_row['user_id'];
                     $user_email_for_notification = $user_row['email'];
                     $user_first_name_for_notification = $user_row['first_name'];
-                    break; 
                 }
             }
         }
@@ -62,14 +86,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valid && isset($_POST['passwo
         $message_type = "error";
     } else {
         if (!$conn) {
-             $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
-             if ($conn->connect_error) {
-                $message = "Database connection failed. Cannot reset password.";
-                $message_type = "error";
-             }
-        }
-        
-        if ($conn && empty($message)) {
+             $message = "Database connection failed. Cannot reset password.";
+             $message_type = "error";
+        } else {
             $new_password_hash = password_hash($password, PASSWORD_DEFAULT);
             $update_sql = "UPDATE users_tbl SET password_hash = ?, reset_token_hash = NULL, reset_token_expires_at = NULL WHERE user_id = ?";
             
@@ -92,16 +111,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valid && isset($_POST['passwo
 
                         $mail->isHTML(true);
                         $mail->Subject = 'Your Password Has Been Changed - PUPT Tracker System';
-                        $mail->Body    = "Hello " . htmlspecialchars($user_first_name_for_notification) . ",<br><br>" .
-                                         "This email confirms that the password for your PUPT Tracker System account has been successfully changed.<br><br>" .
-                                         "If you did not make this change, please contact support immediately.<br><br>" .
-                                         "Regards,<br>" .
-                                         "PUPT Tracker System Administration";
-                        $mail->AltBody = "Hello " . htmlspecialchars($user_first_name_for_notification) . ",\n\n" .
-                                         "This email confirms that the password for your PUPT Tracker System account has been successfully changed.\n\n" .
-                                         "If you did not make this change, please contact support immediately.\n\n" .
-                                         "Regards,\n" .
-                                         "PUPT Tracker System Administration";
+                        $mail->Body    = createPasswordConfirmationEmailBody($user_first_name_for_notification, 'user');
+                        $mail->AltBody = "Hello " . htmlspecialchars($user_first_name_for_notification) . ",\n\nThis email confirms that the password for your PUPT Tracker System account has been successfully changed.\n\nIf you did not make this change, please contact support immediately.\n\nRegards,\nSystem Administration";
                         $mail->send();
                     } catch (Exception $e) {
                         error_log("Mailer Error for password change confirmation {$user_email_for_notification}: " . $mail->ErrorInfo);

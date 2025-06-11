@@ -1,6 +1,9 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener('DOMContentLoaded', function() {
     const notificationLinkToggle = document.getElementById('notificationLinkToggle');
     const notificationsDropdownContent = document.getElementById('notificationsDropdownContent');
+    const markAllReadBtn = document.getElementById('mark-all-read-btn');
+    const notificationList = document.querySelector('.notification-list');
+    const notificationCountBadge = document.querySelector('.notification-count');
 
     if (notificationLinkToggle && notificationsDropdownContent) {
         notificationLinkToggle.addEventListener('click', function(event) {
@@ -16,11 +19,27 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     });
+    
+    if (markAllReadBtn) {
+        markAllReadBtn.addEventListener('click', function() {
+            fetch('mark_all_notifications_read.php', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && notificationList) {
+                        notificationList.innerHTML = '<li class="no-notifications">No new notifications.</li>';
+                        if (notificationCountBadge) {
+                            notificationCountBadge.style.display = 'none';
+                        }
+                        this.style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error marking all notifications as read:', error));
+        });
+    }
 
-    // --- MODIFIED SANCTION REQUEST LOGIC ---
-    const requestButton = document.getElementById("requestSanctionButtonWide");
-    const overlay = document.getElementById("confirmationOverlayWide");
-    const closeButton = document.getElementById("closeOverlayButtonWide");
+    const requestButton = document.getElementById("requestSanctionButton");
+    const overlay = document.getElementById("confirmationOverlay");
+    const closeButton = document.getElementById("closeOverlayButton");
     const overlayMessage = overlay ? overlay.querySelector('p') : null;
 
     if (requestButton) {
@@ -28,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (this.disabled) return;
 
             this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            this.textContent = 'Submitting...';
 
             const formData = new FormData();
             formData.append('action', 'request_sanction');
@@ -45,12 +64,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (overlay) {
                     overlay.style.display = "flex";
                 }
-                // If successful, keep the button disabled to prevent re-submission
                 if (data.success) {
-                    requestButton.innerHTML = '<i class="fas fa-check"></i> Request Sent';
+                    requestButton.textContent = 'Request Sent';
                 } else {
-                    requestButton.disabled = false; // Re-enable on failure
-                    requestButton.innerHTML = 'Request Sanction';
+                    requestButton.disabled = false;
+                    requestButton.textContent = 'Request Sanction';
                 }
             })
             .catch(error => {
@@ -62,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     overlay.style.display = "flex";
                 }
                 this.disabled = false;
-                this.innerHTML = 'Request Sanction';
+                this.textContent = 'Request Sanction';
             });
         });
     }
@@ -80,4 +98,33 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
+    
+    const themeToggle = document.getElementById('theme-checkbox');
+    const currentTheme = localStorage.getItem('theme');
+
+    function applyTheme(theme) {
+        if (theme === 'dark-mode') {
+            document.body.classList.add('dark-mode');
+            themeToggle.checked = true;
+        } else {
+            document.body.classList.remove('dark-mode');
+            themeToggle.checked = false;
+        }
+    }
+
+    if (currentTheme) {
+        applyTheme(currentTheme);
+    } else {
+        applyTheme('light-mode');
+    }
+
+    themeToggle.addEventListener('change', function() {
+        if (this.checked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light-mode');
+        }
+    });
 });

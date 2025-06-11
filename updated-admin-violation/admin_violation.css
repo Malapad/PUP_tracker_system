@@ -1,90 +1,106 @@
-/* Base CSS from your request */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+    --header-height: 70px;
+    --pup-maroon: #800000;
+    --secondary-text: #6b7280;
+    --primary-text: #1f2937;
+    --secondary-bg: #ffffff;
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.main-header {
+    background: var(--secondary-bg);
+    box-shadow: var(--shadow-md);
+    height: var(--header-height);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 1050; 
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+}
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+}
+.main-header .logo img {
+    height: 50px;
+}
+.main-nav {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    justify-content: center;
+    gap: 40px;
+}
+.user-icons {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+.main-nav a {
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95em;
+    color: var(--secondary-text);
+    padding: 5px 10px;
+    position: relative;
+    transition: color 0.3s ease;
+}
+.main-nav a:hover {
+    color: var(--pup-maroon);
+}
+.main-nav a.active-nav {
+    color: var(--pup-maroon);
+    font-weight: 700;
+}
+.main-nav a.active-nav::after {
+    content: "";
+    position: absolute;
+    bottom: -24px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--pup-maroon);
+}
+.header-icon {
+    width: 28px;
+    height: 28px;
+    fill: var(--secondary-text);
+    cursor: pointer;
+    transition: fill 0.2s;
+}
+.header-icon:hover {
+    fill: var(--primary-text);
+}
+
 html, body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: Arial, sans-serif;
-    min-height: 100vh; /* Ensures the body (and its background) fills the viewport height */
+    min-height: 100vh;
 }
 
 body {
-    background-color: #f4f7f6; /* Confirmed and explicitly set as desired */
-    padding-top: 80px; /* Adjusted to account for fixed Bootstrap header height */
+    background-color: #f4f7f6;
 }
 
-/* Styles from header.css for the Bootstrap header */
-/* Variables from header.css, now integrated or adapted */
-:root {
-    --primary-color: #af1414;
-    --primary-hover-color: #bd2727;
-    /* Other existing variables in admin_violation.css will take precedence or be merged */
-}
-
-/* Specific adjustments for Bootstrap's .navbar, using your header's provided styles */
-.navbar {
-    height: 80px; /* Matches your defined --header-height */
-}
-
-.navbar-brand .img-fluid { /* Specific for the image within navbar-brand */
-    height: 60px;
-    width: 180px;
-}
-
-.navbar-nav .nav-link {
-    font-weight: bold;
-    color: black;
-    padding: 8px 10px;
-    border-radius: 3px;
-    transition: color 0.3s ease;
-    position: relative;
-}
-
-.navbar-nav .nav-link:hover {
-    color: var(--primary-color);
-}
-
-.navbar-nav .nav-link.active {
-    color: var(--primary-color);
-}
-
-.navbar-nav .nav-link.active::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 5px;
-    right: 5px;
-    height: 3px;
-    background-color: var(--primary-color);
-    border-radius: 2px;
-}
-
-.d-flex img { /* For the notification and admin icons */
-    width: 35px;
-    height: 35px;
-}
-
-@media (min-width: 992px) {
-    .container-fluid {
-        padding-left: 20px;
-        padding-right: 20px;
-    }
-}
-/* End of Bootstrap header-specific CSS */
-
-
-/* Adjusted container margins to align with header content */
 .container {
     background: white;
     padding: 20px;
     border-radius: 8px;
-    /* Calculate left margin: Bootstrap's default gutter (0.75rem = 12px) + your custom logo margin (70px) */
-    /* Removed explicit margins and let Bootstrap's container-fluid and general body padding handle it for better responsiveness */
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: calc(var(--bs-gutter-x, 0.75rem) + 70px);
+    margin-right: calc(var(--bs-gutter-x, 0.75rem) + 55px);
     margin-top: 20px;
     margin-bottom: 20px;
-    width: 95%; /* Adjust as needed, or remove for Bootstrap's full control */
-    max-width: 1600px; /* Keeping a max-width for content constraint */
+    width: auto;
+    max-width: none;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -98,7 +114,6 @@ h1 {
 
 .clear-filters-container {
     margin-bottom: 15px;
-    text-align: right; /* Changed to right to match admin_sanction_styles.css */
 }
 
 .clear-filters-btn {
@@ -277,7 +292,7 @@ button i, .more-details-btn i, .clear-filters-btn i {
     background-color: #af1414;
     color: white;
     cursor: pointer;
-    border-radius: 0 55px 55px 0; /* Updated border-radius for search button */
+    border-radius: 0 55px 55px 0;
     font-size: 0.85em;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     display: inline-flex;
@@ -421,6 +436,9 @@ button i, .more-details-btn i, .clear-filters-btn i {
     border: 1px solid #ddd;
     border-radius: 4px;
     position: relative;
+}
+
+.config-table-scroll-container {
 }
 
 .table-overlay-spinner {
@@ -990,7 +1008,7 @@ tbody td {
         flex-direction: column;
         align-items: stretch;
     }
-
+    
     .filter-select, .search-group, .refresh-button, .add-violation-button {
         flex-basis: auto;
         width: 100%;
@@ -1033,7 +1051,7 @@ tbody td {
         min-width: unset;
         flex: 1 1 100%;
     }
-
+    
     .modal .form-container .column.full-width div[style*="display: flex"] {
         flex-direction: column;
     }
@@ -1091,11 +1109,34 @@ tbody td {
 }
 
 @media (max-width: 768px) {
-    /* Adjust container margins for smaller screens to match header responsiveness */
+    header {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .custom-navbar .navbar-brand {
+        margin-left: 0;
+        margin-bottom: 10px;
+    }
+
+    .custom-navbar .navbar-collapse {
+        text-align: center;
+    }
+    .custom-navbar .navbar-nav.mx-auto {
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    .custom-navbar .icon-nav {
+        margin-right: 0;
+        justify-content: center;
+        width: 100%;
+    }
+
     .container {
-        margin-left: auto; /* Re-center */
-        margin-right: auto; /* Re-center */
-        width: 95%; /* Keep it flexible */
+        margin-left: calc(var(--bs-gutter-x, 0.75rem) + 15px);
+        margin-right: calc(var(--bs-gutter-x, 0.75rem) + 15px);
+        width: auto;
     }
 
     h1 {
@@ -1184,5 +1225,83 @@ tbody td {
         width: 90%;
         left: 5%;
         transform: translateX(0);
+    }
+}
+
+.custom-navbar {
+    background-color: #ffffff;
+    border-bottom: 2px solid #d1cece;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    align-items: center;
+}
+
+header {
+    padding: 1px;
+}
+
+.custom-navbar .navbar-brand {
+    margin-left: 70px;
+    margin-right: auto;
+}
+
+.custom-navbar .navbar-brand img {
+    width: 170px;
+    height: 70px;
+}
+
+.custom-navbar .nav-link {
+    color: #333333;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.custom-navbar .nav-link:hover {
+    color: #000000;
+}
+
+.custom-navbar .nav-link.active {
+    color: #a00000;
+    font-weight: 600;
+}
+
+.custom-navbar .nav-link.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background-color: #a00000;
+}
+
+.custom-navbar .icon-nav {
+    margin-right: 55px;
+}
+
+.custom-navbar .icon-nav .nav-link img {
+    width: 40px;
+    height: auto;
+    vertical-align: middle;
+}
+
+@media (max-width: 991.98px) {
+    .custom-navbar .navbar-brand {
+        margin-left: 15px;
+    }
+    .custom-navbar .icon-nav {
+        margin-right: 15px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+    .custom-navbar .navbar-collapse {
+        text-align: center;
+    }
+    .custom-navbar .navbar-nav.mx-auto {
+        margin-left: auto !important;
+        margin-right: auto !important;
     }
 }

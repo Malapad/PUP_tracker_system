@@ -1,7 +1,7 @@
 <?php
 $servername = "localhost";
 $username = "root";
-$password = "password";
+$password = "Tayotomika04";
 $database = "pup_trackersys";
 
 $conn = new mysqli($servername, $username, $password, $database);
