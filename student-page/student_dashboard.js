@@ -1,67 +1,95 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const notificationLinkToggle = document.getElementById('notificationLinkToggle');
-    const notificationsDropdownContent = document.getElementById('notificationsDropdownContent');
+    const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+    const primaryNav = document.querySelector('#primary-navigation');
+    const notificationToggle = document.getElementById('notificationLinkToggle');
+    const notificationsDropdown = document.getElementById('notificationsDropdownContent');
+    const searchInput = document.getElementById('handbook-search-input');
+    const accordionContainer = document.querySelector('.accordion-container');
+    const noResultsMessage = document.getElementById('no-results-message');
 
-    if (notificationLinkToggle && notificationsDropdownContent) {
-        notificationLinkToggle.addEventListener('click', function(event) {
+    if (mobileNavToggle && primaryNav) {
+        mobileNavToggle.addEventListener('click', () => {
+            const isVisible = primaryNav.getAttribute('data-visible') === 'true';
+            primaryNav.setAttribute('data-visible', !isVisible);
+            mobileNavToggle.setAttribute('aria-expanded', !isVisible);
+        });
+    }
+
+    if (notificationToggle && notificationsDropdown) {
+        notificationToggle.addEventListener('click', function(event) {
             event.preventDefault();
-            notificationsDropdownContent.classList.toggle('show');
+            notificationsDropdown.classList.toggle('show');
         });
     }
 
     document.addEventListener('click', function(event) {
-        if (notificationsDropdownContent && notificationLinkToggle) {
-            if (!notificationLinkToggle.contains(event.target) && !notificationsDropdownContent.contains(event.target)) {
-                notificationsDropdownContent.classList.remove('show');
+        if (notificationsDropdown && notificationsDropdown.classList.contains('show')) {
+            if (!notificationToggle.contains(event.target) && !notificationsDropdown.contains(event.target)) {
+                notificationsDropdown.classList.remove('show');
             }
         }
     });
 
-    const searchInput = document.getElementById('handbook-search-input');
-    const accordionItems = document.querySelectorAll('.accordion-container .accordion-item');
-    const noResultsMessage = document.getElementById('no-results-message');
-
-    if (searchInput && accordionItems.length > 0) {
-        const originalContent = new Map();
-        accordionItems.forEach(item => {
-            const elementsToSearch = [item.querySelector('.accordion-header span'), ...item.querySelectorAll('.accordion-content li')];
-            elementsToSearch.forEach(el => {
-                if(el) originalContent.set(el, el.textContent);
-            });
-        });
-
+    if (searchInput && accordionContainer) {
         searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.trim();
-            let resultsFound = false;
+            const searchTerm = this.value.trim().toLowerCase();
+            let anyCategoryVisible = false;
 
-            accordionItems.forEach(item => {
-                const headerSpan = item.querySelector('.accordion-header span');
-                const listItems = item.querySelectorAll('.accordion-content li');
-                let isMatch = false;
-                
-                const highlight = (element) => {
-                    const originalText = originalContent.get(element) || '';
-                    if (searchTerm && originalText.toLowerCase().includes(searchTerm.toLowerCase())) {
-                        isMatch = true;
-                        const regex = new RegExp(searchTerm, 'gi');
-                        element.innerHTML = originalText.replace(regex, match => `<mark>${match}</mark>`);
-                    } else {
-                        element.innerHTML = originalText;
+            const categories = accordionContainer.querySelectorAll('.accordion-item');
+
+            categories.forEach(category => {
+                const categoryHeader = category.querySelector('.accordion-header .category-name');
+                const violationTypes = category.querySelectorAll('.violation-type-item');
+                let isCategoryVisible = false;
+
+                const categoryHeaderText = categoryHeader.textContent.trim().toLowerCase();
+                if (categoryHeaderText.includes(searchTerm)) {
+                    isCategoryVisible = true;
+                }
+
+                violationTypes.forEach(violation => {
+                    const violationHeader = violation.querySelector('.violation-type-header');
+                    const sanctions = violation.querySelectorAll('.sanction-item');
+                    let isViolationVisible = false;
+
+                    const violationHeaderText = violationHeader.textContent.trim().toLowerCase();
+                    if (violationHeaderText.includes(searchTerm)) {
+                        isViolationVisible = true;
                     }
-                };
 
-                highlight(headerSpan);
-                listItems.forEach(li => highlight(li));
+                    sanctions.forEach(sanction => {
+                        const sanctionText = sanction.textContent.trim().toLowerCase();
+                        if (sanctionText.includes(searchTerm)) {
+                            isViolationVisible = true;
+                            sanction.style.display = '';
+                        } else if (searchTerm) {
+                            sanction.style.display = 'none';
+                        } else {
+                            sanction.style.display = '';
+                        }
+                    });
 
-                if (isMatch || !searchTerm) {
-                    item.style.display = 'block';
-                    resultsFound = true;
+                    if (isViolationVisible) {
+                        violation.style.display = 'block';
+                        violation.open = !!searchTerm; 
+                        isCategoryVisible = true;
+                    } else {
+                        violation.style.display = 'none';
+                    }
+                });
+
+                if (isCategoryVisible) {
+                    category.style.display = 'block';
+                    category.open = !!searchTerm; 
+                    anyCategoryVisible = true;
                 } else {
-                    item.style.display = 'none';
+                    category.style.display = 'none';
                 }
             });
 
-            noResultsMessage.style.display = resultsFound ? 'none' : 'block';
+            if (noResultsMessage) {
+                noResultsMessage.style.display = anyCategoryVisible ? 'none' : 'block';
+            }
         });
     }
 
@@ -71,10 +99,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function applyTheme(theme) {
         if (theme === 'dark-mode') {
             document.body.classList.add('dark-mode');
-            themeToggle.checked = true;
+            if(themeToggle) themeToggle.checked = true;
         } else {
             document.body.classList.remove('dark-mode');
-            themeToggle.checked = false;
+            if(themeToggle) themeToggle.checked = false;
         }
     }
 
@@ -84,13 +112,15 @@ document.addEventListener('DOMContentLoaded', function() {
         applyTheme('light-mode');
     }
 
-    themeToggle.addEventListener('change', function() {
-        if (this.checked) {
-            document.body.classList.add('dark-mode');
-            localStorage.setItem('theme', 'dark-mode');
-        } else {
-            document.body.classList.remove('dark-mode');
-            localStorage.setItem('theme', 'light-mode');
-        }
-    });
+    if(themeToggle) {
+        themeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light-mode');
+            }
+        });
+    }
 });
