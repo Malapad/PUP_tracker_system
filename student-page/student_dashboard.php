@@ -13,9 +13,9 @@ if (!isset($_SESSION["current_user_id"]) || !isset($_SESSION["user_student_numbe
 $student_stud_number_from_session = $_SESSION["user_student_number"];
 
 $violations_query = "SELECT vt.violation_category_id, vt.violation_type
-                     FROM violation_tbl v
-                     JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                     WHERE v.student_number = ?";
+                       FROM violation_tbl v
+                       JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                       WHERE v.student_number = ?";
 
 $violations_by_category = [];
 $total_violations = 0;
@@ -57,9 +57,9 @@ $unread_notification_count_header = 0;
 
 if (isset($conn)) {
     $sql_notifications_list_header = "SELECT notification_id, message, created_at, link
-                                      FROM notifications_tbl
-                                      WHERE student_number = ? AND is_read = FALSE
-                                      ORDER BY created_at DESC LIMIT 5";
+                                          FROM notifications_tbl
+                                          WHERE student_number = ? AND is_read = FALSE
+                                          ORDER BY created_at DESC LIMIT 5";
     if ($stmt_notifications_list_header = $conn->prepare($sql_notifications_list_header)) {
         $stmt_notifications_list_header->bind_param("s", $student_stud_number_from_session);
         $stmt_notifications_list_header->execute();
@@ -71,8 +71,8 @@ if (isset($conn)) {
     }
 
     $sql_notifications_count_header = "SELECT COUNT(*) as total_unread
-                                       FROM notifications_tbl
-                                       WHERE student_number = ? AND is_read = FALSE";
+                                           FROM notifications_tbl
+                                           WHERE student_number = ? AND is_read = FALSE";
     if ($stmt_notifications_count_header = $conn->prepare($sql_notifications_count_header)) {
         $stmt_notifications_count_header->bind_param("s", $student_stud_number_from_session);
         $stmt_notifications_count_header->execute();
@@ -91,7 +91,7 @@ if (isset($conn)) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./student_style.css">
+    <link rel="stylesheet" href="./student_dashboard_style.css">
 </head>
 <body>
     <header class="main-header">
@@ -99,12 +99,26 @@ if (isset($conn)) {
             <div class="logo">
                 <img src="../IMAGE//Tracker-logo.png" alt="PUP Logo">
             </div>
-            <nav class="main-nav">
-                <a href="./student_dashboard.php" class="active-nav">Home</a>
-                <a href="./student_record.php">Record</a>
-                <a href="./student_announcements.php">Announcements</a>
+
+            <nav class="main-nav" id="primary-navigation" data-visible="false">
+                <div class="nav-links">
+                    <a href="./student_dashboard.php" class="active-nav">Home</a>
+                    <a href="./student_record.php">Record</a>
+                    <a href="./student_announcements.php">Announcements</a>
+                </div>
+                <div class="mobile-only">
+                    <a href="./student_account.php" class="profile-icon admin">
+                        <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        <span>My Account</span>
+                    </a>
+                    <a href="../PHP/logout.php" class="logout-link">
+                        <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 17v-3H9v-4h7V7l5 5-5 5zM14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9z"></path></svg>
+                        <span>Logout</span>
+                    </a>
+                </div>
             </nav>
-            <div class="user-icons">
+            
+            <div class="header-actions">
                 <div class="notification-icon-area">
                     <a href="#" class="notification" id="notificationLinkToggle">
                         <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg>
@@ -142,9 +156,12 @@ if (isset($conn)) {
                         </div>
                     </div>
                 </div>
-                <a href="./student_account.php" class="profile-icon admin">
-                     <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <a href="./student_account.php" class="profile-icon admin desktop-only">
+                    <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                 </a>
+                <button class="mobile-nav-toggle" aria-controls="primary-navigation" aria-expanded="false">
+                    <span class="sr-only">Menu</span>
+                </button>
             </div>
         </div>
     </header>
@@ -168,60 +185,98 @@ if (isset($conn)) {
                     </div>
                 </div>
                  <?php if ($total_violations > 0): ?>
-                    <p class="summary-message">Please review your '<a href="./student_record.php"><strong>Record</strong></a>' for details on your recent violations.</p>
-                 <?php else: ?>
+                    <a href="./student_record.php" class="summary-message">Please review your <strong>Record</strong> for details on your recent violations.</a>
+                <?php else: ?>
                     <p class="no-violations-message">Keep up the good work! No violations recorded.</p>
                 <?php endif; ?>
             </div>
             <div class="grid-column handbook-column">
                 <h2 class="section-title">Student Handbook</h2>
                 <div class="search-bar">
-                    <input type="text" id="handbook-search-input" placeholder="Search category or type...">
+                    <input type="text" id="handbook-search-input" placeholder="Search category, type, or sanction...">
                 </div>
                 <div class="accordion-container">
                 <?php
-                $handbookQuery = "SELECT vc.violation_category_id, vc.category_name, vt.violation_type 
-                                  FROM violation_category_tbl vc 
-                                  LEFT JOIN violation_type_tbl vt ON vc.violation_category_id = vt.violation_category_id
-                                  ORDER BY vc.category_name, vt.violation_type";
-                $handbookResult = $conn->query($handbookQuery);
-                $handbookData = [];
-                while($row = $handbookResult->fetch_assoc()) {
-                    $handbookData[$row['category_name']]['id'] = $row['violation_category_id'];
-                    $handbookData[$row['category_name']]['violations'][] = $row['violation_type'];
-                }
+                    $handbookQuery = "SELECT 
+                                        vc.violation_category_id, 
+                                        vc.category_name, 
+                                        vt.violation_type_id,
+                                        vt.violation_type, 
+                                        ds.offense_level, 
+                                        ds.disciplinary_sanction 
+                                    FROM violation_category_tbl vc 
+                                    LEFT JOIN violation_type_tbl vt ON vc.violation_category_id = vt.violation_category_id 
+                                    LEFT JOIN disciplinary_sanctions ds ON vt.violation_type_id = ds.violation_type_id
+                                    ORDER BY vc.category_name, vt.violation_type, ds.offense_level";
 
-                if (!empty($handbookData)) {
-                  foreach ($handbookData as $categoryName => $data) {
-                    $cat_id = $data['id'];
-                    $violations = $data['violations'];
-                    ?>
-                    <details class="accordion-item">
-                      <summary class="accordion-header">
-                        <span><?= htmlspecialchars($categoryName) ?></span>
-                        <?php if (isset($violations_by_category[$cat_id]) && $violations_by_category[$cat_id] > 0): ?>
-                            <span class="violation-count-badge"><?= $violations_by_category[$cat_id] ?></span>
-                        <?php endif; ?>
-                      </summary>
-                      <div class="accordion-content">
-                        <ul>
-                          <?php
-                          if (!empty($violations) && $violations[0] !== null) {
-                            foreach ($violations as $violation) {
-                              echo "<li>" . htmlspecialchars($violation) . "</li>";
+                    $handbookResult = $conn->query($handbookQuery);
+                    $handbookData = [];
+
+                    if ($handbookResult->num_rows > 0) {
+                        while($row = $handbookResult->fetch_assoc()) {
+                            $categoryName = $row['category_name'];
+                            $violationType = $row['violation_type'];
+                            
+                            $handbookData[$categoryName]['id'] = $row['violation_category_id'];
+                            
+                            if ($violationType) {
+                                if (!isset($handbookData[$categoryName]['types'][$violationType])) {
+                                    $handbookData[$categoryName]['types'][$violationType] = [];
+                                }
+                                if ($row['offense_level'] && $row['disciplinary_sanction']) {
+                                    $handbookData[$categoryName]['types'][$violationType][] = [
+                                        'level' => $row['offense_level'],
+                                        'sanction' => $row['disciplinary_sanction']
+                                    ];
+                                }
                             }
-                          } else {
-                            echo "<li class='no-match'>No violation types listed.</li>";
-                          }
-                          ?>
-                        </ul>
-                      </div>
-                    </details>
-                    <?php
-                  }
-                } else {
-                  echo "<p class='no-records'>No Handbook Records Found</p>";
-                }
+                        }
+                    }
+
+                    if (!empty($handbookData)) {
+                        foreach ($handbookData as $categoryName => $data) {
+                            $cat_id = $data['id'];
+                            $violationTypes = isset($data['types']) ? $data['types'] : [];
+                            ?>
+                            <details class="accordion-item">
+                                <summary class="accordion-header">
+                                    <span class="category-name"><?= htmlspecialchars($categoryName) ?></span>
+                                    <?php if (isset($violations_by_category[$cat_id]) && $violations_by_category[$cat_id] > 0): ?>
+                                        <span class="violation-count-badge"><?= $violations_by_category[$cat_id] ?></span>
+                                    <?php endif; ?>
+                                </summary>
+                                <div class="accordion-content">
+                                    <div class="violation-types-container">
+                                        <?php if (!empty($violationTypes)): ?>
+                                            <?php foreach ($violationTypes as $typeName => $sanctions): ?>
+                                                <details class="violation-type-item">
+                                                    <summary class="violation-type-header"><?= htmlspecialchars($typeName) ?></summary>
+                                                    <div class="violation-type-content">
+                                                        <?php if (!empty($sanctions)): ?>
+                                                            <ul class="sanctions-list">
+                                                                <?php foreach ($sanctions as $sanction): ?>
+                                                                    <li class="sanction-item">
+                                                                        <strong><?= htmlspecialchars($sanction['level']) ?>:</strong> <?= htmlspecialchars($sanction['sanction']) ?>
+                                                                    </li>
+                                                                <?php endforeach; ?>
+                                                            </ul>
+                                                        <?php else: ?>
+                                                            <p class="no-sanctions-info">No specific sanctions listed.</p>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </details>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <p class="no-match">No violation types listed for this category.</p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </details>
+                            <?php
+                        }
+                    } else {
+                        echo "<p class='no-records'>No Handbook Records Found</p>";
+                    }
                 ?>
                 <p id="no-results-message" style="display: none;">No matching records found.</p>
                 </div>
@@ -229,6 +284,6 @@ if (isset($conn)) {
         </div>
     </div>
 </main>
-<script src="./student_scripts.js"></script>
+<script src="./student_dashboard.js"></script>
 </body>
 </html>
