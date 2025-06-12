@@ -1,4 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
+    const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+    const primaryNav = document.getElementById('primary-navigation');
+    
+    if (mobileNavToggle && primaryNav) {
+        mobileNavToggle.addEventListener('click', () => {
+            const isVisible = primaryNav.getAttribute('data-visible') === "true";
+            if (isVisible) {
+                primaryNav.setAttribute('data-visible', "false");
+                mobileNavToggle.setAttribute('aria-expanded', "false");
+            } else {
+                primaryNav.setAttribute('data-visible', "true");
+                mobileNavToggle.setAttribute('aria-expanded', "true");
+            }
+        });
+    }
+    
     const notificationLinkToggle = document.getElementById('notificationLinkToggle');
     const notificationsDropdownContent = document.getElementById('notificationsDropdownContent');
     const markAllReadBtn = document.getElementById('mark-all-read-btn');
@@ -123,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const modalTitle = document.getElementById('modalTitle');
         const modalMeta = document.getElementById('modalMeta');
         const modalContent = document.getElementById('modalContent');
+        const modalImage = document.getElementById('modalImage');
         const closeBtn = document.querySelector('.announcement-close-btn');
         let readAnnouncements = JSON.parse(localStorage.getItem('readAnnouncements')) || [];
         const announcementCards = document.querySelectorAll('.announcement-card');
@@ -150,7 +167,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 modalTitle.textContent = 'Loading...';
                 modalMeta.innerHTML = '';
-                modalContent.textContent = '';
+                modalContent.innerHTML = '';
+                if (modalImage) {
+                    modalImage.style.display = 'none';
+                    modalImage.src = '';
+                }
+
                 openModal();
                 fetch(`student_announcements.php?action=get_announcement&id=${announcementId}`)
                     .then(response => response.json())
@@ -159,7 +181,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             const data = result.data;
                             modalTitle.textContent = data.title;
                             modalMeta.innerHTML = `<span class="meta-item"><svg class="meta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 10c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-12C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79-4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> By ${data.author_name || 'Admin'}</span><span class="meta-item"><svg class="meta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg> ${data.created_at_formatted}</span>`;
-                            modalContent.textContent = data.content;
+                            
+                            if (data.attachment_path && modalImage) {
+                                modalImage.src = `../uploads/announcements/${data.attachment_path}`;
+                                modalImage.style.display = 'block';
+                            }
+                            
+                            modalContent.innerHTML = data.content;
                         } else {
                             modalTitle.textContent = 'Error';
                             modalContent.textContent = 'Could not load the announcement.';
