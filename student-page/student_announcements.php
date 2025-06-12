@@ -11,7 +11,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_announcement' && isset($_G
     $response = ['success' => false];
     if (isset($conn)) {
         $stmt = $conn->prepare("
-            SELECT a.title, a.content, a.created_at, CONCAT(ai.firstname, ' ', ai.lastname) AS author_name
+            SELECT a.title, a.content, a.attachment_path, a.created_at, CONCAT(ai.firstname, ' ', ai.lastname) AS author_name
             FROM announcements_tbl a
             LEFT JOIN admin_info_tbl ai ON a.admin_id = ai.admin_id
             WHERE a.announcement_id = ?
@@ -41,9 +41,9 @@ $unread_notification_count_header = 0;
 
 if (isset($conn)) {
     $sql_notifications_list_header = "SELECT notification_id, message, created_at, link
-                                          FROM notifications_tbl
-                                          WHERE student_number = ? AND is_read = FALSE
-                                          ORDER BY created_at DESC LIMIT 5";
+                                      FROM notifications_tbl
+                                      WHERE student_number = ? AND is_read = FALSE
+                                      ORDER BY created_at DESC LIMIT 5";
     if ($stmt_notifications_list_header = $conn->prepare($sql_notifications_list_header)) {
         $stmt_notifications_list_header->bind_param("s", $student_stud_number_from_session);
         $stmt_notifications_list_header->execute();
@@ -55,8 +55,8 @@ if (isset($conn)) {
     }
 
     $sql_notifications_count_header = "SELECT COUNT(*) as total_unread
-                                          FROM notifications_tbl
-                                          WHERE student_number = ? AND is_read = FALSE";
+                                           FROM notifications_tbl
+                                           WHERE student_number = ? AND is_read = FALSE";
     if ($stmt_notifications_count_header = $conn->prepare($sql_notifications_count_header)) {
         $stmt_notifications_count_header->bind_param("s", $student_stud_number_from_session);
         $stmt_notifications_count_header->execute();
@@ -102,12 +102,24 @@ $announcements_result = $announcements_stmt->get_result();
             <div class="logo">
                 <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo">
             </div>
-            <nav class="main-nav">
-                <a href="./student_dashboard.php">Home</a>
-                <a href="./student_record.php">Record</a>
-                <a href="./student_announcements.php" class="active-nav">Announcements</a>
+            <nav class="main-nav" id="primary-navigation">
+                <div class="nav-links">
+                    <a href="./student_dashboard.php">Home</a>
+                    <a href="./student_record.php">Record</a>
+                    <a href="./student_announcements.php" class="active-nav">Announcements</a>
+                    <div class="mobile-only">
+                        <a href="./student_account.php" class="profile-icon admin">
+                            <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            <span>My Account</span>
+                        </a>
+                        <a href="../PHP/logout.php" class="logout-link">
+                            <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 17v-3H9v-4h7V7l5 5-5 5zM14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9z"></path></svg>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
             </nav>
-            <div class="user-icons">
+            <div class="header-actions">
                 <div class="notification-icon-area">
                     <a href="#" class="notification" id="notificationLinkToggle">
                         <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg>
@@ -145,9 +157,12 @@ $announcements_result = $announcements_stmt->get_result();
                         </div>
                     </div>
                 </div>
-                <a href="./student_account.php" class="profile-icon admin">
-                     <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <a href="./student_account.php" class="profile-icon admin desktop-only">
+                       <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                 </a>
+                <button class="mobile-nav-toggle" aria-controls="primary-navigation" aria-expanded="false">
+                    <span class="sr-only">Menu</span>
+                </button>
             </div>
         </div>
     </header>
@@ -176,7 +191,7 @@ $announcements_result = $announcements_stmt->get_result();
                             </div>
                         </div>
                         <div class="announcement-content-preview">
-                            <?php echo nl2br(htmlspecialchars(substr($row['content'], 0, 200))) . (strlen($row['content']) > 200 ? '...' : ''); ?>
+                            <?php echo nl2br(htmlspecialchars(strip_tags(substr($row['content'], 0, 200)))) . (strlen(strip_tags($row['content'])) > 200 ? '...' : ''); ?>
                         </div>
                         <div class="announcement-footer">
                             <span class="read-more-link">Read More &rarr;</span>
@@ -217,6 +232,7 @@ $announcements_result = $announcements_stmt->get_result();
         <div class="announcement-modal-body">
             <div id="modalMeta" class="announcement-meta"></div>
             <div id="modalContent"></div>
+            <img id="modalImage" class="announcement-modal-image" src="" alt="Announcement Image" style="display: none;">
         </div>
     </div>
 </div>
