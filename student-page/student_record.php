@@ -33,7 +33,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'request_sanction') {
                 }
                 $insert_stmt->close();
             } else {
-                   $response['message'] = 'Database error: Could not prepare the request.';
+                    $response['message'] = 'Database error: Could not prepare the request.';
             }
         }
     }
@@ -93,18 +93,17 @@ if (isset($conn)) {
 $student_details = null;
 $violations_log = [];
 $violation_summary = [];
-$sanction_records = []; // Array to hold sanction records
+$sanction_records = []; 
 $student_stud_number_for_page_violations = '';
 $year_display = "N/A";
 $page_error = null;
 
-// Fetch student details
 $sql_student_info = "SELECT u.first_name, u.middle_name, u.last_name, u.student_number, u.year_id,
                             c.course_name, s.section_name
-                       FROM users_tbl u
-                       LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                       LEFT JOIN section_tbl s ON u.section_id = s.section_id
-                       WHERE u.user_id = ?";
+                     FROM users_tbl u
+                     LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                     LEFT JOIN section_tbl s ON u.section_id = s.section_id
+                     WHERE u.user_id = ?";
 
 if (isset($conn) && $stmt_info = $conn->prepare($sql_student_info)) {
     $stmt_info->bind_param("i", $session_user_id);
@@ -141,7 +140,6 @@ if (isset($conn) && $stmt_info = $conn->prepare($sql_student_info)) {
 
 $has_sanctionable_offense = false; 
 
-// Fetch violation records
 if (isset($conn) && !empty($student_stud_number_for_page_violations)) {
     $sql_violations_updated = "SELECT v.violation_id, vc.category_name, vt.violation_type, v.violation_date, v.description AS remarks
                                FROM violation_tbl v
@@ -200,18 +198,17 @@ if (isset($conn) && !empty($student_stud_number_for_page_violations)) {
     }
 }
 
-// Fetch sanction records from student_sanction_records_tbl
 if (isset($conn) && !empty($student_stud_number_for_page_violations)) {
     $sql_sanction_records = "SELECT ssr.record_id, ssr.date_assigned, ssr.status,
-                                   ds.disciplinary_sanction,
-                                   v.description AS violation_remarks,
-                                   vt.violation_type AS violation_type_name
-                           FROM student_sanction_records_tbl ssr
-                           JOIN disciplinary_sanctions ds ON ssr.assigned_sanction_id = ds.disciplinary_sanction_id
-                           LEFT JOIN violation_tbl v ON ssr.violation_id = v.violation_id
-                           LEFT JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                           WHERE ssr.student_number = ?
-                           ORDER BY ssr.date_assigned DESC";
+                                    ds.disciplinary_sanction,
+                                    v.description AS violation_remarks,
+                                    vt.violation_type AS violation_type_name
+                             FROM student_sanction_records_tbl ssr
+                             JOIN disciplinary_sanctions ds ON ssr.assigned_sanction_id = ds.disciplinary_sanction_id
+                             LEFT JOIN violation_tbl v ON ssr.violation_id = v.violation_id
+                             LEFT JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                             WHERE ssr.student_number = ?
+                             ORDER BY ssr.date_assigned DESC";
     
     if ($stmt_sanction_records = $conn->prepare($sql_sanction_records)) {
         $stmt_sanction_records->bind_param("s", $student_stud_number_for_page_violations);
@@ -247,12 +244,24 @@ $button_disabled = !$has_sanctionable_offense;
             <div class="logo">
                 <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo">
             </div>
-            <nav class="main-nav">
-                <a href="./student_dashboard.php">Home</a>
-                <a href="./student_record.php" class="active-nav">Record</a>
-                <a href="./student_announcements.php">Announcements</a>
+            <nav class="main-nav" id="primary-navigation" data-visible="false">
+                <div class="nav-links">
+                    <a href="./student_dashboard.php">Home</a>
+                    <a href="./student_record.php" class="active-nav">Record</a>
+                    <a href="./student_announcements.php">Announcements</a>
+                </div>
+                <div class="mobile-only">
+                    <a href="./student_account.php" class="profile-icon admin">
+                        <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        <span>My Account</span>
+                    </a>
+                    <a href="../PHP/logout.php" class="logout-link">
+                        <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 17v-3H9v-4h7V7l5 5-5 5zM14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9z"></path></svg>
+                        <span>Logout</span>
+                    </a>
+                </div>
             </nav>
-            <div class="user-icons">
+            <div class="header-actions">
                 <div class="notification-icon-area">
                     <a href="#" class="notification" id="notificationLinkToggle">
                         <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg>
@@ -290,9 +299,12 @@ $button_disabled = !$has_sanctionable_offense;
                         </div>
                     </div>
                 </div>
-                <a href="./student_account.php" class="profile-icon admin">
-                     <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <a href="./student_account.php" class="profile-icon admin desktop-only">
+                       <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                 </a>
+                <button class="mobile-nav-toggle" aria-controls="primary-navigation" aria-expanded="false">
+                    <span class="sr-only">Menu</span>
+                </button>
             </div>
         </div>
     </header>
@@ -309,11 +321,11 @@ $button_disabled = !$has_sanctionable_offense;
                 <?php echo $student_details['FirstNameDisplay'] . " " . $student_details['MiddleNameDisplay'] . " " . $student_details['LastNameDisplay']; ?>
             </p>
             <p class="meta-text"><strong>Student Number:</strong> <?php echo $student_details['StudNumberDisplay']; ?></p>
-            <p class="meta-text">
-                <strong>Course:</strong> <?php echo $student_details['CourseNameDisplay']; ?> |
-                <strong>Year:</strong> <?php echo $student_details['YearDisplay']; ?> |
-                <strong>Section:</strong> <?php echo $student_details['SectionNameDisplay']; ?>
-            </p>
+            <div class="meta-info-group">
+                <p class="meta-text"><strong>Course:</strong> <span><?php echo $student_details['CourseNameDisplay']; ?></span></p>
+                <p class="meta-text"><strong>Year:</strong> <span><?php echo $student_details['YearDisplay']; ?></span></p>
+                <p class="meta-text"><strong>Section:</strong> <span><?php echo $student_details['SectionNameDisplay']; ?></span></p>
+            </div>
         </div>
 
         <div class="tabs-navigation">
@@ -332,28 +344,29 @@ $button_disabled = !$has_sanctionable_offense;
                     <table class="data-table" id="summaryViolationTable">
                         <thead>
                             <tr>
-                                <th>Category</th>
                                 <th>Violation Type</th>
-                                <th>Commits</th>
                                 <th>Offense</th>
+                                <th>Commits</th>
+                                <th>Category</th>
                                 <th>Remarks</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (!empty($violation_summary)): ?>
                                 <?php foreach ($violation_summary as $summary_item): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($summary_item['category']); ?></td>
-                                        <td><?php echo htmlspecialchars($summary_item['type']); ?></td>
-                                        <td><?php echo $summary_item['count']; ?></td>
-                                        <td>
+                                    <tr class="mobile-accordion-row">
+                                        <td data-label="Violation Type" class="cell-summary"><?php echo htmlspecialchars($summary_item['type']); ?></td>
+                                        <td data-label="Offense" class="cell-summary">
                                             <?php
-                                            $typeOffenseStatus = ($summary_item['count'] >= 2) ? 'Sanction' : 'Warning';
-                                            $typeOffenseClass = ($summary_item['count'] >= 2) ? 'offense-tag-sanction' : 'offense-tag-warning';
+                                            $isSanction = $summary_item['count'] >= 2;
+                                            $typeOffenseStatus = $isSanction ? 'Sanction' : 'Warning';
+                                            $typeOffenseClass = $isSanction ? 'offense-tag-sanction' : 'offense-tag-warning';
                                             echo "<span class='offense-tag " . $typeOffenseClass . "'>" . htmlspecialchars($typeOffenseStatus) . "</span>";
                                             ?>
                                         </td>
-                                        <td><?php echo nl2br(htmlspecialchars($summary_item['remark_display'])); ?></td>
+                                        <td data-label="Commits" class="cell-details"><?php echo $summary_item['count']; ?></td>
+                                        <td data-label="Category" class="cell-details"><?php echo htmlspecialchars($summary_item['category']); ?></td>
+                                        <td data-label="Remarks" class="cell-details"><?php echo nl2br(htmlspecialchars($summary_item['remark_display'])); ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
@@ -370,20 +383,20 @@ $button_disabled = !$has_sanctionable_offense;
                     <table class="data-table" id="individualViolationsTable">
                         <thead>
                             <tr>
-                                <th>Category</th>
                                 <th>Violation Type</th>
                                 <th>Date of Violation</th>
+                                <th>Category</th>
                                 <th>Remarks</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (!empty($violations_log)): ?>
                                 <?php foreach ($violations_log as $record): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($record['category_name'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($record['violation_type']); ?></td>
-                                        <td><?php echo htmlspecialchars(date("M d, Y, h:i a", strtotime($record['violation_date']))); ?></td>
-                                        <td><?php echo nl2br(htmlspecialchars(trim($record['remarks'] ?? '') === '' ? 'No remarks' : $record['remarks'])); ?></td>
+                                    <tr class="mobile-accordion-row">
+                                        <td data-label="Violation Type" class="cell-summary"><?php echo htmlspecialchars($record['violation_type']); ?></td>
+                                        <td data-label="Date" class="cell-summary"><?php echo htmlspecialchars(date("M d, Y, h:i a", strtotime($record['violation_date']))); ?></td>
+                                        <td data-label="Category" class="cell-details"><?php echo htmlspecialchars($record['category_name'] ?? 'N/A'); ?></td>
+                                        <td data-label="Remarks" class="cell-details"><?php echo nl2br(htmlspecialchars(trim($record['remarks'] ?? '') === '' ? 'No remarks' : $record['remarks'])); ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
@@ -395,19 +408,6 @@ $button_disabled = !$has_sanctionable_offense;
                     </table>
                 </div>
             </div>
-
-            <div class="actions-panel">
-                <p class="reminder-paragraph">
-                    Please be reminded to take your sanction before the graduation. If you want to take your sanction kindly click the
-                    ‘Request Sanction’ button to directly request to the Head of Office of Student Services (OSS) or go to the Building B Office.
-                </p>
-                <div class="sanction-request-bar">
-                    <p>Total Individual Violation Instances: <strong><?php echo $total_individual_violations; ?></strong></p>
-                    <button id="requestSanctionButton" class="action-button" <?php if ($button_disabled) echo 'disabled'; ?>>
-                        Request Sanction
-                    </button>
-                </div>
-            </div>
         </div>
 
         <div id="sanctionRecordContent" class="tab-content">
@@ -416,46 +416,35 @@ $button_disabled = !$has_sanctionable_offense;
                 <table class="data-table" id="sanctionRecordsTable">
                     <thead>
                         <tr>
+                            <th>Violation Type</th>
+                            <th>Status</th>
                             <th>Record ID</th>
                             <th>Date Assigned</th>
-                            <th>Status</th>
                             <th>Sanction Details</th>
-                            <th>Violation Type</th>
                             <th>Violation Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (!empty($sanction_records)): ?>
                             <?php foreach ($sanction_records as $sanction): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($sanction['record_id']); ?></td>
-                                    <td><?php echo htmlspecialchars(date("M d, Y, h:i a", strtotime($sanction['date_assigned']))); ?></td>
-                                    <td>
+                                <tr class="mobile-accordion-row">
+                                    <td data-label="Violation Type" class="cell-summary"><?php echo htmlspecialchars($sanction['violation_type_name'] ?? 'N/A'); ?></td>
+                                    <td data-label="Status" class="cell-summary">
                                         <?php
                                         $statusClass = '';
-                                        switch ($sanction['status']) {
-                                            case 'Pending':
-                                                $statusClass = 'offense-tag-warning';
-                                                break;
-                                            case 'Approved':
-                                                $statusClass = 'offense-tag-sanction'; // Using sanction style for approved
-                                                break;
-                                            case 'Completed':
-                                                $statusClass = 'offense-tag-warning'; // Using warning style for completed
-                                                break;
-                                            case 'Declined':
-                                                $statusClass = 'offense-tag-sanction'; // Using sanction style for declined
-                                                break;
-                                            default:
-                                                $statusClass = '';
-                                                break;
+                                        switch (strtolower($sanction['status'])) {
+                                            case 'pending': $statusClass = 'offense-tag-warning'; break;
+                                            case 'approved': $statusClass = 'offense-tag-sanction'; break;
+                                            case 'completed': $statusClass = 'offense-tag-completed'; break;
+                                            case 'declined': $statusClass = 'offense-tag-sanction'; break;
                                         }
                                         echo "<span class='offense-tag " . $statusClass . "'>" . htmlspecialchars($sanction['status']) . "</span>";
                                         ?>
                                     </td>
-                                    <td><?php echo nl2br(htmlspecialchars($sanction['disciplinary_sanction'] ?? 'N/A')); ?></td>
-                                    <td><?php echo htmlspecialchars($sanction['violation_type_name'] ?? 'N/A'); ?></td>
-                                    <td><?php echo nl2br(htmlspecialchars(trim($sanction['violation_remarks'] ?? '') === '' ? 'No remarks' : $sanction['violation_remarks'])); ?></td>
+                                    <td data-label="Record ID" class="cell-details"><?php echo htmlspecialchars($sanction['record_id']); ?></td>
+                                    <td data-label="Date Assigned" class="cell-details"><?php echo htmlspecialchars(date("M d, Y, h:i a", strtotime($sanction['date_assigned']))); ?></td>
+                                    <td data-label="Sanction Details" class="cell-details"><?php echo nl2br(htmlspecialchars($sanction['disciplinary_sanction'] ?? 'N/A')); ?></td>
+                                    <td data-label="Violation Remarks" class="cell-details"><?php echo nl2br(htmlspecialchars(trim($sanction['violation_remarks'] ?? '') === '' ? 'No remarks' : $sanction['violation_remarks'])); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
@@ -483,6 +472,24 @@ $button_disabled = !$has_sanctionable_offense;
         </div>
     </div>
 </main>
+
+<?php if ($student_details): ?>
+<div class="actions-panel-sticky">
+    <div class="actions-panel-content">
+        <p class="reminder-paragraph">
+            Please be reminded to take your sanction before the graduation. If you want to take your sanction kindly click the
+            ‘Request Sanction’ button to directly request to the Head of Office of Student Services (OSS) or go to the Building B Office.
+        </p>
+        <div class="sanction-request-bar">
+            <p>Total Individual Violation Instances: <strong><?php echo $total_individual_violations; ?></strong></p>
+            <button id="requestSanctionButton" class="action-button" <?php if ($button_disabled) echo 'disabled'; ?>>
+                Request Sanction
+            </button>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <script src="./student_record.js"></script>
     <?php
         if (isset($conn)) {

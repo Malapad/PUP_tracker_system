@@ -1,5 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Notification Dropdown Logic ---
+    const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+    const primaryNav = document.querySelector('#primary-navigation');
+
+    if (mobileNavToggle && primaryNav) {
+        mobileNavToggle.addEventListener('click', () => {
+            primaryNav.classList.toggle('main-nav-visible');
+            mobileNavToggle.classList.toggle('expanded');
+            
+            const isVisible = primaryNav.classList.contains('main-nav-visible');
+            mobileNavToggle.setAttribute('aria-expanded', isVisible);
+        });
+    }
+    
     const notificationLinkToggle = document.getElementById('notificationLinkToggle');
     const notificationsDropdownContent = document.getElementById('notificationsDropdownContent');
     const markAllReadBtn = document.getElementById('mark-all-read-btn');
@@ -38,7 +50,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- Sanction Request Overlay Logic ---
     const requestButton = document.getElementById("requestSanctionButton");
     const overlay = document.getElementById("confirmationOverlay");
     const closeButton = document.getElementById("closeOverlayButton");
@@ -67,10 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     overlay.style.display = "flex";
                 }
                 if (data.success) {
-                    // Optionally update the button text or re-disable it permanently if the request is successful and only one request is allowed.
                     requestButton.textContent = 'Request Sent';
-                    // You might want to disable it permanently or reload the page to reflect the new state.
-                    // For now, it just says 'Request Sent' but remains disabled by the server-side check on reload.
                 } else {
                     requestButton.disabled = false;
                     requestButton.textContent = 'Request Sanction';
@@ -104,17 +112,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // --- Theme Toggle Logic ---
     const themeToggle = document.getElementById('theme-checkbox');
     const currentTheme = localStorage.getItem('theme');
 
     function applyTheme(theme) {
         if (theme === 'dark-mode') {
             document.body.classList.add('dark-mode');
-            if (themeToggle) themeToggle.checked = true; // Ensure toggle is checked
+            if (themeToggle) themeToggle.checked = true;
         } else {
             document.body.classList.remove('dark-mode');
-            if (themeToggle) themeToggle.checked = false; // Ensure toggle is unchecked
+            if (themeToggle) themeToggle.checked = false;
         }
     }
 
@@ -136,22 +143,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- Tab Switching Logic ---
     const tabButtons = document.querySelectorAll('.tabs-navigation .tab-button');
     const tabContents = document.querySelectorAll('.tab-content');
 
     tabButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const targetTabId = this.dataset.tab; // Get the data-tab attribute value
+            const targetTabId = this.dataset.tab;
 
-            // Remove active classes from all buttons and content
             tabButtons.forEach(btn => btn.classList.remove('active-tab-button'));
             tabContents.forEach(content => content.classList.remove('active-tab'));
 
-            // Add active class to the clicked button
             this.classList.add('active-tab-button');
 
-            // Show the target tab content
             const targetTabContent = document.getElementById(targetTabId);
             if (targetTabContent) {
                 targetTabContent.classList.add('active-tab');
@@ -159,6 +162,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Optionally, if you want a default active tab on page load (though PHP handles this initially)
-    // You could set the first tab as active if none are, but it's redundant with the initial PHP setup.
+    function initializeMobileAccordions() {
+        const accordions = document.querySelectorAll('.mobile-accordion-row');
+        if (!accordions.length) return;
+        
+        accordions.forEach(acc => {
+            acc.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' || e.target.closest('a')) {
+                    return;
+                }
+
+                const wasOpen = acc.classList.contains('is-open');
+
+                accordions.forEach(otherAcc => {
+                    otherAcc.classList.remove('is-open');
+                });
+                
+                if (!wasOpen) {
+                    acc.classList.add('is-open');
+                }
+            });
+        });
+    }
+    
+    if (window.innerWidth <= 992) {
+        initializeMobileAccordions();
+    }
 });
