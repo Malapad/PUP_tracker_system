@@ -13,9 +13,9 @@ if (!isset($_SESSION["current_user_id"]) || !isset($_SESSION["user_student_numbe
 $student_stud_number_from_session = $_SESSION["user_student_number"];
 
 $violations_query = "SELECT vt.violation_category_id, vt.violation_type
-                       FROM violation_tbl v
-                       JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                       WHERE v.student_number = ?";
+                     FROM violation_tbl v
+                     JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                     WHERE v.student_number = ?";
 
 $violations_by_category = [];
 $total_violations = 0;
@@ -57,9 +57,9 @@ $unread_notification_count_header = 0;
 
 if (isset($conn)) {
     $sql_notifications_list_header = "SELECT notification_id, message, created_at, link
-                                          FROM notifications_tbl
-                                          WHERE student_number = ? AND is_read = FALSE
-                                          ORDER BY created_at DESC LIMIT 5";
+                                      FROM notifications_tbl
+                                      WHERE student_number = ? AND is_read = FALSE
+                                      ORDER BY created_at DESC LIMIT 5";
     if ($stmt_notifications_list_header = $conn->prepare($sql_notifications_list_header)) {
         $stmt_notifications_list_header->bind_param("s", $student_stud_number_from_session);
         $stmt_notifications_list_header->execute();
@@ -71,8 +71,8 @@ if (isset($conn)) {
     }
 
     $sql_notifications_count_header = "SELECT COUNT(*) as total_unread
-                                           FROM notifications_tbl
-                                           WHERE student_number = ? AND is_read = FALSE";
+                                       FROM notifications_tbl
+                                       WHERE student_number = ? AND is_read = FALSE";
     if ($stmt_notifications_count_header = $conn->prepare($sql_notifications_count_header)) {
         $stmt_notifications_count_header->bind_param("s", $student_stud_number_from_session);
         $stmt_notifications_count_header->execute();
@@ -91,21 +91,23 @@ if (isset($conn)) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./student_dashboard_style.css">
+    
+    <link rel="stylesheet" href="./student_style.css">
 </head>
 <body>
-    <header class="main-header">
-        <div class="header-content">
-            <div class="logo">
-                <img src="../IMAGE//Tracker-logo.png" alt="PUP Logo">
-            </div>
+    
+<header class="main-header">
+    <div class="header-content">
+        <div class="logo">
+            <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo">
+        </div>
 
-            <nav class="main-nav" id="primary-navigation" data-visible="false">
-                <div class="nav-links">
-                    <a href="./student_dashboard.php" class="active-nav">Home</a>
-                    <a href="./student_record.php">Record</a>
-                    <a href="./student_announcements.php">Announcements</a>
-                </div>
+        <nav class="main-nav" id="primary-navigation">
+            <div class="nav-links">
+                <a href="./student_dashboard.php" class="active-nav">Home</a>
+                <a href="./student_record.php">Record</a>
+                <a href="./student_announcements.php">Announcements</a>
+
                 <div class="mobile-only">
                     <a href="./student_account.php" class="profile-icon admin">
                         <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -116,55 +118,56 @@ if (isset($conn)) {
                         <span>Logout</span>
                     </a>
                 </div>
-            </nav>
-            
-            <div class="header-actions">
-                <div class="notification-icon-area">
-                    <a href="#" class="notification" id="notificationLinkToggle">
-                        <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg>
-                        <?php if ($unread_notification_count_header > 0): ?>
-                            <span class="notification-count"><?php echo $unread_notification_count_header; ?></span>
+            </div>
+        </nav>
+
+        <div class="header-actions">
+            <div class="notification-icon-area">
+                <a href="#" class="notification" id="notificationLinkToggle">
+                    <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg>
+                    <?php if ($unread_notification_count_header > 0): ?>
+                        <span class="notification-count"><?php echo $unread_notification_count_header; ?></span>
+                    <?php endif; ?>
+                </a>
+                <div class="notifications-dropdown" id="notificationsDropdownContent">
+                    <div class="notification-header">
+                        <h3>Notifications</h3>
+                        <button id="mark-all-read-btn">Mark all as read</button>
+                    </div>
+                    <ul class="notification-list">
+                        <?php if (!empty($unread_notifications_header)): ?>
+                            <?php foreach ($unread_notifications_header as $notification_h): ?>
+                                <li class="notification-item">
+                                    <div class="notification-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.103 0-2 .897-2 2v18l4-4h14c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2zm-3 9h-4v4h-2v-4H7V9h4V5h2v4h4v2z"/></svg>
+                                    </div>
+                                    <div class="notification-details">
+                                        <p class="notification-message"><?php echo htmlspecialchars($notification_h['message']); ?></p>
+                                        <small class="notification-timestamp"><?php echo date("M d, Y h:i A", strtotime($notification_h['created_at'])); ?></small>
+                                    </div>
+                                    <a href="./mark_notification_read.php?id=<?php echo $notification_h['notification_id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="mark-as-read-btn" title="Mark as read">
+                                        <span class="read-dot-icon"></span>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <li class="no-notifications">No new notifications.</li>
                         <?php endif; ?>
-                    </a>
-                    <div class="notifications-dropdown" id="notificationsDropdownContent">
-                        <div class="notification-header">
-                            <h3>Notifications</h3>
-                            <button id="mark-all-read-btn">Mark all as read</button>
-                        </div>
-                        <ul class="notification-list">
-                            <?php if (!empty($unread_notifications_header)): ?>
-                                <?php foreach ($unread_notifications_header as $notification_h): ?>
-                                    <li class="notification-item">
-                                        <div class="notification-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.103 0-2 .897-2 2v18l4-4h14c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2zm-3 9h-4v4h-2v-4H7V9h4V5h2v4h4v2z"/></svg>
-                                        </div>
-                                        <div class="notification-details">
-                                            <p class="notification-message"><?php echo htmlspecialchars($notification_h['message']); ?></p>
-                                            <small class="notification-timestamp"><?php echo date("M d, Y h:i A", strtotime($notification_h['created_at'])); ?></small>
-                                        </div>
-                                        <a href="./mark_notification_read.php?id=<?php echo $notification_h['notification_id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="mark-as-read-btn" title="Mark as read">
-                                            <span class="read-dot-icon"></span>
-                                        </a>
-                                    </li>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <li class="no-notifications">No new notifications.</li>
-                            <?php endif; ?>
-                        </ul>
-                        <div class="notification-footer">
-                            <a href="./all_notifications.php" class="view-all-notifications-link">View All Notifications</a>
-                        </div>
+                    </ul>
+                    <div class="notification-footer">
+                        <a href="./all_notifications.php" class="view-all-notifications-link">View All Notifications</a>
                     </div>
                 </div>
-                <a href="./student_account.php" class="profile-icon admin desktop-only">
-                    <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                </a>
-                <button class="mobile-nav-toggle" aria-controls="primary-navigation" aria-expanded="false">
-                    <span class="sr-only">Menu</span>
-                </button>
             </div>
+            <a href="./student_account.php" class="profile-icon admin desktop-only">
+                <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </a>
+            <button class="mobile-nav-toggle" aria-controls="primary-navigation" aria-expanded="false">
+                <span class="sr-only">Menu</span>
+            </button>
         </div>
-    </header>
+    </div>
+</header>
 
 <main>
     <div class="dashboard-wrapper">
@@ -284,6 +287,7 @@ if (isset($conn)) {
         </div>
     </div>
 </main>
-<script src="./student_dashboard.js"></script>
+
+<script src="./student_scripts.js"></script>
 </body>
 </html>

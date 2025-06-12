@@ -138,27 +138,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Request Password Reset - PUPT</title>
-    <link rel="stylesheet" href="./student_login_style.css">
-    <style>
-        .right-panel form p.message {
-            padding: 10px; margin-bottom: 15px; border-radius: 5px; text-align: center;
-        }
-        .right-panel form p.message.success {
-            background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;
-        }
-        .right-panel form p.message.error {
-            background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./student_login_style.css"> 
 </head>
 <body>
-    <div class="container">
-        <div class="left-panel">
-            <h2>Password Reset</h2>
-            <p>Enter your student number or email address to receive a password reset link.</p>
-        </div>
-        <div class="right-panel">
+    <div class="login-container">
+        <div class="welcome-panel">
             <img src="../assets/PUP_logo.png" alt="PUP Logo" class="logo">
+            <h2>Forgot Your Password?</h2>
+            <p>No problem. Enter your details and we'll help you reset it.</p>
+        </div>
+        <div class="login-form-wrapper">
             <h3>Reset Your Password</h3>
             
             <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
@@ -167,13 +159,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php endif; ?>
 
                 <div class="input-group">
-                    <input type="text" name="email_or_student_number" placeholder="Student Number or Email" required value="<?php echo isset($email_or_student_number) ? htmlspecialchars($email_or_student_number) : ''; ?>">
+                    <input type="text" name="email_or_student_number" placeholder="Enter Student Number or Email" required value="<?php echo isset($email_or_student_number) ? htmlspecialchars($email_or_student_number) : ''; ?>">
                 </div>
                 
                 <button type="submit" class="login-btn">Send Reset Link</button>
-                <p style="text-align: center; margin-top: 20px;">
-                    <a href="student_login.php" style="color: #8a1c1c; text-decoration: none;">Back to Login</a>
-                </p>
+                <div class="options-container">
+                    <a href="student_login.php" class="back-link">Back to Login</a>
+                </div>
             </form>
         </div>
     </div>
