@@ -46,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $errors['db_error'] = "Database query failed. Please try again later.";
             }
             if ($conn) {
-              $conn->close();
+                $conn->close();
             }
         }
     }
@@ -58,18 +58,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PUP Student Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./student_login_style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="left-panel">
-            <h2>Welcome PUPTians!</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-        </div>
-        <div class="right-panel">
+    <div class="login-container">
+        <div class="welcome-panel">
             <img src="../assets/PUP_logo.png" alt="PUP Logo" class="logo">
-            <h3>Student Account</h3>
-            
+            <h2>Welcome PUPTians!</h2>
+            <p>Access your records and stay updated.</p>
+        </div>
+        <div class="login-form-wrapper">
+            <h3>Student Login</h3>
             <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
                 <?php if (!empty($errors['login_error'])): ?>
                     <p class="error-message main-error"><?php echo $errors['login_error']; ?></p>
@@ -79,24 +81,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php endif; ?>
                 <?php
                 if (isset($_SESSION['password_reset_success'])) {
-                    echo '<p class="message success" style="padding: 10px; margin-bottom: 15px; border-radius: 5px; text-align: center; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;">' . htmlspecialchars($_SESSION['password_reset_success']) . '</p>';
+                    echo '<p class="message success">' . htmlspecialchars($_SESSION['password_reset_success']) . '</p>';
                     unset($_SESSION['password_reset_success']);
                 }
                 ?>
                 <div class="input-group">
-                    <input type="text" name="student_number" placeholder="Student Number" value="<?php echo htmlspecialchars($studentNumber); ?>" required>
+                    <input id="student_number" type="text" name="student_number" placeholder="Student Number" value="<?php echo htmlspecialchars($studentNumber); ?>" required>
                     <?php if (!empty($errors['student_number'])): ?>
                         <span class="error-message"><?php echo $errors['student_number']; ?></span>
                     <?php endif; ?>
                 </div>
                 <div class="input-group">
-                    <input type="password" name="password" placeholder="Password" required>
+                    <input id="password" type="password" name="password" placeholder="Password" required>
                     <?php if (!empty($errors['password'])): ?>
                         <span class="error-message"><?php echo $errors['password']; ?></span>
                     <?php endif; ?>
                 </div>
-                <p class="forget"><a href="request_password_reset.php">Forgot password?</a></p>
-                <button type="submit" class="login-btn">Log in</button>
+                <div class="options-container">
+                    <a href="request_password_reset.php" class="forgot-password">Forgot password?</a>
+                </div>
+                <button type="submit" class="login-btn">Log In</button>
             </form>
         </div>
     </div>
