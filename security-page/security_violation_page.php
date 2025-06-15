@@ -1,8 +1,12 @@
 <?php
+// ADD THESE TWO LINES AT THE VERY TOP
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 include '../PHP/dbcon.php';
 
-if (isset($_REQUEST['action'])) {
+if (isset($_REQUEST['action']) && !isset($_REQUEST['generate_pdf'])) {
     header('Content-Type: application/json');
     $response = ['success' => false, 'message' => 'An unknown error occurred.'];
 
@@ -93,12 +97,12 @@ function generate_violation_table_body($conn) {
     $endDate = isset($_POST['end_date']) ? $_POST['end_date'] : '';
 
     $sql_students = "SELECT DISTINCT u.student_number, u.first_name, u.middle_name, u.last_name, 
-                                   c.course_name, y.year, s.section_name 
-                     FROM users_tbl u
-                     JOIN violation_tbl v ON u.student_number = v.student_number
-                     LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                     LEFT JOIN year_tbl y ON u.year_id = y.year_id
-                     LEFT JOIN section_tbl s ON u.section_id = s.section_id";
+                                     c.course_name, y.year, s.section_name 
+                       FROM users_tbl u
+                       JOIN violation_tbl v ON u.student_number = v.student_number
+                       LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                       LEFT JOIN year_tbl y ON u.year_id = y.year_id
+                       LEFT JOIN section_tbl s ON u.section_id = s.section_id";
 
     $where = [];
     $params = [];
@@ -141,23 +145,38 @@ function generate_violation_table_body($conn) {
     $result_students = $stmt_students->get_result();
     $output = '';
 
-    if ($result_students->num_rows > 0) {
+    if ($result_students && $result_students->num_rows > 0) {
         $sanction_sql_check = "SELECT disciplinary_sanction FROM disciplinary_sanctions WHERE violation_type_id = ? AND offense_level = ?";
         $stmt_sanction_check = $conn->prepare($sanction_sql_check);
-        $violations_sql = "SELECT vt.violation_type, v.violation_type as violation_type_id, vc.category_name, MAX(v.violation_date) as latest_date,
-                                  (SELECT COUNT(*) FROM violation_tbl WHERE student_number = ? AND violation_type = v.violation_type) as offense_count,
-                                  (SELECT v_inner.description FROM violation_tbl v_inner WHERE v_inner.student_number = v.student_number AND v_inner.violation_type = v.violation_type ORDER BY v_inner.violation_date DESC LIMIT 1) as latest_description
-                           FROM violation_tbl v
-                           JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                           JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id
-                           WHERE v.student_number = ?
-                           GROUP BY v.student_number, v.violation_type
-                           ORDER BY latest_date DESC";
-        $stmt_violations = $conn->prepare($violations_sql);
+        
+        $violations_sql_base = "SELECT vt.violation_type, v.violation_type as violation_type_id, vc.category_name, MAX(v.violation_date) as latest_date,
+                                   (SELECT COUNT(*) FROM violation_tbl WHERE student_number = ? AND violation_type = v.violation_type) as offense_count,
+                                   (SELECT v_inner.description FROM violation_tbl v_inner WHERE v_inner.student_number = v.student_number AND v_inner.violation_type = v.violation_type ORDER BY v_inner.violation_date DESC LIMIT 1) as latest_description
+                             FROM violation_tbl v
+                             JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                             JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id";
 
         while ($student_row = $result_students->fetch_assoc()) {
             $student_number = $student_row['student_number'];
-            $stmt_violations->bind_param("ss", $student_number, $student_number);
+
+            $violation_where = ["v.student_number = ?"];
+            $violation_params = [$student_number, $student_number];
+            $violation_types = "ss";
+
+            if(!empty($startDate)){
+                $violation_where[] = "DATE(v.violation_date) >= ?";
+                $violation_params[] = $startDate;
+                $violation_types .= "s";
+            }
+            if(!empty($endDate)){
+                $violation_where[] = "DATE(v.violation_date) <= ?";
+                $violation_params[] = $endDate;
+                $violation_types .= "s";
+            }
+            $violations_sql = $violations_sql_base . " WHERE " . implode(" AND ", $violation_where) . " GROUP BY v.student_number, v.violation_type ORDER BY latest_date DESC";
+            $stmt_violations = $conn->prepare($violations_sql);
+            $stmt_violations->bind_param($violation_types, ...$violation_params);
+
             $stmt_violations->execute();
             $violations_result = $stmt_violations->get_result();
             $violations_data = $violations_result->fetch_all(MYSQLI_ASSOC);
@@ -221,8 +240,8 @@ function generate_violation_table_body($conn) {
                 $output .= "</div></div>";
             }
             $output .= "</div></td></tr>";
+            $stmt_violations->close();
         }
-        $stmt_violations->close();
         $stmt_sanction_check->close();
     } else {
         $output = "<tr><td colspan='8' class='no-records-cell'>No student violations match the current filters.</td></tr>";
@@ -267,12 +286,14 @@ function generate_violation_table_body($conn) {
             <select name="course_id" id="courseFilter">
                 <option value="">Filter by Course</option>
                  <?php
-                    $courseQuery = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name ASC";
-                    $courseResult = $conn->query($courseQuery);
-                    if ($courseResult) {
-                        while ($row = $courseResult->fetch_assoc()) {
-                            echo "<option value='" . htmlspecialchars($row['course_id']) . "'>" . htmlspecialchars($row['course_name']) . "</option>";
-                        }
+                    if ($conn) {
+                       $courseQuery = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name ASC";
+                        $courseResult = $conn->query($courseQuery);
+                        if ($courseResult) {
+                            while ($row = $courseResult->fetch_assoc()) {
+                                echo "<option value='" . htmlspecialchars($row['course_id']) . "'>" . htmlspecialchars($row['course_name']) . "</option>";
+                            }
+                        } 
                     }
                 ?>
             </select>
@@ -287,6 +308,7 @@ function generate_violation_table_body($conn) {
                 <input type="text" name="search" id="searchFilter" placeholder="Search Student Number or Name...">
             </div>
             <button type="button" id="refreshBtn" class="filter-btn refresh-btn"><i class="fas fa-sync-alt"></i> Refresh List</button>
+            <button type="button" id="generateReportBtn" class="filter-btn report-btn"><i class="fas fa-file-pdf"></i> Generate Report</button>
             <button type="button" id="addViolationBtn" class="filter-btn add-btn"><i class="fas fa-plus"></i> Add Violation</button>
         </form>
 
@@ -305,7 +327,7 @@ function generate_violation_table_body($conn) {
                     </tr>
                 </thead>
                 <tbody id="violationTableBody">
-                    <?php generate_violation_table_body($conn); ?>
+                    <?php if($conn) generate_violation_table_body($conn); ?>
                 </tbody>
             </table>
         </div>
@@ -339,11 +361,13 @@ function generate_violation_table_body($conn) {
                     <select id="violationCategory" name="violationCategory" required>
                         <option value="">Select Violation Category</option>
                         <?php
-                        $catSqlModal = "SELECT violation_category_id, category_name FROM violation_category_tbl ORDER BY category_name ASC";
-                        $catResultModal = $conn->query($catSqlModal);
-                        if ($catResultModal && $catResultModal->num_rows > 0) {
-                            while ($catRowModal = $catResultModal->fetch_assoc()) {
-                                echo '<option value="' . htmlspecialchars($catRowModal['violation_category_id']) . '">' . htmlspecialchars($catRowModal['category_name']) . '</option>';
+                        if ($conn) {
+                            $catSqlModal = "SELECT violation_category_id, category_name FROM violation_category_tbl ORDER BY category_name ASC";
+                            $catResultModal = $conn->query($catSqlModal);
+                            if ($catResultModal && $catResultModal->num_rows > 0) {
+                                while ($catRowModal = $catResultModal->fetch_assoc()) {
+                                    echo '<option value="' . htmlspecialchars($catRowModal['violation_category_id']) . '">' . htmlspecialchars($catRowModal['category_name']) . '</option>';
+                                }
                             }
                         }
                         ?>
@@ -371,5 +395,7 @@ function generate_violation_table_body($conn) {
 </body>
 </html>
 <?php
-$conn->close();
+if ($conn) {
+    $conn->close();
+}
 ?>

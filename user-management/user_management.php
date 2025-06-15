@@ -34,6 +34,7 @@ include '../PHP/dbcon.php';
         <div class="tabs">
             <button class="tab active" data-tab="students">Students</button>
             <button class="tab" data-tab="admins">Admins</button>
+            <button class="tab" data-tab="security">Security</button>
         </div>
 
         <div id="students-content" class="tab-content active">
@@ -231,12 +232,83 @@ include '../PHP/dbcon.php';
                 </table>
             </div>
         </div>
+
+        <div id="security-content" class="tab-content">
+            <div id="security-list-view">
+                <div class="controls" id="security-controls">
+                    <div class="main-controls-wrapper">
+                        <div class="left-control-group">
+                           <form method="GET" action="" id="security-filter-form">
+                               <input type="hidden" name="tab" value="security">
+                               <div class="search-field-group">
+                                   <input type="text" name="security_search" placeholder="Search by Name or Email" value="<?php echo isset($_GET['security_search']) && isset($_GET['tab']) && $_GET['tab'] === 'security' ? htmlspecialchars($_GET['security_search']) : ''; ?>">
+                                   <button type="submit" class="search-button"><i class="fas fa-search"></i></button>
+                               </div>
+                           </form>
+                        </div>
+                        <div class="right-control-group">
+                            <button type="button" id="toggle-security-history-btn" class="secondary-button"><i class="fas fa-history"></i> View History</button>
+                            <button type="button" id="refresh-security-list-btn" class="refresh-button"><i class="fas fa-sync-alt"></i> Refresh List</button>
+                            <button type="button" id="open-add-security-modal-btn" class="add-user-button"><i class="fas fa-plus"></i> Add Security</button>
+                        </div>
+                    </div>
+                </div>
+                <table id="security-table">
+                    <thead><tr><th>Position</th><th>Last Name</th><th>First Name</th><th>Middle Name</th><th>Email</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody>
+                        <?php
+                        if ($conn) {
+                            $security_search = isset($_GET['security_search']) && isset($_GET['tab']) && $_GET['tab'] === 'security' ? mysqli_real_escape_string($conn, $_GET['security_search']) : '';
+                            $securityQuery = "SELECT si.security_id, si.firstname, si.middlename, si.lastname, si.Position, s.email, si.status_id, st.status_name FROM security_info si JOIN security s ON si.security_id = s.id LEFT JOIN status_tbl st ON si.status_id = st.status_id WHERE 1";
+                            if (!empty($security_search)) { $securityQuery .= " AND (si.firstname LIKE '%$security_search%' OR si.middlename LIKE '%$security_search%' OR si.lastname LIKE '%$security_search%' OR s.email LIKE '%$security_search%' OR si.Position LIKE '%$security_search%')"; }
+                            $securityQuery .= " ORDER BY si.lastname ASC, si.firstname ASC";
+                            $securityResult = mysqli_query($conn, $securityQuery);
+                            if ($securityResult && mysqli_num_rows($securityResult) > 0) {
+                                while ($securityRow = mysqli_fetch_assoc($securityResult)) {
+                                    $securityFullName = htmlspecialchars($securityRow['firstname'] . ' ' . $securityRow['lastname']);
+                                    $security_data_json = htmlspecialchars(json_encode(['security_id' => $securityRow['security_id'],'first_name' => $securityRow['firstname'],'middle_name' => $securityRow['middlename'],'last_name' => $securityRow['lastname'],'position' => $securityRow['Position'], 'email' => $securityRow['email'],'status_id' => $securityRow['status_id']]), ENT_QUOTES, 'UTF-8');
+                                    $status_class = strtolower(htmlspecialchars($securityRow['status_name'] ?? '')) == 'active' ? 'status-active' : 'status-inactive';
+                                    echo "<tr><td>".htmlspecialchars($securityRow['Position'])."</td><td>".htmlspecialchars($securityRow['lastname'])."</td><td>".htmlspecialchars($securityRow['firstname'])."</td><td>".htmlspecialchars($securityRow['middlename'])."</td><td>".htmlspecialchars($securityRow['email'])."</td><td><span class='status-badge ".$status_class."'>".htmlspecialchars($securityRow['status_name'] ?? 'Unknown')."</span></td><td><div class='table-action-buttons'><button class='edit-btn security-edit-btn' data-security='".$security_data_json."'><i class='fas fa-pencil-alt'></i> Edit</button><button type='button' class='delete-btn security-delete-trigger-btn' data-id='".htmlspecialchars($securityRow['security_id'])."' data-name='".$securityFullName."' data-type='security'><i class='fas fa-trash-alt'></i> Delete</button></div></td></tr>";
+                                }
+                            } else { echo "<tr><td colspan='7'>No security data available</td></tr>"; }
+                        } else { echo "<tr><td colspan='7'>Database connection error.</td></tr>"; }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+            <div id="security-history-view" style="display: none;">
+                 <div class="controls"><div class="main-controls-wrapper"><div class="left-control-group"><h3 style="margin: 0;">Security Action History</h3></div><div class="right-control-group"><button type="button" id="back-to-security-list-btn" class="secondary-button"><i class="fas fa-arrow-left"></i> Back to Security List</button></div></div></div>
+                <table id="security-history-table">
+                    <thead><tr><th>Timestamp</th><th>Performed By</th><th>Action</th><th>Target Security</th><th>Details</th></tr></thead>
+                    <tbody>
+                        <?php
+                        if ($conn) {
+                            $historyQuery = "SELECT timestamp, performed_by_admin_name, action_type, target_user_identifier, details FROM user_management_history WHERE target_user_type = 'Security' ORDER BY timestamp DESC LIMIT 200";
+                            $historyResult = mysqli_query($conn, $historyQuery);
+                            if ($historyResult && mysqli_num_rows($historyResult) > 0) {
+                                while ($historyRow = mysqli_fetch_assoc($historyResult)) {
+                                    $action_class = ''; $action_type = strtolower($historyRow['action_type']);
+                                    if (strpos($action_type, 'add') !== false) { $action_class = 'action-add'; } elseif (strpos($action_type, 'edit') !== false) { $action_class = 'action-edit'; } elseif (strpos($action_type, 'delete') !== false) { $action_class = 'action-delete'; }
+                                    echo "<tr><td>".htmlspecialchars(date('M d, Y, h:i A', strtotime($historyRow['timestamp'])))."</td><td>".htmlspecialchars($historyRow['performed_by_admin_name'])."</td><td><span class='action-badge ".$action_class."'>".htmlspecialchars($historyRow['action_type'])."</span></td><td>".htmlspecialchars($historyRow['target_user_identifier'])."</td><td class='history-details'>".$historyRow['details']."</td></tr>";
+                                }
+                            } else { echo "<tr><td colspan='5'>No history found for security.</td></tr>"; }
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
     
     <div id="edit-student-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Student</h3><form id="edit-student-form"><input type="hidden" id="original-student-number" name="original_student_number"><div><label>Student Number:</label><input type="text" id="edit-student-number" name="student_number" required></div><div><label>First Name:</label><input type="text" id="edit-student-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-student-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-student-last-name" name="last_name" required></div><div><label>Email:</label><input type="email" id="edit-student-email" name="email" required></div><div><label>Course:</label><select id="edit-student-course" name="course_id" required><option value="">Select Course</option><?php if (isset($courseResultPHP) && $courseResultPHP) { mysqli_data_seek($courseResultPHP, 0); while ($row = mysqli_fetch_assoc($courseResultPHP)) { echo "<option value='{$row['course_id']}'>{$row['course_name']}</option>"; } } ?></select></div><div><label>Year:</label><select id="edit-student-year" name="year_id" required><option value="">Select Year</option><?php if (isset($yearResultPHP) && $yearResultPHP) { mysqli_data_seek($yearResultPHP, 0); while ($row = mysqli_fetch_assoc($yearResultPHP)) { echo "<option value='{$row['year_id']}'>{$row['year']}</option>"; } } ?></select></div><div><label>Section:</label><select id="edit-student-section" name="section_id" required><option value="">Select Section</option><?php if (isset($sectionResultPHP) && $sectionResultPHP) { mysqli_data_seek($sectionResultPHP, 0); while ($row = mysqli_fetch_assoc($sectionResultPHP)) { echo "<option value='{$row['section_id']}'>{$row['section_name']}</option>"; } } ?></select></div><div><label>Status:</label><select id="edit-student-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP) && $statusResultPHP) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Student</button></form></div></div>
     <div id="add-student-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Student</h3><form id="add-student-form"><div><label>Student Number:</label><input type="text" name="student_number" required></div><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Email:</label><input type="email" name="email" required></div><div><label>Course:</label><select name="course_id" required><option value="">Select Course</option><?php if (isset($courseResultPHP) && $courseResultPHP) { mysqli_data_seek($courseResultPHP, 0); while ($row = mysqli_fetch_assoc($courseResultPHP)) { echo "<option value='{$row['course_id']}'>{$row['course_name']}</option>"; } } ?></select></div><div><label>Year:</label><select name="year_id" required><option value="">Select Year</option><?php if (isset($yearResultPHP) && $yearResultPHP) { mysqli_data_seek($yearResultPHP, 0); while ($row = mysqli_fetch_assoc($yearResultPHP)) { echo "<option value='{$row['year_id']}'>{$row['year']}</option>"; } } ?></select></div><div><label>Section:</label><select name="section_id" required><option value="">Select Section</option><?php if (isset($sectionResultPHP) && $sectionResultPHP) { mysqli_data_seek($sectionResultPHP, 0); while ($row = mysqli_fetch_assoc($sectionResultPHP)) { echo "<option value='{$row['section_id']}'>{$row['section_name']}</option>"; } } ?></select></div><div><label>Status:</label><select name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP) && $statusResultPHP) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-plus"></i> Add Student</button></form></div></div>
+    
     <div id="add-admin-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Admin</h3><form id="add-admin-form"><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Position:</label><input type="text" name="position" required></div><div><label>Email (will be used as Username):</label><input type="email" name="email" required></div><button type="submit"><i class="fas fa-plus"></i> Add Admin</button></form></div></div>
     <div id="edit-admin-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Admin</h3><form id="edit-admin-form"><input type="hidden" id="edit-admin-id" name="admin_id"><div><label>First Name:</label><input type="text" id="edit-admin-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-admin-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-admin-last-name" name="last_name" required></div><div><label>Position:</label><input type="text" id="edit-admin-position" name="position" required></div><div><label>Email:</label><input type="email" id="edit-admin-email" name="email" required></div><div><label>New Password:</label><input type="password" id="edit-admin-password" name="password" placeholder="Leave blank to keep current password"></div><div><label>Status:</label><select id="edit-admin-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP)) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Admin</button></form></div></div>
+    
+    <div id="add-security-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Security</h3><form id="add-security-form"><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Position:</label><input type="text" name="position" required value="Security Guard"></div><div><label>Email (will be used as Username):</label><input type="email" name="email" required></div><button type="submit"><i class="fas fa-plus"></i> Add Security</button></form></div></div>
+    <div id="edit-security-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Security</h3><form id="edit-security-form"><input type="hidden" id="edit-security-id" name="security_id"><div><label>First Name:</label><input type="text" id="edit-security-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-security-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-security-last-name" name="last_name" required></div><div><label>Position:</label><input type="text" id="edit-security-position" name="position" required></div><div><label>Email:</label><input type="email" id="edit-security-email" name="email" required></div><div><label>New Password:</label><input type="password" id="edit-security-password" name="password" placeholder="Leave blank to keep current password"></div><div><label>Status:</label><select id="edit-security-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP)) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Security</button></form></div></div>
+
     <div id="delete-confirm-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h3><p id="delete-confirm-text">Are you sure you want to delete <span id="delete-item-type-placeholder"></span>: <strong id="delete-item-identifier-placeholder"></strong>?</p><div class="delete-confirm-actions"><button type="button" id="confirm-delete-action-btn" class="delete-btn"><i class="fas fa-trash-alt"></i> Confirm Delete</button><button type="button" id="cancel-delete-action-btn" class="edit-btn"><i class="fas fa-times"></i> Cancel</button></div></div></div>
     <div id="custom-toast-notification" class="toast-notification"><span id="toast-notification-message"></span></div>
 </main>

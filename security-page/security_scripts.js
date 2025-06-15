@@ -1,10 +1,29 @@
 document.addEventListener("DOMContentLoaded", () => {
   const courseFilter = document.getElementById("courseFilter");
   const yearFilter = document.getElementById("yearFilter");
-  const periodFilter = document.getElementById("datePeriod");
   const loadingOverlay = document.getElementById("loadingOverlay");
+  const datePickerInput = document.getElementById("dateRangePicker");
+  const startDateFilter = document.getElementById("startDateFilter");
+  const endDateFilter = document.getElementById("endDateFilter");
 
   let violationChartInstance = null;
+
+  const datePicker = flatpickr(datePickerInput, {
+    mode: "range",
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "M j, Y",
+    onChange: function (selectedDates, dateStr, instance) {
+      if (selectedDates.length === 2) {
+        startDateFilter.value = instance.formatDate(selectedDates[0], "Y-m-d");
+        endDateFilter.value = instance.formatDate(selectedDates[1], "Y-m-d");
+      } else {
+        startDateFilter.value = "";
+        endDateFilter.value = "";
+      }
+      updateDashboard();
+    },
+  });
 
   const renderEmptyState = (containerId, message) => {
     const container = document.getElementById(containerId);
@@ -47,7 +66,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (violationChartInstance) violationChartInstance.destroy();
     document.getElementById("violationInsight").textContent = "";
 
-    const url = `security_dashboard.php?action=get_dashboard_data&course=${courseFilter.value}&year=${yearFilter.value}&period=${periodFilter.value}`;
+    const url = `security_dashboard.php?action=get_dashboard_data&course=${
+      courseFilter.value
+    }&year=${yearFilter.value}&start_date=${startDateFilter.value}&end_date=${
+      endDateFilter.value
+    }`;
 
     try {
       const response = await fetch(url);
@@ -84,8 +107,6 @@ document.addEventListener("DOMContentLoaded", () => {
                   backgroundColor: (c) =>
                     c.dataIndex === 0 ? "#FFC425" : "#BE123C",
                   borderRadius: 4,
-                  hoverBackgroundColor: (c) =>
-                    c.dataIndex === 0 ? "#FBBF24" : "#D63353",
                 },
               ],
             },
@@ -93,27 +114,8 @@ document.addEventListener("DOMContentLoaded", () => {
               indexAxis: "y",
               responsive: true,
               maintainAspectRatio: false,
-              animation: { duration: 1200, easing: "easeInOutQuart" },
-              onHover: (e, el) => {
-                e.native.target.style.cursor = el[0] ? "pointer" : "default";
-              },
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  backgroundColor: "#600000",
-                  padding: 10,
-                  cornerRadius: 5,
-                  displayColors: false,
-                  callbacks: {
-                    title: () => null,
-                    label: (c) => `${c.label}: ${c.raw}`,
-                  },
-                },
-              },
-              scales: {
-                x: { grid: { display: false }, ticks: { precision: 0 } },
-                y: { grid: { display: false } },
-              },
+              plugins: { legend: { display: false }, tooltip: { displayColors: false } },
+              scales: { x: { grid: { display: false }, ticks: { precision: 0 } }, y: { grid: { display: false } } },
             },
           }
         );
@@ -131,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  [courseFilter, yearFilter, periodFilter].forEach((filter) => {
+  [courseFilter, yearFilter].forEach((filter) => {
     filter.addEventListener("change", updateDashboard);
   });
 

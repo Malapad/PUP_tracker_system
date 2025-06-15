@@ -191,6 +191,16 @@ h1 {
   background-color: var(--pup-maroon-dark);
 }
 
+.filter-btn.report-btn {
+  background-color: #1d4ed8;
+  color: white;
+  border-color: #1d4ed8;
+}
+
+.filter-btn.report-btn:hover {
+  background-color: #1e40af;
+}
+
 .main-table-scroll-container {
   max-height: 70vh;
   overflow-y: auto;

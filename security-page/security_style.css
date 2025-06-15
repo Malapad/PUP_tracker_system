@@ -135,6 +135,8 @@ main {
   border-radius: 12px;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
+  flex-wrap: wrap; 
+  justify-content: flex-end;
 }
 .filter-group {
   display: flex;
@@ -150,8 +152,8 @@ main {
 .select-wrapper {
   position: relative;
 }
-.controls-container select {
-  padding: 8px 28px 8px 12px;
+.controls-container select, .date-range-wrapper {
+  padding: 8px 12px;
   border: 1px solid transparent;
   border-radius: 8px;
   font-family: var(--font-family);
@@ -162,10 +164,23 @@ main {
   cursor: pointer;
   transition: all 0.2s;
 }
-.controls-container select:hover {
+.date-range-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.date-range-wrapper input {
+    border: none;
+    background: transparent;
+    width: 160px;
+}
+.date-range-wrapper input:focus{
+    outline: none;
+}
+.controls-container select:hover, .date-range-wrapper:hover {
   border-color: #d1d5db;
 }
-.controls-container select:focus {
+.controls-container select:focus, .date-range-wrapper:focus-within {
   outline: none;
   border-color: var(--pup-maroon);
   box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
@@ -183,10 +198,9 @@ main {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr; /* Changed for single column layout */
+  justify-items: center; /* Center the chart card horizontally */
   gap: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
 }
 .chart-card {
   background-color: var(--secondary-bg);
@@ -194,12 +208,8 @@ main {
   border-radius: 16px;
   padding: 24px;
   box-shadow: var(--shadow-md);
-  transition: all 0.3s ease;
-}
-.chart-card:hover {
-  border-color: var(--pup-gold);
-  transform: translateY(-2px);
-  box-shadow: 0 7px 10px -3px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Make card take full width of grid column */
+  max-width: 1200px; /* Prevent chart from being excessively wide */
 }
 .chart-title {
   font-size: 1.25em;
@@ -253,5 +263,16 @@ main {
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1450px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .controls-container {
+    width: 100%;
+    justify-content: flex-start;
   }
 }

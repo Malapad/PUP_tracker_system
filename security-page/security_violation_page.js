@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const refreshBtn = document.getElementById("refreshBtn");
   const startDateInput = document.getElementById("startDateFilter");
   const endDateInput = document.getElementById("endDateFilter");
+  // ADD THIS LINE
+  const generateReportBtn = document.getElementById("generateReportBtn");
 
   const datePicker = flatpickr("#dateRangePicker", {
     mode: "range",
@@ -70,6 +72,26 @@ document.addEventListener("DOMContentLoaded", function () {
       startDateInput.value = "";
       endDateInput.value = "";
       updateTable();
+    });
+  }
+
+  // ADD THIS ENTIRE IF BLOCK
+  if (generateReportBtn) {
+    generateReportBtn.addEventListener("click", () => {
+      const course = document.getElementById("courseFilter").value;
+      const search = document.getElementById("searchFilter").value;
+      const startDate = startDateInput.value;
+      const endDate = endDateInput.value;
+
+      const url = `generate_violation_report.php?course_id=${encodeURIComponent(
+        course
+      )}&start_date=${encodeURIComponent(
+        startDate
+      )}&end_date=${encodeURIComponent(
+        endDate
+      )}&search=${encodeURIComponent(search)}`;
+      
+      window.open(url, '_blank');
     });
   }
 
@@ -150,23 +172,23 @@ document.addEventListener("DOMContentLoaded", function () {
         if (data.success && data.student) {
           const student = data.student;
           searchResultArea.innerHTML = `
-                        <div class="student-info-box">
-                            <p><strong>Number:</strong> ${
-                              student.student_number
-                            }</p>
-                            <p><strong>Name:</strong> ${
-                              student.first_name || ""
-                            } ${student.middle_name || ""} ${
+                          <div class="student-info-box">
+                              <p><strong>Number:</strong> ${
+                                student.student_number
+                              }</p>
+                              <p><strong>Name:</strong> ${
+                                student.first_name || ""
+                              } ${student.middle_name || ""} ${
             student.last_name || ""
           }</p>
-                            <p><strong>Course:</strong> ${
-                              student.course_name || "N/A"
-                            } - ${
+                              <p><strong>Course:</strong> ${
+                                student.course_name || "N/A"
+                              } - ${
             student.year || "N/A"
           } | <strong>Section:</strong> ${student.section_name || "N/A"}</p>
-                        </div>
-                        <button type="button" id="useThisStudentBtn" class="action-btn use-student-btn"><i class="fas fa-user-check"></i> Use This Student</button>
-                    `;
+                          </div>
+                          <button type="button" id="useThisStudentBtn" class="action-btn use-student-btn"><i class="fas fa-user-check"></i> Use This Student</button>
+                      `;
           document.getElementById("useThisStudentBtn").onclick = () => {
             confirmedInfoDiv.innerHTML =
               searchResultArea.querySelector(".student-info-box").innerHTML;

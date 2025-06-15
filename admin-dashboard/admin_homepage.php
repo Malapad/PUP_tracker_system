@@ -79,10 +79,12 @@ if (isset($_GET['action'])) {
         $response['error'] = "A fatal error occurred: " . $e->getMessage();
     }
     
-    $conn->close();
+    if (isset($conn)) $conn->close();
     echo json_encode($response);
     exit();
 }
+
+$currentPage = 'home'; 
 
 @require '../PHP/dbcon.php';
 $totalStudents = $conn->query("SELECT COUNT(*) as count FROM users_tbl")->fetch_assoc()['count'] ?? 0;
@@ -90,7 +92,6 @@ $totalViolations = $conn->query("SELECT COUNT(*) as count FROM violation_tbl")->
 $totalCourses = $conn->query("SELECT COUNT(*) as count FROM course_tbl")->fetch_assoc()['count'] ?? 0;
 $topViolationResult = $conn->query("SELECT vt.violation_type, COUNT(v.violation_id) as count FROM violation_tbl v JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id GROUP BY vt.violation_type ORDER BY count DESC LIMIT 1")->fetch_assoc();
 $topViolation = $topViolationResult['violation_type'] ?? 'N/A';
-$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -102,25 +103,14 @@ $conn->close();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./admin_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header class="main-header">
-         <div class="header-content">
-            <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
-            <nav class="main-nav">
-                <a href="admin_homepage.php" class="active-nav">Home</a>
-                <a href="../updated-admin-violation/admin_violation_page.php">Violations</a>
-                <a href="../updated-admin-sanction/admin_sanction.php">Student Sanction</a>
-                <a href="../user-management/user_management.php">User Management</a>
-                <a href="../PHP/admin_announcements.php">Announcements</a>
-            </nav>
-            <div class="user-icons">
-                <a href="notification.html" class="notification"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg></a>
-                <a href="../PHP/admin_account.php" class="admin-profile"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
-            </div>
-        </div>
-    </header>
+    
+<?php 
+require_once __DIR__ . '/../partials/admin_header.php'; 
+?>
 
 <main>
     <div class="admin-wrapper" id="dashboard-content">
@@ -180,5 +170,7 @@ $conn->close();
     </div>
 </main>
 <script src="./admin_scripts.js"></script>
+<script src="./admin_notifications.js"></script>
 </body>
 </html>
+<?php if(isset($conn)) $conn->close(); ?>

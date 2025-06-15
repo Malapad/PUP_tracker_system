@@ -23,39 +23,33 @@ if (isset($_GET['action'])) {
         if ($_GET['action'] == 'get_courses') {
             $sql = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name";
             $result = $conn->query($sql);
-            if (!$result) throw new Exception("Course query failed: " . $conn->error);
             $response['data'] = $result->fetch_all(MYSQLI_ASSOC);
         }
         
         if ($_GET['action'] == 'get_years') {
             $sql = "SELECT year_id, year FROM year_tbl ORDER BY year";
             $result = $conn->query($sql);
-            if (!$result) throw new Exception("Year query failed: " . $conn->error);
             $response['data'] = $result->fetch_all(MYSQLI_ASSOC);
         }
 
         if ($_GET['action'] == 'get_dashboard_data') {
             $courseFilter = isset($_GET['course']) && $_GET['course'] !== 'all' ? $_GET['course'] : null;
             $yearFilter = isset($_GET['year']) && $_GET['year'] !== 'all' ? $_GET['year'] : null;
-            $periodFilter = isset($_GET['period']) ? $_GET['period'] : 'all';
+            $startDate = isset($_GET['start_date']) && !empty($_GET['start_date']) ? $_GET['start_date'] : null;
+            $endDate = isset($_GET['end_date']) && !empty($_GET['end_date']) ? $_GET['end_date'] : null;
 
             $whereClauses = "";
             $params = [];
             $types = "";
+
             if ($courseFilter) { $whereClauses .= " AND u.course_id = ?"; $params[] = $courseFilter; $types .= "i"; }
             if ($yearFilter) { $whereClauses .= " AND u.year_id = ?"; $params[] = $yearFilter; $types .= "i"; }
+            if ($startDate) { $whereClauses .= " AND DATE(v.violation_date) >= ?"; $params[] = $startDate; $types .= "s"; }
+            if ($endDate) { $whereClauses .= " AND DATE(v.violation_date) <= ?"; $params[] = $endDate; $types .= "s"; }
             
-            $violationsQuery = "SELECT vt.violation_type, COUNT(v.violation_id) as count FROM violation_tbl v JOIN users_tbl u ON v.student_number = u.student_number JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id WHERE 1 {$whereClauses}";
-            switch ($periodFilter) {
-                case 'today': $violationsQuery .= " AND DATE(v.violation_date) = CURDATE()"; break;
-                case 'week': $violationsQuery .= " AND YEARWEEK(v.violation_date, 1) = YEARWEEK(CURDATE(), 1)"; break;
-                case 'month': $violationsQuery .= " AND MONTH(v.violation_date) = MONTH(CURDATE()) AND YEAR(v.violation_date) = YEAR(CURDATE())"; break;
-                case 'year': $violationsQuery .= " AND YEAR(v.violation_date) = YEAR(CURDATE())"; break;
-            }
-            $violationsQuery .= " GROUP BY vt.violation_type ORDER BY count DESC";
+            $violationsQuery = "SELECT vt.violation_type, COUNT(v.violation_id) as count FROM violation_tbl v JOIN users_tbl u ON v.student_number = u.student_number JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id WHERE 1 {$whereClauses} GROUP BY vt.violation_type ORDER BY count DESC";
             
             $stmt_violations = $conn->prepare($violationsQuery);
-            if (!$stmt_violations) throw new Exception("Violation query failed: " . $conn->error);
             if (!empty($params)) $stmt_violations->bind_param($types, ...$params);
             $stmt_violations->execute();
             $violationData = $stmt_violations->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -70,7 +64,7 @@ if (isset($_GET['action'])) {
         $response['error'] = "A fatal error occurred: " . $e->getMessage();
     }
     
-    $conn->close();
+    if ($conn) $conn->close();
     echo json_encode($response);
     exit();
 }
@@ -84,6 +78,8 @@ if (isset($_GET['action'])) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="./security_style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -120,8 +116,13 @@ if (isset($_GET['action'])) {
                     <div class="select-wrapper"><select id="yearFilter" name="yearFilter"><option value="all">All Years</option></select></div>
                 </div>
                 <div class="filter-group">
-                    <label for="datePeriod">Date:</label>
-                    <div class="select-wrapper"><select id="datePeriod" name="datePeriod"><option value="all">All Time</option><option value="today">Today</option><option value="week">This Week</option><option value="month">This Month</option><option value="year">This Year</option></select></div>
+                    <label>Date:</label>
+                    <div class="date-range-wrapper">
+                        <i class="fas fa-calendar-alt"></i>
+                        <input type="text" id="dateRangePicker" placeholder="Filter by Date Range">
+                    </div>
+                    <input type="hidden" id="startDateFilter">
+                    <input type="hidden" id="endDateFilter">
                 </div>
             </div>
         </div>
@@ -135,6 +136,7 @@ if (isset($_GET['action'])) {
         </div>
     </div>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="./security_scripts.js"></script>
 </body>
 </html>

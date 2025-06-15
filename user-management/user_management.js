@@ -11,6 +11,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const adminHistoryView = document.getElementById('admin-history-view');
     const toggleAdminHistoryBtn = document.getElementById('toggle-admin-history-btn');
     const backToAdminListBtn = document.getElementById('back-to-admin-list-btn');
+
+    const securityListView = document.getElementById('security-list-view');
+    const securityHistoryView = document.getElementById('security-history-view');
+    const toggleSecurityHistoryBtn = document.getElementById('toggle-security-history-btn');
+    const backToSecurityListBtn = document.getElementById('back-to-security-list-btn');
     
     const studentTable = document.getElementById("student-table");
     const addStudentModal = document.getElementById("add-student-modal");
@@ -27,6 +32,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const editAdminModal = document.getElementById("edit-admin-modal");
     const editAdminForm = document.getElementById("edit-admin-form");
     const refreshAdminListBtn = document.getElementById("refresh-admin-list-btn");
+
+    const securityTable = document.getElementById("security-table");
+    const addSecurityModal = document.getElementById("add-security-modal");
+    const openAddSecurityModalBtn = document.getElementById("open-add-security-modal-btn");
+    const addSecurityForm = document.getElementById("add-security-form");
+    const editSecurityModal = document.getElementById("edit-security-modal");
+    const editSecurityForm = document.getElementById("edit-security-form");
+    const refreshSecurityListBtn = document.getElementById("refresh-security-list-btn");
 
     const deleteConfirmModal = document.getElementById("delete-confirm-modal");
     const deleteItemTypePlaceholder = document.getElementById("delete-item-type-placeholder");
@@ -56,7 +69,6 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = window.location.pathname + '?tab=' + tabName;
     }
 
-
     tabs.forEach(tab => {
         tab.addEventListener("click", () => {
             const targetTab = tab.dataset.tab;
@@ -67,15 +79,21 @@ document.addEventListener("DOMContentLoaded", function () {
             
             const url = new URL(window.location);
             url.searchParams.set('tab', targetTab);
+            url.searchParams.delete('search');
+            url.searchParams.delete('admin_search');
+            url.searchParams.delete('security_search');
             window.history.pushState({}, '', url);
         });
     });
 
     const urlParams = new URLSearchParams(window.location.search);
-    const activeTabFromUrl = urlParams.get('tab');
-    if (activeTabFromUrl) {
-        const tabToActivate = document.querySelector(`.tab[data-tab="${activeTabFromUrl}"]`);
-        if (tabToActivate) tabToActivate.click();
+    const activeTabFromUrl = urlParams.get('tab') || 'students';
+    const tabToActivate = document.querySelector(`.tab[data-tab="${activeTabFromUrl}"]`);
+    if (tabToActivate) {
+        tabs.forEach(t => t.classList.remove("active"));
+        tabToActivate.classList.add("active");
+        tabContents.forEach(content => { content.classList.remove("active"); });
+        document.getElementById(`${activeTabFromUrl}-content`).classList.add("active");
     }
 
     if (toggleStudentHistoryBtn) {
@@ -103,6 +121,19 @@ document.addEventListener("DOMContentLoaded", function () {
             adminHistoryView.style.display = 'none';
         });
     }
+
+    if (toggleSecurityHistoryBtn) {
+        toggleSecurityHistoryBtn.addEventListener('click', () => {
+            securityListView.style.display = 'none';
+            securityHistoryView.style.display = 'block';
+        });
+    }
+    if (backToSecurityListBtn) {
+        backToSecurityListBtn.addEventListener('click', () => {
+            securityListView.style.display = 'block';
+            securityHistoryView.style.display = 'none';
+        });
+    }
     
     allCloseModalBtns.forEach(btn => {
         btn.addEventListener("click", () => closeModal(btn.closest(".modal")));
@@ -113,6 +144,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if(refreshStudentListBtn) refreshStudentListBtn.addEventListener("click", () => refreshPageForTab('students'));
     if(refreshAdminListBtn) refreshAdminListBtn.addEventListener("click", () => refreshPageForTab('admins'));
+    if(refreshSecurityListBtn) refreshSecurityListBtn.addEventListener("click", () => refreshPageForTab('security'));
 
     if (openAddStudentModalBtn) {
         openAddStudentModalBtn.addEventListener("click", () => {
@@ -126,11 +158,19 @@ document.addEventListener("DOMContentLoaded", function () {
             openModal(addAdminModal);
         });
     }
+    if (openAddSecurityModalBtn) {
+        openAddSecurityModalBtn.addEventListener("click", () => {
+            if (addSecurityForm) addSecurityForm.reset();
+            openModal(addSecurityModal);
+        });
+    }
     
     if (addStudentForm) { addStudentForm.addEventListener("submit", handleFormSubmit('add_student.php', 'students', addStudentModal)); }
     if (editStudentForm) { editStudentForm.addEventListener("submit", handleFormSubmit('edit_student.php', 'students', editStudentModal)); }
     if (addAdminForm) { addAdminForm.addEventListener("submit", handleFormSubmit('add_admin.php', 'admins', addAdminModal)); }
     if (editAdminForm) { editAdminForm.addEventListener("submit", handleFormSubmit('edit_admin.php', 'admins', editAdminModal)); }
+    if (addSecurityForm) { addSecurityForm.addEventListener("submit", handleFormSubmit('add_security.php', 'security', addSecurityModal)); }
+    if (editSecurityForm) { editSecurityForm.addEventListener("submit", handleFormSubmit('edit_security.php', 'security', editSecurityModal)); }
 
     function handleFormSubmit(url, tabToRefresh, modal) {
         return function(event) {
@@ -153,6 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if(studentTable) studentTable.addEventListener("click", handleTableClick);
     if(adminTable) adminTable.addEventListener("click", handleTableClick);
+    if(securityTable) securityTable.addEventListener("click", handleTableClick);
     
     function handleTableClick(e) {
         const editBtn = e.target.closest(".edit-btn");
@@ -183,6 +224,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 editAdminForm.querySelector("#edit-admin-password").value = ""; 
                 editAdminForm.querySelector("#edit-admin-status").value = admin.status_id;
                 openModal(editAdminModal);
+            } else if (editBtn.classList.contains('security-edit-btn')) {
+                const security = JSON.parse(editBtn.getAttribute("data-security"));
+                editSecurityForm.querySelector("#edit-security-id").value = security.security_id;
+                editSecurityForm.querySelector("#edit-security-first-name").value = security.first_name;
+                editSecurityForm.querySelector("#edit-security-middle-name").value = security.middle_name || "";
+                editSecurityForm.querySelector("#edit-security-last-name").value = security.last_name;
+                editSecurityForm.querySelector("#edit-security-position").value = security.position;
+                editSecurityForm.querySelector("#edit-security-email").value = security.email;
+                editSecurityForm.querySelector("#edit-security-password").value = ""; 
+                editSecurityForm.querySelector("#edit-security-status").value = security.status_id;
+                openModal(editSecurityModal);
             }
         } else if (deleteTriggerBtn) {
             itemToDeleteId = deleteTriggerBtn.dataset.id;
@@ -208,6 +260,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 formData.append('admin_id', itemToDeleteId);
                 url = './delete_admin.php';
                 tabToRefresh = 'admins';
+            } else if (itemTypeToDelete === 'security') {
+                formData.append('security_id', itemToDeleteId);
+                url = './delete_security.php';
+                tabToRefresh = 'security';
             }
             
             fetch(url, { method: 'POST', body: formData })
