@@ -1,5 +1,18 @@
 <?php
-include '../PHP/dbcon.php';
+include '../PHP/dbcon.php'; // Your database connection file
+
+// Re-fetch these results as they are used in modals as they were on the prior response
+$courseQuery = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name ASC";
+$courseResultPHP = mysqli_query($conn, $courseQuery);
+
+$yearQuery = "SELECT year_id, year FROM year_tbl ORDER BY year ASC";
+$yearResultPHP = mysqli_query($conn, $yearQuery);
+
+$sectionQuery = "SELECT section_id, section_name FROM section_tbl ORDER BY section_name ASC";
+$sectionResultPHP = mysqli_query($conn, $sectionQuery);
+
+$statusQuery = "SELECT status_id, status_name FROM status_tbl ORDER BY status_name ASC";
+$statusResultPHP = mysqli_query($conn, $statusQuery);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,7 +50,7 @@ include '../PHP/dbcon.php';
         </div>
 
         <div id="students-content" class="tab-content active">
-            
+
             <div id="student-list-view">
                 <div class="controls" id="student-controls">
                     <div class="main-controls-wrapper">
@@ -45,59 +58,47 @@ include '../PHP/dbcon.php';
                             <form method="GET" action="" id="student-filter-form">
                                 <input type="hidden" name="tab" value="students">
                                 <select name="course" onchange="this.form.submit()"><option value="">Select Course</option>
-                                    <?php 
-                                    if ($conn) { 
-                                        $courseQuery = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name ASC"; 
-                                        $courseResultPHP = mysqli_query($conn, $courseQuery); 
-                                        if ($courseResultPHP) { 
-                                            while ($row = mysqli_fetch_assoc($courseResultPHP)) { 
-                                                $selected = isset($_GET['course']) && $_GET['course'] == $row['course_id'] ? 'selected' : ''; 
-                                                echo "<option value='{$row['course_id']}' $selected>{$row['course_name']}</option>"; 
-                                            } 
-                                        } 
-                                    } 
+                                    <?php
+                                    if ($conn && $courseResultPHP) {
+                                        mysqli_data_seek($courseResultPHP, 0); // Reset pointer
+                                        while ($row = mysqli_fetch_assoc($courseResultPHP)) {
+                                            $selected = isset($_GET['course']) && $_GET['course'] == $row['course_id'] ? 'selected' : '';
+                                            echo "<option value='{$row['course_id']}' $selected>{$row['course_name']}</option>";
+                                        }
+                                    }
                                     ?>
                                 </select>
                                 <select name="year" onchange="this.form.submit()"><option value="">Select Year</option>
-                                    <?php 
-                                    if ($conn) { 
-                                        $yearQuery = "SELECT year_id, year FROM year_tbl ORDER BY year ASC"; 
-                                        $yearResultPHP = mysqli_query($conn, $yearQuery); 
-                                        if ($yearResultPHP) { 
-                                            while ($row = mysqli_fetch_assoc($yearResultPHP)) { 
-                                                $selected = isset($_GET['year']) && $_GET['year'] == $row['year_id'] ? 'selected' : ''; 
-                                                echo "<option value='{$row['year_id']}' $selected>{$row['year']}</option>"; 
-                                            } 
-                                        } 
-                                    } 
+                                    <?php
+                                    if ($conn && $yearResultPHP) {
+                                        mysqli_data_seek($yearResultPHP, 0); // Reset pointer
+                                        while ($row = mysqli_fetch_assoc($yearResultPHP)) {
+                                            $selected = isset($_GET['year']) && $_GET['year'] == $row['year_id'] ? 'selected' : '';
+                                            echo "<option value='{$row['year_id']}' $selected>{$row['year']}</option>";
+                                        }
+                                    }
                                     ?>
                                 </select>
                                 <select name="section" onchange="this.form.submit()"><option value="">Select Section</option>
-                                    <?php 
-                                    if ($conn) { 
-                                        $sectionQuery = "SELECT section_id, section_name FROM section_tbl ORDER BY section_name ASC"; 
-                                        $sectionResultPHP = mysqli_query($conn, $sectionQuery); 
-                                        if ($sectionResultPHP) { 
-                                            while ($row = mysqli_fetch_assoc($sectionResultPHP)) { 
-                                                $selected = isset($_GET['section']) && $_GET['section'] == $row['section_id'] ? 'selected' : ''; 
-                                                echo "<option value='{$row['section_id']}' $selected>{$row['section_name']}</option>"; 
-                                            } 
-                                        } 
-                                    } 
+                                    <?php
+                                    if ($conn && $sectionResultPHP) {
+                                        mysqli_data_seek($sectionResultPHP, 0); // Reset pointer
+                                        while ($row = mysqli_fetch_assoc($sectionResultPHP)) {
+                                            $selected = isset($_GET['section']) && $_GET['section'] == $row['section_id'] ? 'selected' : '';
+                                            echo "<option value='{$row['section_id']}' $selected>{$row['section_name']}</option>";
+                                        }
+                                    }
                                     ?>
                                 </select>
                                 <select name="status" onchange="this.form.submit()"><option value="">Select Status</option>
-                                    <?php 
-                                    if ($conn) { 
-                                        $statusQuery = "SELECT status_id, status_name FROM status_tbl ORDER BY status_name ASC"; 
-                                        $statusResultPHP = mysqli_query($conn, $statusQuery); 
-                                        if ($statusResultPHP) { 
-                                            while ($row = mysqli_fetch_assoc($statusResultPHP)) { 
-                                                $selected = isset($_GET['status']) && $_GET['status'] == $row['status_id'] ? 'selected' : ''; 
-                                                echo "<option value='{$row['status_id']}' $selected>{$row['status_name']}</option>"; 
-                                            } 
-                                        } 
-                                    } 
+                                    <?php
+                                    if ($conn && $statusResultPHP) {
+                                        mysqli_data_seek($statusResultPHP, 0); // Reset pointer
+                                        while ($row = mysqli_fetch_assoc($statusResultPHP)) {
+                                            $selected = isset($_GET['status']) && $_GET['status'] == $row['status_id'] ? 'selected' : '';
+                                            echo "<option value='{$row['status_id']}' $selected>{$row['status_name']}</option>";
+                                        }
+                                    }
                                     ?>
                                 </select>
                                 <div class="search-field-group">
@@ -110,6 +111,7 @@ include '../PHP/dbcon.php';
                             <button type="button" id="toggle-student-history-btn" class="secondary-button"><i class="fas fa-history"></i> View History</button>
                             <button type="button" id="refresh-student-list-btn" class="refresh-button"><i class="fas fa-sync-alt"></i> Refresh List</button>
                             <button type="button" id="open-add-student-modal-btn" class="add-user-button"><i class="fas fa-plus"></i> Add Student</button>
+                            <button type="button" id="open-import-student-modal-btn" class="add-user-button"><i class="fas fa-upload"></i> Import CSV</button>
                         </div>
                     </div>
                 </div>
@@ -183,6 +185,7 @@ include '../PHP/dbcon.php';
                             <button type="button" id="toggle-admin-history-btn" class="secondary-button"><i class="fas fa-history"></i> View History</button>
                             <button type="button" id="refresh-admin-list-btn" class="refresh-button"><i class="fas fa-sync-alt"></i> Refresh List</button>
                             <button type="button" id="open-add-admin-modal-btn" class="add-user-button"><i class="fas fa-plus"></i> Add Admin</button>
+                            <button type="button" id="open-import-admin-modal-btn" class="add-user-button"><i class="fas fa-upload"></i> Import CSV</button>
                         </div>
                     </div>
                 </div>
@@ -232,12 +235,61 @@ include '../PHP/dbcon.php';
             </div>
         </div>
     </div>
-    
+
     <div id="edit-student-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Student</h3><form id="edit-student-form"><input type="hidden" id="original-student-number" name="original_student_number"><div><label>Student Number:</label><input type="text" id="edit-student-number" name="student_number" required></div><div><label>First Name:</label><input type="text" id="edit-student-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-student-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-student-last-name" name="last_name" required></div><div><label>Email:</label><input type="email" id="edit-student-email" name="email" required></div><div><label>Course:</label><select id="edit-student-course" name="course_id" required><option value="">Select Course</option><?php if (isset($courseResultPHP) && $courseResultPHP) { mysqli_data_seek($courseResultPHP, 0); while ($row = mysqli_fetch_assoc($courseResultPHP)) { echo "<option value='{$row['course_id']}'>{$row['course_name']}</option>"; } } ?></select></div><div><label>Year:</label><select id="edit-student-year" name="year_id" required><option value="">Select Year</option><?php if (isset($yearResultPHP) && $yearResultPHP) { mysqli_data_seek($yearResultPHP, 0); while ($row = mysqli_fetch_assoc($yearResultPHP)) { echo "<option value='{$row['year_id']}'>{$row['year']}</option>"; } } ?></select></div><div><label>Section:</label><select id="edit-student-section" name="section_id" required><option value="">Select Section</option><?php if (isset($sectionResultPHP) && $sectionResultPHP) { mysqli_data_seek($sectionResultPHP, 0); while ($row = mysqli_fetch_assoc($sectionResultPHP)) { echo "<option value='{$row['section_id']}'>{$row['section_name']}</option>"; } } ?></select></div><div><label>Status:</label><select id="edit-student-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP) && $statusResultPHP) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Student</button></form></div></div>
     <div id="add-student-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Student</h3><form id="add-student-form"><div><label>Student Number:</label><input type="text" name="student_number" required></div><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Email:</label><input type="email" name="email" required></div><div><label>Course:</label><select name="course_id" required><option value="">Select Course</option><?php if (isset($courseResultPHP) && $courseResultPHP) { mysqli_data_seek($courseResultPHP, 0); while ($row = mysqli_fetch_assoc($courseResultPHP)) { echo "<option value='{$row['course_id']}'>{$row['course_name']}</option>"; } } ?></select></div><div><label>Year:</label><select name="year_id" required><option value="">Select Year</option><?php if (isset($yearResultPHP) && $yearResultPHP) { mysqli_data_seek($yearResultPHP, 0); while ($row = mysqli_fetch_assoc($yearResultPHP)) { echo "<option value='{$row['year_id']}'>{$row['year']}</option>"; } } ?></select></div><div><label>Section:</label><select name="section_id" required><option value="">Select Section</option><?php if (isset($sectionResultPHP) && $sectionResultPHP) { mysqli_data_seek($sectionResultPHP, 0); while ($row = mysqli_fetch_assoc($sectionResultPHP)) { echo "<option value='{$row['section_id']}'>{$row['section_name']}</option>"; } } ?></select></div><div><label>Status:</label><select name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP) && $statusResultPHP) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-plus"></i> Add Student</button></form></div></div>
     <div id="add-admin-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Admin</h3><form id="add-admin-form"><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Position:</label><input type="text" name="position" required></div><div><label>Email (will be used as Username):</label><input type="email" name="email" required></div><button type="submit"><i class="fas fa-plus"></i> Add Admin</button></form></div></div>
     <div id="edit-admin-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Admin</h3><form id="edit-admin-form"><input type="hidden" id="edit-admin-id" name="admin_id"><div><label>First Name:</label><input type="text" id="edit-admin-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-admin-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-admin-last-name" name="last_name" required></div><div><label>Position:</label><input type="text" id="edit-admin-position" name="position" required></div><div><label>Email:</label><input type="email" id="edit-admin-email" name="email" required></div><div><label>New Password:</label><input type="password" id="edit-admin-password" name="password" placeholder="Leave blank to keep current password"></div><div><label>Status:</label><select id="edit-admin-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP)) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Admin</button></form></div></div>
     <div id="delete-confirm-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h3><p id="delete-confirm-text">Are you sure you want to delete <span id="delete-item-type-placeholder"></span>: <strong id="delete-item-identifier-placeholder"></strong>?</p><div class="delete-confirm-actions"><button type="button" id="confirm-delete-action-btn" class="delete-btn"><i class="fas fa-trash-alt"></i> Confirm Delete</button><button type="button" id="cancel-delete-action-btn" class="edit-btn"><i class="fas fa-times"></i> Cancel</button></div></div></div>
+
+    <div id="import-student-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Import Students from CSV</h3>
+            <p><strong>CSV File Format Requirements:</strong></p>
+            <ul>
+                <li>The first row must be a header row.</li>
+                <li>Required columns (case-insensitive, exact match):
+                    `Student Number`, `First Name`, `Middle Name`, `Last Name`, `Email`, `Course Name`, `Year`, `Section Name`, `Gender Name`
+                </li>
+                <li>Make sure Course Name, Year, Section Name, and Gender Name values exist in their respective lookup tables (`course_tbl`, `year_tbl`, `section_tbl`, `gender_tbl`).</li>
+                <li>Missing `Middle Name` is allowed (can be empty).</li>
+                <li>All imported students will automatically be set to 'Active' status.</li>
+                <li>Password will be automatically generated.</li>
+            </ul>
+            <form id="import-student-form" enctype="multipart/form-data">
+                <div>
+                    <label for="csv-file-student">Upload CSV File:</label>
+                    <input type="file" id="csv-file-student" name="csv_file" accept=".csv" required>
+                </div>
+                <button type="submit"><i class="fas fa-file-import"></i> Import Students</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="import-admin-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Import Admins from CSV</h3>
+            <p><strong>CSV File Format Requirements:</strong></p>
+            <ul>
+                <li>The first row must be a header row.</li>
+                <li>Required columns (case-insensitive, exact match):
+                    `First Name`, `Middle Name`, `Last Name`, `Position`, `Email`
+                </li>
+                <li>All imported admins will automatically be set to 'Active' status.</li>
+                <li>Password will be automatically generated.</li>
+            </ul>
+            <form id="import-admin-form" enctype="multipart/form-data">
+                <div>
+                    <label for="csv-file-admin">Upload CSV File:</label>
+                    <input type="file" id="csv-file-admin" name="csv_file" accept=".csv" required>
+                </div>
+                <button type="submit"><i class="fas fa-file-import"></i> Import Admins</button>
+            </form>
+        </div>
+    </div>
+
     <div id="custom-toast-notification" class="toast-notification"><span id="toast-notification-message"></span></div>
 </main>
     <script src="./user_management.js"></script>

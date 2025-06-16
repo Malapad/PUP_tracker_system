@@ -34,7 +34,7 @@ main {
     padding: 25px;
     border-radius: 8px;
     width: 100%;
-    max-width: 1752px; 
+    max-width: 1752px;
     margin: 0 auto;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
@@ -68,8 +68,8 @@ h1 {
     transition: all 0.3s ease;
 }
 
-.tabs .tab:hover { 
-    background-color: #e2e2e2; 
+.tabs .tab:hover {
+    background-color: #e2e2e2;
 }
 
 .tab.active {
@@ -84,7 +84,7 @@ h1 {
 .tab-content.active {
     display: block;
 }
- 
+
 .controls {
     display: flex;
     flex-direction: column;
@@ -263,12 +263,12 @@ thead th {
     border-bottom: 1px solid #eee;
 }
 
-tbody tr:nth-of-type(even) { 
-    background-color: #f9f9f9; 
+tbody tr:nth-of-type(even) {
+    background-color: #f9f9f9;
 }
 
-tbody tr:hover { 
-    background-color: #e9e9e9; 
+tbody tr:hover {
+    background-color: #e9e9e9;
 }
 
 .status-badge {
@@ -353,7 +353,7 @@ tbody tr:hover {
     padding: 25px 30px;
     border: 1px solid #888;
     width: 90%;
-    max-width: 700px;
+    max-width: 700px; /* Kept consistent with other forms */
     border-radius: 8px;
     position: relative;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
@@ -380,33 +380,43 @@ tbody tr:hover {
     text-align: center;
 }
 
+/* Common styling for all forms within modals */
 #edit-student-form,
 #add-student-form,
 #edit-admin-form,
-#add-admin-form {
+#add-admin-form,
+#import-student-form, /* Added for import forms */
+#import-admin-form {   /* Added for import forms */
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
+/* Common styling for form input groups */
 #edit-student-form div,
 #add-student-form div,
 #edit-admin-form div,
-#add-admin-form div {
+#add-admin-form div,
+#import-student-form div, /* Added for import forms */
+#import-admin-form div {   /* Added for import forms */
     display: flex;
     flex-direction: column;
     gap: 5px;
 }
 
+/* Common styling for labels */
 #edit-student-form label,
 #add-student-form label,
 #edit-admin-form label,
-#add-admin-form label {
+#add-admin-form label,
+#import-student-form label, /* Added for import forms */
+#import-admin-form label {   /* Added for import forms */
     font-weight: bold;
     font-size: 0.9em;
     color: #444;
 }
 
+/* Common styling for inputs and selects */
 #edit-student-form input[type="text"],
 #edit-student-form input[type="email"],
 #edit-student-form select,
@@ -418,19 +428,60 @@ tbody tr:hover {
 #edit-admin-form input[type="password"],
 #edit-admin-form select,
 #add-admin-form input[type="text"],
-#add-admin-form input[type="email"] {
+#add-admin-form input[type="email"],
+#import-student-form input[type="file"], /* Specific for file inputs */
+#import-admin-form input[type="file"] {   /* Specific for file inputs */
     width: 100%;
     padding: 8px 12px;
     font-size: 1em;
     border: 1px solid var(--light-gray-border);
     border-radius: 4px;
     height: 40px;
+    /* For file inputs, adjust line-height if height: 40px causes issues */
+    line-height: normal; /* Override if a specific height makes text misaligned for file input */
 }
 
+/* Adjust styling for file input specifically */
+#import-student-form input[type="file"],
+#import-admin-form input[type="file"] {
+    padding-top: 5px; /* Adjust padding for better alignment of file input text */
+    padding-bottom: 5px;
+    height: auto; /* Allow height to adjust naturally for file input */
+}
+
+/* Style for the instruction lists within modals */
+.modal-content ul {
+    list-style-type: disc; /* Use disk bullet points */
+    margin-left: 20px; /* Indent the list */
+    margin-bottom: 15px; /* Space after the list */
+    color: #555;
+    font-size: 0.9em;
+    line-height: 1.6;
+}
+
+.modal-content ul li {
+    margin-bottom: 5px;
+}
+
+.modal-content p {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 0.95em;
+    color: #333;
+}
+
+.modal-content p strong {
+    color: var(--primary-color); /* Highlight important text */
+}
+
+
+/* Common styling for submit buttons within modals */
 #edit-student-form button[type="submit"],
 #add-student-form button[type="submit"],
 #edit-admin-form button[type="submit"],
-#add-admin-form button[type="submit"] {
+#add-admin-form button[type="submit"],
+#import-student-form button[type="submit"], /* Added for import forms */
+#import-admin-form button[type="submit"] {   /* Added for import forms */
     align-self: flex-end;
     margin-top: 10px;
     width: auto;
@@ -442,7 +493,9 @@ tbody tr:hover {
 #edit-student-form button[type="submit"]:hover,
 #add-student-form button[type="submit"]:hover,
 #edit-admin-form button[type="submit"]:hover,
-#add-admin-form button[type="submit"]:hover {
+#add-admin-form button[type="submit"]:hover,
+#import-student-form button[type="submit"]:hover, /* Added for import forms */
+#import-admin-form button[type="submit"]:hover {   /* Added for import forms */
     background-color: var(--primary-hover-color);
 }
 
@@ -484,4 +537,88 @@ tbody tr:hover {
     justify-content: center;
     gap: 15px;
     margin-top: 20px;
+}
+
+/* Responsive adjustments for controls */
+@media (max-width: 992px) {
+    .main-controls-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px; /* Increase gap for better separation */
+    }
+    .left-control-group, .right-control-group {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 10px; /* Adjust gap within groups */
+    }
+    #student-filter-form, #admin-filter-form {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 10px;
+    }
+    #student-filter-form select, #admin-filter-form select,
+    .search-field-group {
+        width: 100%;
+        min-width: unset;
+    }
+    .search-field-group input[type="text"] {
+        flex-grow: 1;
+    }
+    .search-button {
+        flex-shrink: 0;
+        width: 45px; /* Keep button fixed width */
+    }
+    button {
+        width: 100%; /* Make buttons full width in smaller screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    h1 {
+        font-size: 1.5em;
+    }
+    .tab {
+        padding: 8px 15px;
+        font-size: 0.9em;
+    }
+    #student-table th, #student-table td,
+    #admin-table th, #admin-table td,
+    #student-history-table th, #student-history-table td,
+    #admin-history-table th, #admin-history-table td {
+        font-size: 0.8em;
+    }
+    .edit-btn, .delete-btn {
+        padding: 4px 8px !important;
+        font-size: 0.7em !important;
+    }
+    .modal-content {
+        padding: 20px 25px;
+        width: 95%;
+    }
+    .modal-content h3 {
+        font-size: 1.2em;
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    main {
+        padding: 10px;
+    }
+    .tabs {
+        flex-wrap: wrap;
+    }
+    .tab {
+        flex-basis: 48%; /* Adjust for two tabs per row */
+        text-align: center;
+        margin-bottom: 5px;
+    }
+    .left-control-group button, .right-control-group button {
+        margin-bottom: 5px;
+    }
 }
