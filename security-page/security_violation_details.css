@@ -1,18 +1,25 @@
 body {
-    background-color: #f8f9fa;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f9fafb;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    color: #212529;
+}
+
+.page-container {
+  position: relative;
+  overflow-x: hidden;
 }
 
 .main-header {
     background: #ffffff;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     height: 70px;
     padding: 0 24px;
     position: sticky;
     top: 0;
     z-index: 1050;
     width: 100%;
-    font-family: "Inter", sans-serif;
+    box-sizing: border-box;
 }
 .header-content {
     display: flex;
@@ -31,6 +38,9 @@ body {
 .main-nav a.active-nav::after { content: ""; position: absolute; bottom: -24px; left: 0; width: 100%; height: 3px; background-color: #800000; }
 .header-icon { width: 28px; height: 28px; fill: #6b7280; cursor: pointer; transition: fill 0.2s; }
 .header-icon:hover { fill: #1f2937; }
+.menu-toggle, .close-btn, .side-menu, .overlay {
+    display: none;
+}
 
 .details-container {
     width: 95%;
@@ -43,6 +53,8 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .page-header .page-title {
@@ -64,6 +76,7 @@ body {
     font-size: 1.75rem;
     font-weight: 700;
     color: #800000;
+    margin-top: 0;
     margin-bottom: 0.5rem;
 }
 
@@ -127,21 +140,35 @@ body {
     border-bottom: 1px solid #e9ecef;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 0;
+    cursor: default;
+}
+
+.section-title .title-text {
+    display: flex;
+    align-items: center;
     gap: 0.75rem;
 }
 
-.section-title i {
+.section-title .title-text i {
     color: #800000;
+}
+.section-title .toggle-icon {
+    display: none;
+    transition: transform 0.3s ease;
 }
 
 .table-responsive-wrapper {
     overflow-x: auto;
+    display: block;
 }
 
 .details-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
+    table-layout: auto;
 }
 
 .details-table th, .details-table td {
@@ -155,20 +182,6 @@ body {
     hyphens: auto;
 }
 
-.summary-table th:nth-child(1) { width: 15%; }
-.summary-table th:nth-child(2) { width: 18%; }
-.summary-table th:nth-child(3) { width: 12%; }
-.summary-table th:nth-child(4) { width: 10%; }
-.summary-table th:nth-child(5) { width: 20%; }
-.summary-table th:nth-child(6) { width: 25%; }
-
-.table-log th:nth-child(1) { width: 15%; }
-.table-log th:nth-child(2) { width: 18%; }
-.table-log th:nth-child(3) { width: 18%; }
-.table-log th:nth-child(4) { width: 24%; }
-.table-log th:nth-child(5) { width: 15%; }
-.table-log th:nth-child(6) { width: 10%; }
-
 .details-table td:first-child {
     font-weight: 500;
     color: #212529;
@@ -178,7 +191,7 @@ body {
     font-weight: 600;
     font-size: 0.75rem;
     color: #6c757d;
-    background-color: #ffffff;
+    background-color: #f8f9fa;
     border-bottom: 2px solid #e9ecef;
     text-transform: uppercase;
     letter-spacing: 0.75px;
@@ -250,7 +263,7 @@ body {
 }
 
 .back-button:hover {
-    background-color: #ab2323;
+    background-color: #600000;
     text-decoration: none;
 }
 
@@ -273,28 +286,170 @@ tr[class*="category-"] td:first-child {
     padding-left: calc(1rem - 4px);
 }
 
+@media (max-width: 992px) {
+    .main-nav, .user-icons {
+        display: none;
+    }
+    .menu-toggle {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 22px;
+        cursor: pointer;
+        color: #6b7280;
+    }
+    .header-content .logo {
+        flex-grow: 1;
+    }
+    .side-menu {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 280px;
+        height: 100%;
+        background: #ffffff;
+        z-index: 2000;
+        transform: translateX(280px);
+        transition: transform 0.4s ease;
+        padding: 20px 0;
+        border-left: 1px solid #dee2e6;
+    }
+    .menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px 20px 20px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .menu-logo {
+        height: 40px;
+    }
+    .close-btn {
+        display: block;
+        font-size: 24px;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+    .side-menu .menu-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 10px;
+    }
+    .nav-item {
+        padding: 15px 20px;
+        text-decoration: none;
+        color: #212529;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .nav-item i {
+        width: 20px;
+    }
+    .nav-item.active,
+    .nav-item:hover {
+        background-color: #f9fafb;
+        color: #800000;
+    }
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 1500;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.4s ease, visibility 0s 0.4s;
+    }
+    .page-container.menu-open .side-menu {
+        transform: translateX(0);
+    }
+    .page-container.menu-open .overlay {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.4s ease;
+    }
+}
 
 @media (max-width: 768px) {
+    .section-title {
+        cursor: pointer;
+    }
+    .section-title .toggle-icon {
+        display: inline-block;
+    }
+    .section-title.active .toggle-icon {
+        transform: rotate(180deg);
+    }
+    .section-title.active {
+        border-bottom-color: transparent;
+    }
+
+    .content-card .table-responsive-wrapper {
+        display: none;
+        padding: 0.5rem 1rem 1rem 1rem;
+    }
+    .content-card .section-title.active + .table-responsive-wrapper {
+        display: block;
+    }
+
+    .details-container {
+        width: auto;
+        padding: 0 1rem;
+        margin: 1.5rem auto;
+    }
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .back-button {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+    }
+    .student-info-block .student-name {
+        font-size: 1.5rem;
+    }
+    .details-pills {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .details-pills span {
+        width: 100%;
+        box-sizing: border-box;
+    }
     .details-table thead {
         display: none;
     }
     .details-table, .details-table tbody, .details-table tr, .details-table td {
         display: block;
         width: 100%;
+        box-sizing: border-box;
     }
     .details-table tr {
         margin-bottom: 1rem;
         border: 1px solid #e9ecef;
         border-radius: 8px;
         overflow: hidden;
-        border-left: 4px solid transparent;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .details-table tr[class*="category-"] {
+        border-left-width: 5px;
     }
     .details-table td {
         display: flex;
         justify-content: space-between;
         align-items: center;
         text-align: right;
-        padding-left: 1rem;
+        padding: 0.75rem 1rem;
         border-bottom: 1px solid #f1f3f5;
     }
     .details-table tr td:last-child {
@@ -302,9 +457,25 @@ tr[class*="category-"] td:first-child {
     }
     .details-table td::before {
         content: attr(data-label);
-        font-weight: bold;
+        font-weight: 600;
         text-align: left;
         margin-right: 1rem;
-        color: #343a40;
+        color: #495057;
+        flex-shrink: 0;
+    }
+    .details-table td[data-label="Sanction"],
+    .details-table td[data-label="Remarks"] {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .details-table td[data-label="Sanction"]::before,
+    .details-table td[data-label="Remarks"]::before {
+        margin-bottom: 0.25rem;
+    }
+    .details-table td[data-label="Sanction"] span,
+    .details-table td[data-label="Remarks"] span {
+        align-self: flex-start;
+        text-align: left;
     }
 }
