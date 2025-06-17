@@ -1,9 +1,100 @@
 document.addEventListener("DOMContentLoaded", function () {
+  let currentPage = 1;
+
+  const pageContainer = document.getElementById("pageContainer");
+  const openMenuBtn = document.getElementById("openMenuBtn");
+  const closeMenuBtn = document.getElementById("closeMenuBtn");
+  const overlay = document.getElementById("overlay");
   const filterForm = document.getElementById("filter-form");
   const violationTableBody = document.getElementById("violationTableBody");
   const refreshBtn = document.getElementById("refreshBtn");
   const startDateInput = document.getElementById("startDateFilter");
   const endDateInput = document.getElementById("endDateFilter");
+  const generateReportBtn = document.getElementById("generateReportBtn");
+  const paginationContainer = document.getElementById("paginationContainer");
+  const toggleFilterBtn = document.getElementById('toggleFilterBtn');
+  const filterContainer = document.getElementById('filterContainer');
+  const fabAddViolation = document.getElementById('fabAddViolation');
+
+  const renderPagination = (paginationData) => {
+    const { currentPage, totalPages } = paginationData;
+    paginationContainer.innerHTML = "";
+
+    if (totalPages <= 1) return;
+
+    let paginationHTML = '<nav><ul class="pagination">';
+
+    paginationHTML += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+        <a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>
+    </li>`;
+
+    for (let i = 1; i <= totalPages; i++) {
+        paginationHTML += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+            <a class="page-link" href="#" data-page="${i}">${i}</a>
+        </li>`;
+    }
+
+    paginationHTML += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+        <a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>
+    </li>`;
+
+    paginationHTML += '</ul></nav>';
+    paginationContainer.innerHTML = paginationHTML;
+  };
+
+  const updateTable = (page = 1) => {
+    currentPage = page;
+    const formData = new FormData(filterForm);
+    formData.append("action", "filter_violations");
+    formData.append("page", currentPage);
+
+    violationTableBody.innerHTML =
+      '<tr><td colspan="8" class="no-records-cell" style="text-align:center;"><i class="fas fa-spinner fa-spin fa-2x"></i></td></tr>';
+
+    fetch("security_violation_page.php", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          violationTableBody.innerHTML = data.html;
+          renderPagination(data.pagination);
+        } else {
+          violationTableBody.innerHTML =
+            '<tr><td colspan="8" class="no-records-cell">Error loading data.</td></tr>';
+          paginationContainer.innerHTML = "";
+        }
+      })
+      .catch((error) => {
+        violationTableBody.innerHTML =
+          '<tr><td colspan="8" class="no-records-cell">Request failed. Please try again.</td></tr>';
+        paginationContainer.innerHTML = "";
+      });
+  };
+
+  if (toggleFilterBtn && filterContainer) {
+    toggleFilterBtn.addEventListener('click', () => {
+        toggleFilterBtn.classList.toggle('active');
+        filterContainer.classList.toggle('active');
+    });
+  }
+
+  if (openMenuBtn) {
+    openMenuBtn.addEventListener("click", () =>
+      pageContainer.classList.add("menu-open")
+    );
+  }
+  if (closeMenuBtn) {
+    closeMenuBtn.addEventListener("click", () =>
+      pageContainer.classList.remove("menu-open")
+    );
+  }
+  if (overlay) {
+    overlay.addEventListener("click", () =>
+      pageContainer.classList.remove("menu-open")
+    );
+  }
 
   const datePicker = flatpickr("#dateRangePicker", {
     mode: "range",
@@ -18,47 +109,21 @@ document.addEventListener("DOMContentLoaded", function () {
         startDateInput.value = "";
         endDateInput.value = "";
       }
-      updateTable();
+      updateTable(1);
     },
   });
-
-  const updateTable = () => {
-    const formData = new FormData(filterForm);
-    formData.append("action", "filter_violations");
-
-    violationTableBody.innerHTML =
-      '<tr><td colspan="8" class="no-records-cell" style="text-align:center;"><i class="fas fa-spinner fa-spin fa-2x"></i></td></tr>';
-
-    fetch("security_violation_page.php", {
-      method: "POST",
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          violationTableBody.innerHTML = data.html;
-        } else {
-          violationTableBody.innerHTML =
-            '<tr><td colspan="8" class="no-records-cell">Error loading data.</td></tr>';
-        }
-      })
-      .catch((error) => {
-        violationTableBody.innerHTML =
-          '<tr><td colspan="8" class="no-records-cell">Request failed. Please try again.</td></tr>';
-      });
-  };
 
   let debounceTimer;
   const debounceUpdateTable = () => {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(updateTable, 500);
+    debounceTimer = setTimeout(() => updateTable(1), 500);
   };
 
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => e.preventDefault());
     document
       .getElementById("courseFilter")
-      .addEventListener("change", updateTable);
+      .addEventListener("change", () => updateTable(1));
     document
       .getElementById("searchFilter")
       .addEventListener("input", debounceUpdateTable);
@@ -69,14 +134,47 @@ document.addEventListener("DOMContentLoaded", function () {
       datePicker.clear();
       startDateInput.value = "";
       endDateInput.value = "";
-      updateTable();
+      updateTable(1);
+    });
+  }
+
+  if (paginationContainer) {
+    paginationContainer.addEventListener('click', e => {
+        e.preventDefault();
+        const link = e.target.closest('.page-link');
+        if (link) {
+            const page = parseInt(link.dataset.page);
+            const parentLi = link.parentElement;
+            if (page && !parentLi.classList.contains('disabled') && !parentLi.classList.contains('active')) {
+                 updateTable(page);
+            }
+        }
+    });
+  }
+
+  if (generateReportBtn) {
+    generateReportBtn.addEventListener("click", () => {
+      const course = document.getElementById("courseFilter").value;
+      const search = document.getElementById("searchFilter").value;
+      const startDate = startDateInput.value;
+      const endDate = endDateInput.value;
+
+      const url = `generate_violation_report.php?course_id=${encodeURIComponent(
+        course
+      )}&start_date=${encodeURIComponent(
+        startDate
+      )}&end_date=${encodeURIComponent(
+        endDate
+      )}&search=${encodeURIComponent(search)}`;
+
+      window.open(url, "_blank");
     });
   }
 
   const addViolationBtn = document.getElementById("addViolationBtn");
   const modalOverlay = document.getElementById("violationModal");
 
-  if (addViolationBtn && modalOverlay) {
+  if (modalOverlay) {
     const closeModalBtn = document.getElementById("closeModalBtn");
     const cancelFormBtn = document.getElementById("cancelFormBtn");
     const searchStep = document.getElementById("searchStep");
@@ -96,6 +194,13 @@ document.addEventListener("DOMContentLoaded", function () {
       modalOverlay.classList.add("active");
       resetModal();
     };
+
+    if (addViolationBtn) {
+        addViolationBtn.addEventListener("click", openModal);
+    }
+    if (fabAddViolation) {
+        fabAddViolation.addEventListener('click', openModal);
+    }
 
     const closeModal = () => {
       modalOverlay.classList.remove("active");
@@ -150,23 +255,23 @@ document.addEventListener("DOMContentLoaded", function () {
         if (data.success && data.student) {
           const student = data.student;
           searchResultArea.innerHTML = `
-                        <div class="student-info-box">
-                            <p><strong>Number:</strong> ${
-                              student.student_number
-                            }</p>
-                            <p><strong>Name:</strong> ${
-                              student.first_name || ""
-                            } ${student.middle_name || ""} ${
+                                <div class="student-info-box">
+                                    <p><strong>Number:</strong> ${
+                                      student.student_number
+                                    }</p>
+                                    <p><strong>Name:</strong> ${
+                                      student.first_name || ""
+                                    } ${student.middle_name || ""} ${
             student.last_name || ""
           }</p>
-                            <p><strong>Course:</strong> ${
-                              student.course_name || "N/A"
-                            } - ${
+                                    <p><strong>Course:</strong> ${
+                                      student.course_name || "N/A"
+                                    } - ${
             student.year || "N/A"
           } | <strong>Section:</strong> ${student.section_name || "N/A"}</p>
-                        </div>
-                        <button type="button" id="useThisStudentBtn" class="action-btn use-student-btn"><i class="fas fa-user-check"></i> Use This Student</button>
-                    `;
+                                </div>
+                                <button type="button" id="useThisStudentBtn" class="action-btn use-student-btn"><i class="fas fa-user-check"></i> Use This Student</button>
+                            `;
           document.getElementById("useThisStudentBtn").onclick = () => {
             confirmedInfoDiv.innerHTML =
               searchResultArea.querySelector(".student-info-box").innerHTML;
@@ -237,7 +342,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (data.success) {
           showToast(data.message, "success");
           closeModal();
-          updateTable();
+          updateTable(currentPage);
         } else {
           showModalMessage(data.message || "An error occurred.");
         }
@@ -249,7 +354,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     };
 
-    addViolationBtn.addEventListener("click", openModal);
     closeModalBtn.addEventListener("click", closeModal);
     cancelFormBtn.addEventListener("click", closeModal);
     modalOverlay.addEventListener("click", (e) => {
@@ -269,8 +373,9 @@ document.addEventListener("DOMContentLoaded", function () {
     violationForm.addEventListener("submit", submitViolationForm);
   }
 
-  if (violationTableBody) {
-    violationTableBody.addEventListener("click", function (e) {
+  const tableContainer = document.querySelector(".main-table-scroll-container");
+  if (tableContainer) {
+    tableContainer.addEventListener("click", function (e) {
       const summaryRow = e.target.closest(".student-summary-row");
       if (summaryRow) {
         summaryRow.classList.toggle("expanded");
@@ -292,4 +397,6 @@ document.addEventListener("DOMContentLoaded", function () {
       toast.classList.remove("show");
     }, duration);
   }
+
+  updateTable(1);
 });

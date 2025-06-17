@@ -3,19 +3,22 @@ session_start();
 include '../PHP/dbcon.php';
 
 $errors = [];
-$security_number_display = "";
+$email_display = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
-    if (isset($_POST['security_number'])) {
-        $security_number_display = htmlspecialchars($_POST['security_number']);
+    if (isset($_POST['email'])) {
+        $email_display = htmlspecialchars($_POST['email']);
     }
 
-    $security_number_for_query = trim($_POST['security_number']);
+    $email_for_query = trim($_POST['email']);
     $password_posted = $_POST['password'];
 
-    if (empty($security_number_for_query)) {
-        $errors['security_number_input'] = "Security Number is required!";
+    if (empty($email_for_query)) {
+        $errors['email_input'] = "Email Address is required!";
+    } elseif (!filter_var($email_for_query, FILTER_VALIDATE_EMAIL)) {
+        $errors['email_input'] = "Invalid email format!";
     }
+    
     if (empty($password_posted)) {
         $errors['password_input'] = "Password is required!";
     }
@@ -24,13 +27,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
         if (!$conn) {
             $errors['db_error'] = "Database connection failed.";
         } else {
-            $query = "SELECT s.id, s.security_number, s.password, si.firstname 
+            $query = "SELECT s.id, s.email, s.password, si.firstname 
                       FROM security s 
                       LEFT JOIN security_info si ON s.id = si.security_id 
-                      WHERE s.security_number = ?";
+                      WHERE s.email = ?";
             
             if ($stmt = $conn->prepare($query)) {
-                $stmt->bind_param("s", $security_number_for_query);
+                $stmt->bind_param("s", $email_for_query);
                 $stmt->execute();
                 $result = $stmt->get_result();
 
@@ -39,18 +42,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
                     
                     if (password_verify($password_posted, $security_account['password'])) {
                         $_SESSION['security_id'] = $security_account['id'];
-                        $_SESSION['security_number'] = $security_account['security_number'];
+                        $_SESSION['security_email'] = $security_account['email'];
                         $_SESSION['security_first_name'] = $security_account['firstname'];
                         
                         $stmt->close();
                         $conn->close();
-                        header("Location: ../security/security_dashboard.php");
+                        // FIX: Corrected the redirect path below
+                        header("Location: ../security-page/security_dashboard.php");
                         exit;
                     } else {
                         $errors['login_error'] = "Incorrect password! Please try again.";
                     }
                 } else {
-                    $errors['login_error'] = "Security Number not found.";
+                    $errors['login_error'] = "Email Address not found.";
                 }
                 $stmt->close();
             } else {
@@ -59,7 +63,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
         }
     }
 }
-if ($conn) {
+
+// Close connection if it's still open
+if ($conn && $conn->ping()) {
     mysqli_close($conn);
 }
 ?>
@@ -89,9 +95,9 @@ if ($conn) {
                 <?php endif; ?>
                 
                 <div class="input-group">
-                    <input type="text" name="security_number" placeholder="Security Number" value="<?php echo htmlspecialchars($security_number_display); ?>" required>
-                    <?php if (!empty($errors['security_number_input'])): ?>
-                        <span class="error-message"><?php echo $errors['security_number_input']; ?></span>
+                    <input type="email" name="email" placeholder="Email Address" value="<?php echo htmlspecialchars($email_display); ?>" required>
+                    <?php if (!empty($errors['email_input'])): ?>
+                        <span class="error-message"><?php echo $errors['email_input']; ?></span>
                     <?php endif; ?>
                 </div>
                 <div class="input-group">
@@ -99,6 +105,9 @@ if ($conn) {
                     <?php if (!empty($errors['password_input'])): ?>
                         <span class="error-message"><?php echo $errors['password_input']; ?></span>
                     <?php endif; ?>
+                </div>
+                <div class="forgot-password-link">
+                    <a href="security_request_password_reset.php">Forgot Password?</a>
                 </div>
                 <button type="submit" name="login" class="login-btn">Log In</button>
                 <p class="signup-text" style="margin-top: 15px; text-align: center;">
