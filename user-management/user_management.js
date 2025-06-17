@@ -12,6 +12,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const toggleAdminHistoryBtn = document.getElementById('toggle-admin-history-btn');
     const backToAdminListBtn = document.getElementById('back-to-admin-list-btn');
 
+    const securityListView = document.getElementById('security-list-view');
+    const securityHistoryView = document.getElementById('security-history-view');
+    const toggleSecurityHistoryBtn = document.getElementById('toggle-security-history-btn');
+    const backToSecurityListBtn = document.getElementById('back-to-security-list-btn');
+
+
     const studentTable = document.getElementById("student-table");
     const addStudentModal = document.getElementById("add-student-modal");
     const openAddStudentModalBtn = document.getElementById("open-add-student-modal-btn");
@@ -37,6 +43,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const importAdminModal = document.getElementById("import-admin-modal");
     const openImportAdminModalBtn = document.getElementById("open-import-admin-modal-btn");
     const importAdminForm = document.getElementById("import-admin-form");
+
+    const securityTable = document.getElementById("security-table");
+    const addSecurityModal = document.getElementById("add-security-modal");
+    const openAddSecurityModalBtn = document.getElementById("open-add-security-modal-btn");
+    const addSecurityForm = document.getElementById("add-security-form");
+    const editSecurityModal = document.getElementById("edit-security-modal");
+    const editSecurityForm = document.getElementById("edit-security-form");
+    const refreshSecurityListBtn = document.getElementById("refresh-security-list-btn");
+
+    // New elements for security CSV import
+    const importSecurityModal = document.getElementById("import-security-modal");
+    const openImportSecurityModalBtn = document.getElementById("open-import-security-modal-btn");
+    const importSecurityForm = document.getElementById("import-security-form");
 
 
     const deleteConfirmModal = document.getElementById("delete-confirm-modal");
@@ -94,6 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById(`${activeTabFromUrl}-content`).classList.add("active");
     }
 
+    // History View Toggles
     if (toggleStudentHistoryBtn) {
         toggleStudentHistoryBtn.addEventListener('click', () => {
             studentListView.style.display = 'none';
@@ -120,6 +140,20 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    if (toggleSecurityHistoryBtn) {
+        toggleSecurityHistoryBtn.addEventListener('click', () => {
+            securityListView.style.display = 'none';
+            securityHistoryView.style.display = 'block';
+        });
+    }
+    if (backToSecurityListBtn) {
+        backToSecurityListBtn.addEventListener('click', () => {
+            securityListView.style.display = 'block';
+            securityHistoryView.style.display = 'none';
+        });
+    }
+
+    // Close Modals
     allCloseModalBtns.forEach(btn => {
         btn.addEventListener("click", () => closeModal(btn.closest(".modal")));
     });
@@ -127,40 +161,52 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.target.classList.contains("modal")) closeModal(event.target);
     });
 
+    // Refresh Buttons
     if(refreshStudentListBtn) refreshStudentListBtn.addEventListener("click", () => refreshPageForTab('students'));
     if(refreshAdminListBtn) refreshAdminListBtn.addEventListener("click", () => refreshPageForTab('admins'));
     if(refreshSecurityListBtn) refreshSecurityListBtn.addEventListener("click", () => refreshPageForTab('security'));
 
+    // Open Add Modals
     if (openAddStudentModalBtn) {
         openAddStudentModalBtn.addEventListener("click", () => {
             if (addStudentForm) addStudentForm.reset();
             openModal(addStudentModal);
         });
     }
-
-    // Event listener for opening the student CSV import modal
-    if (openImportStudentModalBtn) {
-        openImportStudentModalBtn.addEventListener("click", () => {
-            if (importStudentForm) importStudentForm.reset(); // Clear previous file selection
-            openModal(importStudentModal);
-        });
-    }
-
     if (openAddAdminModalBtn) {
         openAddAdminModalBtn.addEventListener("click", () => {
             if (addAdminForm) addAdminForm.reset();
             openModal(addAdminModal);
         });
     }
-
-    // Event listener for opening the admin CSV import modal
-    if (openImportAdminModalBtn) {
-        openImportAdminModalBtn.addEventListener("click", () => {
-            if (importAdminForm) importAdminForm.reset(); // Clear previous file selection
-            openModal(importAdminModal);
+    if (openAddSecurityModalBtn) {
+        openAddSecurityModalBtn.addEventListener("click", () => {
+            if (addSecurityForm) addSecurityForm.reset();
+            openModal(addSecurityModal);
         });
     }
 
+    // Open Import Modals
+    if (openImportStudentModalBtn) {
+        openImportStudentModalBtn.addEventListener("click", () => {
+            if (importStudentForm) importStudentForm.reset();
+            openModal(importStudentModal);
+        });
+    }
+    if (openImportAdminModalBtn) {
+        openImportAdminModalBtn.addEventListener("click", () => {
+            if (importAdminForm) importAdminForm.reset();
+            openModal(importAdminModal);
+        });
+    }
+    if (openImportSecurityModalBtn) {
+        openImportSecurityModalBtn.addEventListener("click", () => {
+            if (importSecurityForm) importSecurityForm.reset();
+            openModal(importSecurityModal);
+        });
+    }
+
+    // Form Submissions (Add/Edit)
     if (addStudentForm) { addStudentForm.addEventListener("submit", handleFormSubmit('add_student.php', 'students', addStudentModal)); }
     if (editStudentForm) { editStudentForm.addEventListener("submit", handleFormSubmit('edit_student.php', 'students', editStudentModal)); }
     if (addAdminForm) { addAdminForm.addEventListener("submit", handleFormSubmit('add_admin.php', 'admins', addAdminModal)); }
@@ -168,17 +214,16 @@ document.addEventListener("DOMContentLoaded", function () {
     if (addSecurityForm) { addSecurityForm.addEventListener("submit", handleFormSubmit('add_security.php', 'security', addSecurityModal)); }
     if (editSecurityForm) { editSecurityForm.addEventListener("submit", handleFormSubmit('edit_security.php', 'security', editSecurityModal)); }
 
-    // Event listener for the student CSV import form
+    // Form Submissions (Import)
     if (importStudentForm) { importStudentForm.addEventListener("submit", handleFormSubmit('import_students.php', 'students', importStudentModal)); }
-
-    // Event listener for the admin CSV import form
     if (importAdminForm) { importAdminForm.addEventListener("submit", handleFormSubmit('import_admins.php', 'admins', importAdminModal)); }
+    if (importSecurityForm) { importSecurityForm.addEventListener("submit", handleFormSubmit('import_security.php', 'security', importSecurityModal)); }
 
 
     function handleFormSubmit(url, tabToRefresh, modal) {
         return function(event) {
             event.preventDefault();
-            const formData = new FormData(event.target); // FormData handles file inputs automatically
+            const formData = new FormData(event.target);
             fetch(url, { method: 'POST', body: formData })
             .then(response => response.json())
             .then(data => {
@@ -196,6 +241,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if(studentTable) studentTable.addEventListener("click", handleTableClick);
     if(adminTable) adminTable.addEventListener("click", handleTableClick);
+    if(securityTable) securityTable.addEventListener("click", handleTableClick); // Added for security table
     function handleTableClick(e) {
         const editBtn = e.target.closest(".edit-btn");
         const deleteTriggerBtn = e.target.closest(".delete-btn");

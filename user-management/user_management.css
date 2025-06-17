@@ -226,6 +226,21 @@ button i {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* New: Import Button Style */
+.import-button {
+    background-color: #28a745; /* A distinct color for import, e.g., green */
+    color: white;
+    border: 1px solid #28a745;
+}
+
+.import-button:hover {
+    background-color: #218838; /* Darker green on hover */
+    border-color: #1e7e34;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -412,7 +427,11 @@ tbody tr:hover {
 #edit-admin-form,
 #add-admin-form,
 #edit-security-form,
-#add-security-form {
+#add-security-form,
+/* Added new import forms */
+#import-student-form,
+#import-admin-form,
+#import-security-form {
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -424,7 +443,11 @@ tbody tr:hover {
 #edit-admin-form div,
 #add-admin-form div,
 #edit-security-form div,
-#add-security-form div {
+#add-security-form div,
+/* Added new import forms */
+#import-student-form div,
+#import-admin-form div,
+#import-security-form div {
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -436,7 +459,11 @@ tbody tr:hover {
 #edit-admin-form label,
 #add-admin-form label,
 #edit-security-form label,
-#add-security-form label {
+#add-security-form label,
+/* Added new import forms */
+#import-student-form label,
+#import-admin-form label,
+#import-security-form label {
   font-weight: bold;
   font-size: 0.9em;
   color: #444;
@@ -471,7 +498,8 @@ tbody tr:hover {
 
 /* Adjust styling for file input specifically */
 #import-student-form input[type="file"],
-#import-admin-form input[type="file"] {
+#import-admin-form input[type="file"],
+#import-security-form input[type="file"] {
     padding-top: 5px; /* Adjust padding for better alignment of file input text */
     padding-bottom: 5px;
     height: auto; /* Allow height to adjust naturally for file input */
@@ -509,7 +537,11 @@ tbody tr:hover {
 #edit-admin-form button[type="submit"],
 #add-admin-form button[type="submit"],
 #edit-security-form button[type="submit"],
-#add-security-form button[type="submit"] {
+#add-security-form button[type="submit"],
+/* Added new import forms */
+#import-student-form button[type="submit"],
+#import-admin-form button[type="submit"],
+#import-security-form button[type="submit"] {
   align-self: flex-end;
   margin-top: 10px;
   width: auto;
@@ -523,7 +555,11 @@ tbody tr:hover {
 #edit-admin-form button[type="submit"]:hover,
 #add-admin-form button[type="submit"]:hover,
 #edit-security-form button[type="submit"]:hover,
-#add-security-form button[type="submit"]:hover {
+#add-security-form button[type="submit"]:hover,
+/* Added new import forms */
+#import-student-form button[type="submit"]:hover,
+#import-admin-form button[type="submit"]:hover,
+#import-security-form button[type="submit"]:hover {
   background-color: var(--primary-hover-color);
 }
 

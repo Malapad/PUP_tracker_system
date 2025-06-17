@@ -108,6 +108,7 @@ include '../PHP/dbcon.php';
                             </form>
                         </div>
                         <div class="right-control-group">
+                            <button type="button" id="open-import-student-modal-btn" class="secondary-button import-button"><i class="fas fa-file-import"></i> Import Students</button>
                             <button type="button" id="toggle-student-history-btn" class="secondary-button"><i class="fas fa-history"></i> View History</button>
                             <button type="button" id="refresh-student-list-btn" class="refresh-button"><i class="fas fa-sync-alt"></i> Refresh List</button>
                             <button type="button" id="open-add-student-modal-btn" class="add-user-button"><i class="fas fa-plus"></i> Add Student</button>
@@ -181,6 +182,7 @@ include '../PHP/dbcon.php';
                            </form>
                         </div>
                         <div class="right-control-group">
+                            <button type="button" id="open-import-admin-modal-btn" class="secondary-button import-button"><i class="fas fa-file-import"></i> Import Admins</button>
                             <button type="button" id="toggle-admin-history-btn" class="secondary-button"><i class="fas fa-history"></i> View History</button>
                             <button type="button" id="refresh-admin-list-btn" class="refresh-button"><i class="fas fa-sync-alt"></i> Refresh List</button>
                             <button type="button" id="open-add-admin-modal-btn" class="add-user-button"><i class="fas fa-plus"></i> Add Admin</button>
@@ -247,6 +249,7 @@ include '../PHP/dbcon.php';
                            </form>
                         </div>
                         <div class="right-control-group">
+                            <button type="button" id="open-import-security-modal-btn" class="secondary-button import-button"><i class="fas fa-file-import"></i> Import Security</button>
                             <button type="button" id="toggle-security-history-btn" class="secondary-button"><i class="fas fa-history"></i> View History</button>
                             <button type="button" id="refresh-security-list-btn" class="refresh-button"><i class="fas fa-sync-alt"></i> Refresh List</button>
                             <button type="button" id="open-add-security-modal-btn" class="add-user-button"><i class="fas fa-plus"></i> Add Security</button>
@@ -303,11 +306,86 @@ include '../PHP/dbcon.php';
     <div id="edit-student-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Student</h3><form id="edit-student-form"><input type="hidden" id="original-student-number" name="original_student_number"><div><label>Student Number:</label><input type="text" id="edit-student-number" name="student_number" required></div><div><label>First Name:</label><input type="text" id="edit-student-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-student-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-student-last-name" name="last_name" required></div><div><label>Email:</label><input type="email" id="edit-student-email" name="email" required></div><div><label>Course:</label><select id="edit-student-course" name="course_id" required><option value="">Select Course</option><?php if (isset($courseResultPHP) && $courseResultPHP) { mysqli_data_seek($courseResultPHP, 0); while ($row = mysqli_fetch_assoc($courseResultPHP)) { echo "<option value='{$row['course_id']}'>{$row['course_name']}</option>"; } } ?></select></div><div><label>Year:</label><select id="edit-student-year" name="year_id" required><option value="">Select Year</option><?php if (isset($yearResultPHP) && $yearResultPHP) { mysqli_data_seek($yearResultPHP, 0); while ($row = mysqli_fetch_assoc($yearResultPHP)) { echo "<option value='{$row['year_id']}'>{$row['year']}</option>"; } } ?></select></div><div><label>Section:</label><select id="edit-student-section" name="section_id" required><option value="">Select Section</option><?php if (isset($sectionResultPHP) && $sectionResultPHP) { mysqli_data_seek($sectionResultPHP, 0); while ($row = mysqli_fetch_assoc($sectionResultPHP)) { echo "<option value='{$row['section_id']}'>{$row['section_name']}</option>"; } } ?></select></div><div><label>Status:</label><select id="edit-student-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP) && $statusResultPHP) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Student</button></form></div></div>
     <div id="add-student-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Student</h3><form id="add-student-form"><div><label>Student Number:</label><input type="text" name="student_number" required></div><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Email:</label><input type="email" name="email" required></div><div><label>Course:</label><select name="course_id" required><option value="">Select Course</option><?php if (isset($courseResultPHP) && $courseResultPHP) { mysqli_data_seek($courseResultPHP, 0); while ($row = mysqli_fetch_assoc($courseResultPHP)) { echo "<option value='{$row['course_id']}'>{$row['course_name']}</option>"; } } ?></select></div><div><label>Year:</label><select name="year_id" required><option value="">Select Year</option><?php if (isset($yearResultPHP) && $yearResultPHP) { mysqli_data_seek($yearResultPHP, 0); while ($row = mysqli_fetch_assoc($yearResultPHP)) { echo "<option value='{$row['year_id']}'>{$row['year']}</option>"; } } ?></select></div><div><label>Section:</label><select name="section_id" required><option value="">Select Section</option><?php if (isset($sectionResultPHP) && $sectionResultPHP) { mysqli_data_seek($sectionResultPHP, 0); while ($row = mysqli_fetch_assoc($sectionResultPHP)) { echo "<option value='{$row['section_id']}'>{$row['section_name']}</option>"; } } ?></select></div><div><label>Status:</label><select name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP) && $statusResultPHP) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-plus"></i> Add Student</button></form></div></div>
     
-    <div id="add-admin-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Admin</h3><form id="add-admin-form"><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Position:</label><input type="text" name="position" required></div><div><label>Email (will be used as Username):</label><input type="email" name="email" required></div><button type="submit"><i class="fas fa-plus"></i> Add Admin</button></form></div></div>
+    <div id="add-admin-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Admin</h3><form id="add-admin-form"><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Email (will be used as Username):</label><input type="email" name="email" required></div><button type="submit"><i class="fas fa-plus"></i> Add Admin</button></form></div></div>
     <div id="edit-admin-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Admin</h3><form id="edit-admin-form"><input type="hidden" id="edit-admin-id" name="admin_id"><div><label>First Name:</label><input type="text" id="edit-admin-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-admin-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-admin-last-name" name="last_name" required></div><div><label>Position:</label><input type="text" id="edit-admin-position" name="position" required></div><div><label>Email:</label><input type="email" id="edit-admin-email" name="email" required></div><div><label>New Password:</label><input type="password" id="edit-admin-password" name="password" placeholder="Leave blank to keep current password"></div><div><label>Status:</label><select id="edit-admin-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP)) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Admin</button></form></div></div>
     
-    <div id="add-security-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Security</h3><form id="add-security-form"><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Position:</label><input type="text" name="position" required value="Security Guard"></div><div><label>Email (will be used as Username):</label><input type="email" name="email" required></div><button type="submit"><i class="fas fa-plus"></i> Add Security</button></form></div></div>
+    <div id="add-security-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Security</h3><form id="add-security-form"><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Email (will be used as Username):</label><input type="email" name="email" required></div><button type="submit"><i class="fas fa-plus"></i> Add Security</button></form></div></div>
     <div id="edit-security-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Security</h3><form id="edit-security-form"><input type="hidden" id="edit-security-id" name="security_id"><div><label>First Name:</label><input type="text" id="edit-security-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-security-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-security-last-name" name="last_name" required></div><div><label>Position:</label><input type="text" id="edit-security-position" name="position" required></div><div><label>Email:</label><input type="email" id="edit-security-email" name="email" required></div><div><label>New Password:</label><input type="password" id="edit-security-password" name="password" placeholder="Leave blank to keep current password"></div><div><label>Status:</label><select id="edit-security-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP)) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Security</button></form></div></div>
+
+    <div id="import-student-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Import Students from CSV</h3>
+            <p>Please upload a CSV file with student data. The CSV should contain a header row with the following columns:</p>
+            <ul>
+                <li><strong><code>student_number</code></strong> (e.g., `2022-00205-TG-0`)</li>
+                <li><strong><code>first_name</code></strong></li>
+                <li><strong><code>middle_name</code></strong> (optional)</li>
+                <li><strong><code>last_name</code></strong></li>
+                <li><strong><code>email</code></strong> (must be unique)</li>
+                <li><strong><code>course_id</code></strong> (numerical ID, e.g., 1 for DIT)</li>
+                <li><strong><code>year_id</code></strong> (numerical ID, e.g., 3 for 3rd year)</li>
+                <li><strong><code>section_id</code></strong> (numerical ID, e.g., 1 for Section 1)</li>
+                <li><strong><code>gender_id</code></strong> (numerical ID, e.g., 1 for Male, 2 for Female)</li>
+                <li><strong><code>password</code></strong> (plain-text password; will be hashed)</li>
+            </ul>
+            <p>All imported students will be set to <strong>'Active' status</strong> and <strong>'Student' role</strong> automatically.</p>
+            <form id="import-student-form" enctype="multipart/form-data">
+                <div>
+                    <label for="student_csv_file">Upload CSV File:</label>
+                    <input type="file" id="student_csv_file" name="csv_file" accept=".csv" required>
+                </div>
+                <button type="submit"><i class="fas fa-upload"></i> Import Students</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="import-admin-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Import Admins from CSV</h3>
+            <p>Please upload a CSV file with admin data. The CSV should contain a header row with the following columns:</p>
+            <ul>
+                <li><strong><code>email</code></strong> (will be used as username and email; must be unique)</li>
+                <li><strong><code>password</code></strong> (plain-text password; will be hashed)</li>
+                <li><strong><code>first_name</code></strong></li>
+                <li><strong><code>middle_name</code></strong> (optional)</li>
+                <li><strong><code>last_name</code></strong></li>
+            </ul>
+            <p>All imported admins will be set to <strong>'Active' status</strong> and <strong>'Admin' position/role</strong> automatically.</p>
+            <form id="import-admin-form" enctype="multipart/form-data">
+                <div>
+                    <label for="admin_csv_file">Upload CSV File:</label>
+                    <input type="file" id="admin_csv_file" name="csv_file" accept=".csv" required>
+                </div>
+                <button type="submit"><i class="fas fa-upload"></i> Import Admins</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="import-security-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Import Security Personnel from CSV</h3>
+            <p>Please upload a CSV file with security data. The CSV should contain a header row with the following columns:</p>
+            <ul>
+                <li><strong><code>email</code></strong> (will be used as username and email; must be unique)</li>
+                <li><strong><code>password</code></strong> (plain-text password; will be hashed)</li>
+                <li><strong><code>first_name</code></strong></li>
+                <li><strong><code>middle_name</code></strong> (optional)</li>
+                <li><strong><code>last_name</code></strong></li>
+            </ul>
+            <p>All imported security personnel will be set to <strong>'Active' status</strong> and <strong>'Security Guard' position/role</strong> automatically.</p>
+            <form id="import-security-form" enctype="multipart/form-data">
+                <div>
+                    <label for="security_csv_file">Upload CSV File:</label>
+                    <input type="file" id="security_csv_file" name="csv_file" accept=".csv" required>
+                </div>
+                <button type="submit"><i class="fas fa-upload"></i> Import Security</button>
+            </form>
+        </div>
+    </div>
+
 
     <div id="delete-confirm-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h3><p id="delete-confirm-text">Are you sure you want to delete <span id="delete-item-type-placeholder"></span>: <strong id="delete-item-identifier-placeholder"></strong>?</p><div class="delete-confirm-actions"><button type="button" id="confirm-delete-action-btn" class="delete-btn"><i class="fas fa-trash-alt"></i> Confirm Delete</button><button type="button" id="cancel-delete-action-btn" class="edit-btn"><i class="fas fa-times"></i> Cancel</button></div></div></div>
     <div id="custom-toast-notification" class="toast-notification"><span id="toast-notification-message"></span></div>
