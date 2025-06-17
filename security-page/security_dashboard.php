@@ -84,59 +84,87 @@ if (isset($_GET['action'])) {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header class="main-header">
-        <div class="header-content">
-            <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
-            <nav class="main-nav">
-                <a href="security_dashboard.php" class="active-nav">Dashboard</a>
-                <a href="security_violation_page.php">Violations</a>
+    <div class="page-container" id="pageContainer">
+        <aside class="side-menu">
+            <div class="menu-header">
+                <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo" class="menu-logo">
+                <button class="close-btn" id="closeMenuBtn">&times;</button>
+            </div>
+            <nav class="menu-nav">
+                <a href="security_dashboard.php" class="nav-item active"><i class="fas fa-chart-bar"></i> Dashboard</a>
+                <a href="security_violation_page.php" class="nav-item"><i class="fas fa-exclamation-triangle"></i> Violations</a>
+                <a href="security_account.php" class="nav-item"><i class="fas fa-user-shield"></i> My Account</a>
+                <a href="../PHP/logout.php" class="nav-item"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </nav>
-            <div class="user-icons">
-                <a href="notification.html" class="notification"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg></a>
-                <a href="security_account.php" class="admin-profile"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
-            </div>
-        </div>
-    </header>
+        </aside>
 
-<main>
-    <div class="admin-wrapper" id="dashboard-content">
-        <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
-        <div class="dashboard-header">
-            <div>
-                <h1 class="page-main-title">Security Dashboard</h1>
-                <p class="page-subtitle"><?php echo getGreeting(); ?></p>
-            </div>
-            <div class="controls-container">
-                <div class="filter-group">
-                    <label for="courseFilter">Course:</label>
-                    <div class="select-wrapper"><select id="courseFilter" name="courseFilter"><option value="all">All Courses</option></select></div>
-                </div>
-                <div class="filter-group">
-                    <label for="yearFilter">Year:</label>
-                    <div class="select-wrapper"><select id="yearFilter" name="yearFilter"><option value="all">All Years</option></select></div>
-                </div>
-                <div class="filter-group">
-                    <label>Date:</label>
-                    <div class="date-range-wrapper">
-                        <i class="fas fa-calendar-alt"></i>
-                        <input type="text" id="dateRangePicker" placeholder="Filter by Date Range">
+        <div class="page-wrapper" id="pageWrapper">
+            <header class="main-header">
+                <div class="header-content">
+                    <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
+                    <nav class="main-nav">
+                        <a href="security_dashboard.php" class="active-nav">Dashboard</a>
+                        <a href="security_violation_page.php">Violations</a>
+                    </nav>
+                    <div class="user-icons">
+                        <a href="notification.html" class="notification"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg></a>
+                        <a href="security_account.php" class="admin-profile"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
                     </div>
-                    <input type="hidden" id="startDateFilter">
-                    <input type="hidden" id="endDateFilter">
+                    <button class="menu-toggle" id="openMenuBtn"><i class="fas fa-bars"></i></button>
                 </div>
-            </div>
-        </div>
+            </header>
 
-        <div class="dashboard-grid">
-            <div class="chart-card">
-                <h2 class="chart-title">Violations Summary</h2>
-                <p class="chart-insight" id="violationInsight"></p>
-                <div class="chart-body" id="violationChartContainer"><canvas id="violationChart"></canvas></div>
-            </div>
+            <main>
+                <div class="admin-wrapper" id="dashboard-content">
+                    <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+                    <div class="dashboard-header">
+                        <div class="header-text">
+                            <h1 class="page-main-title">Security Dashboard</h1>
+                            <p class="page-subtitle"><?php echo getGreeting(); ?></p>
+                        </div>
+                         <div class="filters-accordion">
+                            <button id="filtersToggleBtn" class="filters-toggle-btn">
+                                <i class="fas fa-filter"></i>
+                                <span>Filter Dashboard</span>
+                                <i class="fas fa-chevron-down arrow-icon"></i>
+                            </button>
+                            <div class="controls-container" id="filtersContainer">
+                                <div class="filter-group">
+                                    <label for="courseFilter">Course:</label>
+                                    <div class="select-wrapper"><select id="courseFilter" name="courseFilter"><option value="all">All Courses</option></select></div>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="yearFilter">Year:</label>
+                                    <div class="select-wrapper"><select id="yearFilter" name="yearFilter"><option value="all">All Years</option></select></div>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="dateRangePicker">Date Range:</label>
+                                    <div class="date-range-wrapper">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <input type="text" id="dateRangePicker" placeholder="Select Date Range">
+                                    </div>
+                                    <input type="hidden" id="startDateFilter">
+                                    <input type="hidden" id="endDateFilter">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h2 class="chart-title">Violations Summary</h2>
+                                <p class="chart-insight" id="violationInsight"></p>
+                            </div>
+                            <div class="chart-body" id="violationChartContainer"><canvas id="violationChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
+        <div class="overlay" id="overlay"></div>
     </div>
-</main>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="./security_scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="./security_scripts.js"></script>
 </body>
 </html>

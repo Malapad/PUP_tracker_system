@@ -1,5 +1,4 @@
 <?php
-// ADD THESE TWO LINES AT THE VERY TOP
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -65,11 +64,13 @@ if (isset($_REQUEST['action']) && !isset($_REQUEST['generate_pdf'])) {
             }
         }
     } elseif ($_SERVER["REQUEST_METHOD"] == "POST" && $_REQUEST['action'] == 'filter_violations') {
-        ob_start();
-        generate_violation_table_body($conn);
-        $response['html'] = ob_get_clean();
+        $page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
+        list($html, $pagination_data) = generate_violation_table_body($conn, $page);
+        
         $response['success'] = true;
         $response['message'] = 'Table updated.';
+        $response['html'] = $html;
+        $response['pagination'] = $pagination_data;
     }
 
 
@@ -90,19 +91,11 @@ function getIconForCategory($categoryName) {
     }
 }
 
-function generate_violation_table_body($conn) {
+function generate_violation_table_body($conn, $page = 1, $limit = 15) {
     $search = isset($_POST['search']) ? trim($_POST['search']) : '';
     $course = isset($_POST['course_id']) ? $_POST['course_id'] : '';
     $startDate = isset($_POST['start_date']) ? $_POST['start_date'] : '';
     $endDate = isset($_POST['end_date']) ? $_POST['end_date'] : '';
-
-    $sql_students = "SELECT DISTINCT u.student_number, u.first_name, u.middle_name, u.last_name, 
-                                     c.course_name, y.year, s.section_name 
-                       FROM users_tbl u
-                       JOIN violation_tbl v ON u.student_number = v.student_number
-                       LEFT JOIN course_tbl c ON u.course_id = c.course_id
-                       LEFT JOIN year_tbl y ON u.year_id = y.year_id
-                       LEFT JOIN section_tbl s ON u.section_id = s.section_id";
 
     $where = [];
     $params = [];
@@ -129,16 +122,48 @@ function generate_violation_table_body($conn) {
         $params[] = $endDate;
         $types .= 's';
     }
+    
+    $sql_count_base = "SELECT COUNT(DISTINCT u.student_number) as total
+                       FROM users_tbl u
+                       JOIN violation_tbl v ON u.student_number = v.student_number";
+    $sql_count = $sql_count_base;
+    if (!empty($where)) {
+        $sql_count .= " WHERE " . implode(" AND ", $where);
+    }
+    
+    $stmt_count = $conn->prepare($sql_count);
+    if (!empty($params)) {
+        $stmt_count->bind_param($types, ...$params);
+    }
+    $stmt_count->execute();
+    $count_result = $stmt_count->get_result()->fetch_assoc();
+    $total_records = $count_result['total'] ?? 0;
+    $total_pages = ceil($total_records / $limit);
+    $stmt_count->close();
+    
+    $offset = ($page - 1) * $limit;
+
+    $sql_students = "SELECT DISTINCT u.student_number, u.first_name, u.middle_name, u.last_name, 
+                                         c.course_name, y.year, s.section_name 
+                                 FROM users_tbl u
+                                 JOIN violation_tbl v ON u.student_number = v.student_number
+                                 LEFT JOIN course_tbl c ON u.course_id = c.course_id
+                                 LEFT JOIN year_tbl y ON u.year_id = y.year_id
+                                 LEFT JOIN section_tbl s ON u.section_id = s.section_id";
 
     if (!empty($where)) {
         $sql_students .= " WHERE " . implode(" AND ", $where);
     }
 
-    $sql_students .= " ORDER BY u.last_name ASC, u.first_name ASC";
+    $sql_students .= " ORDER BY u.last_name ASC, u.first_name ASC LIMIT ? OFFSET ?";
+    
+    $params_with_pagination = $params;
+    array_push($params_with_pagination, $limit, $offset);
+    $types_with_pagination = $types . 'ii';
     
     $stmt_students = $conn->prepare($sql_students);
-    if (!empty($params)) {
-        $stmt_students->bind_param($types, ...$params);
+    if (!empty($params_with_pagination)) {
+        $stmt_students->bind_param($types_with_pagination, ...$params_with_pagination);
     }
     
     $stmt_students->execute();
@@ -150,11 +175,11 @@ function generate_violation_table_body($conn) {
         $stmt_sanction_check = $conn->prepare($sanction_sql_check);
         
         $violations_sql_base = "SELECT vt.violation_type, v.violation_type as violation_type_id, vc.category_name, MAX(v.violation_date) as latest_date,
-                                   (SELECT COUNT(*) FROM violation_tbl WHERE student_number = ? AND violation_type = v.violation_type) as offense_count,
-                                   (SELECT v_inner.description FROM violation_tbl v_inner WHERE v_inner.student_number = v.student_number AND v_inner.violation_type = v.violation_type ORDER BY v_inner.violation_date DESC LIMIT 1) as latest_description
-                             FROM violation_tbl v
-                             JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                             JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id";
+                                       (SELECT COUNT(*) FROM violation_tbl WHERE student_number = ? AND violation_type = v.violation_type) as offense_count,
+                                       (SELECT v_inner.description FROM violation_tbl v_inner WHERE v_inner.student_number = v.student_number AND v_inner.violation_type = v.violation_type ORDER BY v_inner.violation_date DESC LIMIT 1) as latest_description
+                                  FROM violation_tbl v
+                                  JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                                  JOIN violation_category_tbl vc ON vt.violation_category_id = vc.violation_category_id";
 
         while ($student_row = $result_students->fetch_assoc()) {
             $student_number = $student_row['student_number'];
@@ -203,19 +228,21 @@ function generate_violation_table_body($conn) {
             
             $student_id_safe = preg_replace('/[^a-zA-Z0-9_-]/', '-', $student_number);
             $group_border_class = $sanction_count > 0 ? 'group-border-sanction' : 'group-border-warning';
+            $full_name = htmlspecialchars($student_row['first_name'] . ' ' . $student_row['last_name']);
 
-            $output .= "<tr class='student-summary-row' data-target='details-for-{$student_id_safe}'>";
-            $output .= "<td><i class='fas fa-chevron-right expand-icon'></i> " . htmlspecialchars($student_row['student_number']) . "</td>";
-            $output .= "<td>" . htmlspecialchars($student_row['first_name']) . "</td>";
-            $output .= "<td>" . htmlspecialchars($student_row['middle_name'] ?? '') . "</td>";
-            $output .= "<td>" . htmlspecialchars($student_row['last_name']) . "</td>";
-            $output .= "<td>" . htmlspecialchars($student_row['course_name'] ?? 'N/A') . "</td>";
-            $output .= "<td>" . htmlspecialchars($student_row['year'] ?? 'N/A') . "</td>";
-            $output .= "<td>" . htmlspecialchars($student_row['section_name'] ?? 'N/A') . "</td>";
-            $output .= "<td class='text-center'>{$total_violation_types} Types <span class='badge-pill status-sanction summary-badge'>{$sanction_count}</span> <span class='badge-pill status-warning summary-badge'>{$warning_count}</span></td>";
+            $output .= "<tr class='student-summary-row " . $group_border_class . "' data-target='details-for-{$student_id_safe}'>";
+            
+            $output .= "<td data-label='Student Number'><div class='mobile-card-header'><div class='student-id-group'><span class='card-title-name'>{$full_name}</span><span class='card-title-id'>{$student_row['student_number']}</span></div><div class='summary-badge-group'><span class='badge-pill status-sanction'>{$sanction_count}</span><span class='badge-pill status-warning'>{$warning_count}</span><i class='fas fa-chevron-right expand-icon'></i></div></div></td>";
+            $output .= "<td data-label='First Name'>" . htmlspecialchars($student_row['first_name']) . "</td>";
+            $output .= "<td data-label='Middle Name'>" . htmlspecialchars($student_row['middle_name'] ?? '') . "</td>";
+            $output .= "<td data-label='Last Name'>" . htmlspecialchars($student_row['last_name']) . "</td>";
+            $output .= "<td data-label='Course'>" . htmlspecialchars($student_row['course_name'] ?? 'N/A') . "</td>";
+            $output .= "<td data-label='Year'>" . htmlspecialchars($student_row['year'] ?? 'N/A') . "</td>";
+            $output .= "<td data-label='Section'>" . htmlspecialchars($student_row['section_name'] ?? 'N/A') . "</td>";
+            $output .= "<td data-label='Violation Summary' class='text-center'>{$total_violation_types} Types <span class='badge-pill status-sanction summary-badge'>{$sanction_count}</span> <span class='badge-pill status-warning summary-badge'>{$warning_count}</span></td>";
             $output .= "</tr>";
 
-            $output .= "<tr class='violation-detail-row' id='details-for-{$student_id_safe}'><td colspan='8' class='details-container-cell " . $group_border_class . "'><div class='details-wrapper'>";
+            $output .= "<tr class='violation-detail-row' id='details-for-{$student_id_safe}'><td colspan='8' class='details-container-cell'><div class='details-wrapper'>";
             foreach ($violations_data as $violation_row) {
                 $offense_count = $violation_row['offense_count'];
                 $offense_level_display_str = ($offense_count == 1) ? '1st Offense' : (($offense_count == 2) ? '2nd Offense' : (($offense_count == 3) ? '3rd Offense' : $offense_count . 'th Offense'));
@@ -247,7 +274,14 @@ function generate_violation_table_body($conn) {
         $output = "<tr><td colspan='8' class='no-records-cell'>No student violations match the current filters.</td></tr>";
     }
     $stmt_students->close();
-    echo $output;
+    
+    $pagination_data = [
+        'currentPage' => $page,
+        'totalPages' => $total_pages,
+        'totalRecords' => $total_records
+    ];
+
+    return [$output, $pagination_data];
 }
 ?>
 <!DOCTYPE html>
@@ -263,76 +297,111 @@ function generate_violation_table_body($conn) {
 <body>
     <div id="toast-notification" class="toast"></div>
 
-    <header class="main-header">
-        <div class="header-content">
-            <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
-            <nav class="main-nav">
-                <a href="security_dashboard.php">Dashboard</a>
-                <a href="security_violation_page.php" class="active-nav">Violations</a>
+    <div class="page-container" id="pageContainer">
+        <aside class="side-menu">
+            <div class="menu-header">
+                <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo" class="menu-logo">
+                <button class="close-btn" id="closeMenuBtn">&times;</button>
+            </div>
+            <nav class="menu-nav">
+                <a href="security_dashboard.php" class="nav-item"><i class="fas fa-chart-bar"></i> Dashboard</a>
+                <a href="security_violation_page.php" class="nav-item active"><i class="fas fa-exclamation-triangle"></i> Violations</a>
+                <a href="security_account.php" class="nav-item"><i class="fas fa-user-shield"></i> My Account</a>
+                <a href="../PHP/logout.php" class="nav-item"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </nav>
-            <div class="user-icons">
-                <a href="notification.html" class="notification"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg></a>
-                <a href="security_account.php" class="admin-profile"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
-            </div>
-        </div>
-    </header>
+        </aside>
 
-    <div class="container">
-        <div class="page-header">
-            <h1>Student Violation Records</h1>
-        </div>
-        
-        <form id="filter-form" class="filter-controls">
-            <select name="course_id" id="courseFilter">
-                <option value="">Filter by Course</option>
-                 <?php
-                    if ($conn) {
-                       $courseQuery = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name ASC";
-                        $courseResult = $conn->query($courseQuery);
-                        if ($courseResult) {
-                            while ($row = $courseResult->fetch_assoc()) {
-                                echo "<option value='" . htmlspecialchars($row['course_id']) . "'>" . htmlspecialchars($row['course_name']) . "</option>";
-                            }
-                        } 
-                    }
-                ?>
-            </select>
-            <div class="date-range-wrapper">
-                <i class="fas fa-calendar-alt"></i>
-                <input type="text" id="dateRangePicker" placeholder="Filter by Date Range">
-            </div>
-            <input type="hidden" name="start_date" id="startDateFilter">
-            <input type="hidden" name="end_date" id="endDateFilter">
+        <div class="page-wrapper" id="pageWrapper">
+            <header class="main-header">
+                <div class="header-content">
+                    <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
+                    <nav class="main-nav">
+                        <a href="security_dashboard.php">Dashboard</a>
+                        <a href="security_violation_page.php" class="active-nav">Violations</a>
+                    </nav>
+                    <div class="user-icons">
+                        <a href="notification.html" class="notification"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg></a>
+                        <a href="security_account.php" class="admin-profile"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
+                    </div>
+                    <button class="menu-toggle" id="openMenuBtn"><i class="fas fa-bars"></i></button>
+                </div>
+            </header>
 
-            <div class="search-filter-group">
-                <input type="text" name="search" id="searchFilter" placeholder="Search Student Number or Name...">
-            </div>
-            <button type="button" id="refreshBtn" class="filter-btn refresh-btn"><i class="fas fa-sync-alt"></i> Refresh List</button>
-            <button type="button" id="generateReportBtn" class="filter-btn report-btn"><i class="fas fa-file-pdf"></i> Generate Report</button>
-            <button type="button" id="addViolationBtn" class="filter-btn add-btn"><i class="fas fa-plus"></i> Add Violation</button>
-        </form>
+            <main class="container">
+                <div class="page-header">
+                    <h1>Student Violation Records</h1>
+                </div>
+                
+                <div class="mobile-filter-header">
+                    <button type="button" id="toggleFilterBtn" class="filter-toggle-btn">
+                        <span><i class="fas fa-filter"></i> Filter & Search</span>
+                        <i class="fas fa-chevron-down filter-arrow"></i>
+                    </button>
+                </div>
 
-        <div class="main-table-scroll-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Student Number</th>
-                        <th>First Name</th>
-                        <th>Middle Name</th>
-                        <th>Last Name</th>
-                        <th>Course</th>
-                        <th>Year</th>
-                        <th>Section</th>
-                        <th class="text-center">Violation Summary</th>
-                    </tr>
-                </thead>
-                <tbody id="violationTableBody">
-                    <?php if($conn) generate_violation_table_body($conn); ?>
-                </tbody>
-            </table>
+                <div id="filterContainer" class="filter-container">
+                    <form id="filter-form" class="filter-controls">
+                        <select name="course_id" id="courseFilter">
+                            <option value="">Filter by Course</option>
+                            <?php
+                                if ($conn) {
+                                    $courseQuery = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name ASC";
+                                    $courseResult = $conn->query($courseQuery);
+                                    if ($courseResult) {
+                                        while ($row = $courseResult->fetch_assoc()) {
+                                            echo "<option value='" . htmlspecialchars($row['course_id']) . "'>" . htmlspecialchars($row['course_name']) . "</option>";
+                                        }
+                                    } 
+                                }
+                            ?>
+                        </select>
+                        <div class="date-range-wrapper">
+                            <i class="fas fa-calendar-alt"></i>
+                            <input type="text" id="dateRangePicker" placeholder="Filter by Date Range">
+                        </div>
+                        <input type="hidden" name="start_date" id="startDateFilter">
+                        <input type="hidden" name="end_date" id="endDateFilter">
+
+                        <div class="search-filter-group">
+                            <input type="text" name="search" id="searchFilter" placeholder="Search Student Number or Name...">
+                        </div>
+                        <div class="action-buttons-group">
+                            <button type="button" id="refreshBtn" class="filter-btn refresh-btn"><i class="fas fa-sync-alt"></i> Refresh List</button>
+                            <button type="button" id="generateReportBtn" class="filter-btn report-btn"><i class="fas fa-file-pdf"></i> Generate Report</button>
+                            <button type="button" id="addViolationBtn" class="filter-btn add-btn"><i class="fas fa-plus"></i> Add Violation</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="main-table-scroll-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student Number</th>
+                                <th>First Name</th>
+                                <th>Middle Name</th>
+                                <th>Last Name</th>
+                                <th>Course</th>
+                                <th>Year</th>
+                                <th>Section</th>
+                                <th class="text-center">Violation Summary</th>
+                            </tr>
+                        </thead>
+                        <tbody id="violationTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination-container" id="paginationContainer">
+                </div>
+            </main>
         </div>
+        <div class="overlay" id="overlay"></div>
     </div>
     
+    <button type="button" id="fabAddViolation" class="fab" title="Add Violation">
+        <i class="fas fa-plus"></i>
+    </button>
+
     <div id="violationModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -348,8 +417,8 @@ function generate_violation_table_body($conn) {
                         <input type="text" id="studentNumberSearchInput" placeholder="Enter Student Number">
                         <button type="button" id="executeStudentSearchBtn" class="search-btn"><i class="fas fa-search"></i> Search</button>
                     </div>
-                     <div id="searchLoadingIndicator" style="display:none; text-align:center; padding: 20px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
-                     <div id="studentSearchResultArea" style="display: none; margin-top: 1rem;"></div>
+                    <div id="searchLoadingIndicator" style="display:none; text-align:center; padding: 20px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+                    <div id="studentSearchResultArea" style="display: none; margin-top: 1rem;"></div>
                 </div>
 
                 <form id="violationForm" style="display: none;">
