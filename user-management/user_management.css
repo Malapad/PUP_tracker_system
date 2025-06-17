@@ -406,6 +406,7 @@ tbody tr:hover {
   text-align: center;
 }
 
+/* Common styling for all forms within modals */
 #edit-student-form,
 #add-student-form,
 #edit-admin-form,
@@ -417,6 +418,7 @@ tbody tr:hover {
   gap: 15px;
 }
 
+/* Common styling for form input groups */
 #edit-student-form div,
 #add-student-form div,
 #edit-admin-form div,
@@ -428,6 +430,7 @@ tbody tr:hover {
   gap: 5px;
 }
 
+/* Common styling for labels */
 #edit-student-form label,
 #add-student-form label,
 #edit-admin-form label,
@@ -439,6 +442,7 @@ tbody tr:hover {
   color: #444;
 }
 
+/* Common styling for inputs and selects */
 #edit-student-form input[type="text"],
 #edit-student-form input[type="email"],
 #edit-student-form select,
@@ -465,6 +469,41 @@ tbody tr:hover {
   height: 40px;
 }
 
+/* Adjust styling for file input specifically */
+#import-student-form input[type="file"],
+#import-admin-form input[type="file"] {
+    padding-top: 5px; /* Adjust padding for better alignment of file input text */
+    padding-bottom: 5px;
+    height: auto; /* Allow height to adjust naturally for file input */
+}
+
+/* Style for the instruction lists within modals */
+.modal-content ul {
+    list-style-type: disc; /* Use disk bullet points */
+    margin-left: 20px; /* Indent the list */
+    margin-bottom: 15px; /* Space after the list */
+    color: #555;
+    font-size: 0.9em;
+    line-height: 1.6;
+}
+
+.modal-content ul li {
+    margin-bottom: 5px;
+}
+
+.modal-content p {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 0.95em;
+    color: #333;
+}
+
+.modal-content p strong {
+    color: var(--primary-color); /* Highlight important text */
+}
+
+
+/* Common styling for submit buttons within modals */
 #edit-student-form button[type="submit"],
 #add-student-form button[type="submit"],
 #edit-admin-form button[type="submit"],

@@ -12,11 +12,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const toggleAdminHistoryBtn = document.getElementById('toggle-admin-history-btn');
     const backToAdminListBtn = document.getElementById('back-to-admin-list-btn');
 
-    const securityListView = document.getElementById('security-list-view');
-    const securityHistoryView = document.getElementById('security-history-view');
-    const toggleSecurityHistoryBtn = document.getElementById('toggle-security-history-btn');
-    const backToSecurityListBtn = document.getElementById('back-to-security-list-btn');
-    
     const studentTable = document.getElementById("student-table");
     const addStudentModal = document.getElementById("add-student-modal");
     const openAddStudentModalBtn = document.getElementById("open-add-student-modal-btn");
@@ -24,6 +19,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const editStudentModal = document.getElementById("edit-student-modal");
     const editStudentForm = document.getElementById("edit-student-form");
     const refreshStudentListBtn = document.getElementById("refresh-student-list-btn");
+
+    // Elements for student CSV import
+    const importStudentModal = document.getElementById("import-student-modal");
+    const openImportStudentModalBtn = document.getElementById("open-import-student-modal-btn");
+    const importStudentForm = document.getElementById("import-student-form");
 
     const adminTable = document.getElementById("admin-table");
     const addAdminModal = document.getElementById("add-admin-modal");
@@ -33,13 +33,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const editAdminForm = document.getElementById("edit-admin-form");
     const refreshAdminListBtn = document.getElementById("refresh-admin-list-btn");
 
-    const securityTable = document.getElementById("security-table");
-    const addSecurityModal = document.getElementById("add-security-modal");
-    const openAddSecurityModalBtn = document.getElementById("open-add-security-modal-btn");
-    const addSecurityForm = document.getElementById("add-security-form");
-    const editSecurityModal = document.getElementById("edit-security-modal");
-    const editSecurityForm = document.getElementById("edit-security-form");
-    const refreshSecurityListBtn = document.getElementById("refresh-security-list-btn");
+    // New elements for admin CSV import
+    const importAdminModal = document.getElementById("import-admin-modal");
+    const openImportAdminModalBtn = document.getElementById("open-import-admin-modal-btn");
+    const importAdminForm = document.getElementById("import-admin-form");
+
 
     const deleteConfirmModal = document.getElementById("delete-confirm-modal");
     const deleteItemTypePlaceholder = document.getElementById("delete-item-type-placeholder");
@@ -57,14 +55,14 @@ document.addEventListener("DOMContentLoaded", function () {
         toastMessage.textContent = message;
         toast.className = 'toast-notification show ' + type;
 
-        setTimeout(() => { 
-            toast.classList.remove('show'); 
-        }, 3000); 
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
     }
 
     function openModal(modalElement) { if (modalElement) { modalElement.style.display = "flex"; } }
     function closeModal(modalElement) { if (modalElement) { modalElement.style.display = "none"; } }
-    
+
     function refreshPageForTab(tabName) {
         window.location.href = window.location.pathname + '?tab=' + tabName;
     }
@@ -76,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
             tab.classList.add("active");
             tabContents.forEach(content => { content.classList.remove("active"); });
             document.getElementById(`${targetTab}-content`).classList.add("active");
-            
+
             const url = new URL(window.location);
             url.searchParams.set('tab', targetTab);
             url.searchParams.delete('search');
@@ -122,19 +120,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    if (toggleSecurityHistoryBtn) {
-        toggleSecurityHistoryBtn.addEventListener('click', () => {
-            securityListView.style.display = 'none';
-            securityHistoryView.style.display = 'block';
-        });
-    }
-    if (backToSecurityListBtn) {
-        backToSecurityListBtn.addEventListener('click', () => {
-            securityListView.style.display = 'block';
-            securityHistoryView.style.display = 'none';
-        });
-    }
-    
     allCloseModalBtns.forEach(btn => {
         btn.addEventListener("click", () => closeModal(btn.closest(".modal")));
     });
@@ -152,19 +137,30 @@ document.addEventListener("DOMContentLoaded", function () {
             openModal(addStudentModal);
         });
     }
+
+    // Event listener for opening the student CSV import modal
+    if (openImportStudentModalBtn) {
+        openImportStudentModalBtn.addEventListener("click", () => {
+            if (importStudentForm) importStudentForm.reset(); // Clear previous file selection
+            openModal(importStudentModal);
+        });
+    }
+
     if (openAddAdminModalBtn) {
         openAddAdminModalBtn.addEventListener("click", () => {
             if (addAdminForm) addAdminForm.reset();
             openModal(addAdminModal);
         });
     }
-    if (openAddSecurityModalBtn) {
-        openAddSecurityModalBtn.addEventListener("click", () => {
-            if (addSecurityForm) addSecurityForm.reset();
-            openModal(addSecurityModal);
+
+    // Event listener for opening the admin CSV import modal
+    if (openImportAdminModalBtn) {
+        openImportAdminModalBtn.addEventListener("click", () => {
+            if (importAdminForm) importAdminForm.reset(); // Clear previous file selection
+            openModal(importAdminModal);
         });
     }
-    
+
     if (addStudentForm) { addStudentForm.addEventListener("submit", handleFormSubmit('add_student.php', 'students', addStudentModal)); }
     if (editStudentForm) { editStudentForm.addEventListener("submit", handleFormSubmit('edit_student.php', 'students', editStudentModal)); }
     if (addAdminForm) { addAdminForm.addEventListener("submit", handleFormSubmit('add_admin.php', 'admins', addAdminModal)); }
@@ -172,10 +168,17 @@ document.addEventListener("DOMContentLoaded", function () {
     if (addSecurityForm) { addSecurityForm.addEventListener("submit", handleFormSubmit('add_security.php', 'security', addSecurityModal)); }
     if (editSecurityForm) { editSecurityForm.addEventListener("submit", handleFormSubmit('edit_security.php', 'security', editSecurityModal)); }
 
+    // Event listener for the student CSV import form
+    if (importStudentForm) { importStudentForm.addEventListener("submit", handleFormSubmit('import_students.php', 'students', importStudentModal)); }
+
+    // Event listener for the admin CSV import form
+    if (importAdminForm) { importAdminForm.addEventListener("submit", handleFormSubmit('import_admins.php', 'admins', importAdminModal)); }
+
+
     function handleFormSubmit(url, tabToRefresh, modal) {
         return function(event) {
             event.preventDefault();
-            const formData = new FormData(event.target);
+            const formData = new FormData(event.target); // FormData handles file inputs automatically
             fetch(url, { method: 'POST', body: formData })
             .then(response => response.json())
             .then(data => {
@@ -184,7 +187,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     closeModal(modal);
                     setTimeout(() => refreshPageForTab(tabToRefresh), 1500);
                 } else {
-                    showToastNotification('Error: ' + (data.error || "Unknown error"), 'error');
+                    showToastNotification('Error: ' + (data.message || data.error || "Unknown error"), 'error');
                 }
             })
             .catch(error => showToastNotification('A network error occurred: ' + error.message, 'error'));
@@ -193,8 +196,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if(studentTable) studentTable.addEventListener("click", handleTableClick);
     if(adminTable) adminTable.addEventListener("click", handleTableClick);
-    if(securityTable) securityTable.addEventListener("click", handleTableClick);
-    
     function handleTableClick(e) {
         const editBtn = e.target.closest(".edit-btn");
         const deleteTriggerBtn = e.target.closest(".delete-btn");
@@ -221,7 +222,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 editAdminForm.querySelector("#edit-admin-last-name").value = admin.last_name;
                 editAdminForm.querySelector("#edit-admin-position").value = admin.position;
                 editAdminForm.querySelector("#edit-admin-email").value = admin.email;
-                editAdminForm.querySelector("#edit-admin-password").value = ""; 
+                editAdminForm.querySelector("#edit-admin-password").value = "";
                 editAdminForm.querySelector("#edit-admin-status").value = admin.status_id;
                 openModal(editAdminModal);
             } else if (editBtn.classList.contains('security-edit-btn')) {
@@ -248,24 +249,24 @@ document.addEventListener("DOMContentLoaded", function () {
     if (confirmDeleteActionBtn) {
         confirmDeleteActionBtn.addEventListener("click", function() {
             if (!itemToDeleteId || !itemTypeToDelete) return;
-            
+
             const formData = new FormData();
             let url = '';
             let tabToRefresh = '';
             if (itemTypeToDelete === 'student') {
                 formData.append('student_number', itemToDeleteId);
-                url = './delete_student.php';
+                url = './delete_student.php'; // Assuming you have this script
                 tabToRefresh = 'students';
             } else if (itemTypeToDelete === 'admin') {
                 formData.append('admin_id', itemToDeleteId);
-                url = './delete_admin.php';
+                url = './delete_admin.php'; // Assuming you have this script
                 tabToRefresh = 'admins';
             } else if (itemTypeToDelete === 'security') {
                 formData.append('security_id', itemToDeleteId);
                 url = './delete_security.php';
                 tabToRefresh = 'security';
             }
-            
+
             fetch(url, { method: 'POST', body: formData })
             .then(response => response.json())
             .then(data => {
