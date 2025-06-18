@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const importStudentModal = document.getElementById("import-student-modal");
     const openImportStudentModalBtn = document.getElementById("open-import-student-modal-btn");
     const importStudentForm = document.getElementById("import-student-form");
+    const downloadStudentCsvTemplateBtn = document.getElementById("download-student-csv-template-btn"); // New button
 
     const adminTable = document.getElementById("admin-table");
     const addAdminModal = document.getElementById("add-admin-modal");
@@ -83,7 +84,33 @@ document.addEventListener("DOMContentLoaded", function () {
     function closeModal(modalElement) { if (modalElement) { modalElement.style.display = "none"; } }
 
     function refreshPageForTab(tabName) {
-        window.location.href = window.location.pathname + '?tab=' + tabName;
+        // Construct URL with current filters and page
+        const urlParams = new URLSearchParams(window.location.search);
+        let queryString = `tab=${tabName}`;
+
+        if (tabName === 'students') {
+            const course = urlParams.get('course');
+            const year = urlParams.get('year');
+            const section = urlParams.get('section');
+            const status = urlParams.get('status');
+            const search = urlParams.get('search');
+            const page = urlParams.get('page'); // Preserve current page on refresh
+
+            if (course) queryString += `&course=${encodeURIComponent(course)}`;
+            if (year) queryString += `&year=${encodeURIComponent(year)}`;
+            if (section) queryString += `&section=${encodeURIComponent(section)}`;
+            if (status) queryString += `&status=${encodeURIComponent(status)}`;
+            if (search) queryString += `&search=${encodeURIComponent(search)}`;
+            if (page) queryString += `&page=${encodeURIComponent(page)}`;
+        } else if (tabName === 'admins') {
+            const adminSearch = urlParams.get('admin_search');
+            if (adminSearch) queryString += `&admin_search=${encodeURIComponent(adminSearch)}`;
+        } else if (tabName === 'security') {
+            const securitySearch = urlParams.get('security_search');
+            if (securitySearch) queryString += `&security_search=${encodeURIComponent(securitySearch)}`;
+        }
+        
+        window.location.href = window.location.pathname + '?' + queryString;
     }
 
     tabs.forEach(tab => {
@@ -94,15 +121,23 @@ document.addEventListener("DOMContentLoaded", function () {
             tabContents.forEach(content => { content.classList.remove("active"); });
             document.getElementById(`${targetTab}-content`).classList.add("active");
 
+            // Update URL without reloading page, and remove previous search/filter params
             const url = new URL(window.location);
             url.searchParams.set('tab', targetTab);
+            // Clear specific search/filter params when switching tabs
             url.searchParams.delete('search');
+            url.searchParams.delete('course');
+            url.searchParams.delete('year');
+            url.searchParams.delete('section');
+            url.searchParams.delete('status');
+            url.searchParams.delete('page');
             url.searchParams.delete('admin_search');
             url.searchParams.delete('security_search');
             window.history.pushState({}, '', url);
         });
     });
 
+    // Handle initial tab activation based on URL
     const urlParams = new URLSearchParams(window.location.search);
     const activeTabFromUrl = urlParams.get('tab') || 'students';
     const tabToActivate = document.querySelector(`.tab[data-tab="${activeTabFromUrl}"]`);
@@ -206,6 +241,37 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // Download Student CSV Template Button
+    if (downloadStudentCsvTemplateBtn) {
+        downloadStudentCsvTemplateBtn.addEventListener("click", () => {
+            const headers = [
+                'student_number',
+                'first_name',
+                'middle_name',
+                'last_name',
+                'email',
+                'course_id',
+                'year_id',
+                'section_id',
+                'gender_id'
+            ];
+            const csvContent = headers.join(',') + '\n';
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) { // Feature detection for HTML5 download attribute
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'Course_PUPTracker-VS_Accountt_Template.csv'); // Changed filename
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                showToastNotification('Your browser does not support downloading files directly. Please copy the headers manually: ' + headers.join(', '), 'error');
+            }
+        });
+    }
+
+
     // Form Submissions (Add/Edit)
     if (addStudentForm) { addStudentForm.addEventListener("submit", handleFormSubmit('add_student.php', 'students', addStudentModal)); }
     if (editStudentForm) { editStudentForm.addEventListener("submit", handleFormSubmit('edit_student.php', 'students', editStudentModal)); }
@@ -247,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const deleteTriggerBtn = e.target.closest(".delete-btn");
 
         if (editBtn) {
-            if(editBtn.classList.contains('student-edit-btn')) {
+            if (editBtn.classList.contains('student-edit-btn')) {
                 const student = JSON.parse(editBtn.getAttribute("data-student"));
                 editStudentForm.querySelector("#original-student-number").value = student.student_number;
                 editStudentForm.querySelector("#edit-student-number").value = student.student_number;
@@ -332,4 +398,27 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
     if(cancelDeleteActionBtn) cancelDeleteActionBtn.addEventListener("click", () => closeModal(deleteConfirmModal));
+
+    // Logic for "NEW" badge visibility
+    function manageNewBadges() {
+        const newBadges = document.querySelectorAll('.new-badge');
+        const currentTime = Date.now(); // Current time in milliseconds
+
+        newBadges.forEach(badge => {
+            const newUntilTimestamp = parseInt(badge.dataset.newUntil) * 1000; // Convert to milliseconds
+            if (currentTime >= newUntilTimestamp) {
+                // If the "new" period has passed, hide or remove the badge
+                badge.style.display = 'none'; // Or badge.remove();
+            } else {
+                // Otherwise, ensure it's visible and set a timeout to hide it later
+                badge.style.display = 'inline-block';
+                const timeRemaining = newUntilTimestamp - currentTime;
+                setTimeout(() => {
+                    badge.style.display = 'none'; // Hide after the remaining time
+                }, timeRemaining);
+            }
+        });
+    }
+
+    manageNewBadges();
 });
