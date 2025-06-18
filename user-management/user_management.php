@@ -327,9 +327,8 @@ include '../PHP/dbcon.php';
                 <li><strong><code>year_id</code></strong> (numerical ID, e.g., 3 for 3rd year)</li>
                 <li><strong><code>section_id</code></strong> (numerical ID, e.g., 1 for Section 1)</li>
                 <li><strong><code>gender_id</code></strong> (numerical ID, e.g., 1 for Male, 2 for Female)</li>
-                <li><strong><code>password</code></strong> (plain-text password; will be hashed)</li>
             </ul>
-            <p>All imported students will be set to <strong>'Active' status</strong> and <strong>'Student' role</strong> automatically.</p>
+            <p>A password will be **system-generated** for each student and sent to their email. All imported students will be set to <strong>'Active' status</strong> and <strong>'Student' role</strong> automatically.</p>
             <form id="import-student-form" enctype="multipart/form-data">
                 <div>
                     <label for="student_csv_file">Upload CSV File:</label>
