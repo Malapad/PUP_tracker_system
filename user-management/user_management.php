@@ -1,5 +1,78 @@
 <?php
-include '../PHP/dbcon.php';
+include '../PHP/dbcon.php'; // Adjust path as necessary for your db connection
+
+// Pagination variables
+$limit = 25; // Number of rows per page
+$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($current_page - 1) * $limit;
+
+// Function to fetch total number of students for pagination
+function getTotalStudents($conn, $search_student, $course_id_filter, $year_id_filter, $section_id_filter, $status_id_filter) {
+    $countQuery = "SELECT COUNT(*) AS total FROM users_tbl u WHERE 1";
+    if (!empty($search_student)) {
+        $countQuery .= " AND u.student_number LIKE '%" . mysqli_real_escape_string($conn, $search_student) . "%'";
+    }
+    if (!empty($course_id_filter)) {
+        $countQuery .= " AND u.course_id = '" . mysqli_real_escape_string($conn, $course_id_filter) . "'";
+    }
+    if (!empty($year_id_filter)) {
+        $countQuery .= " AND u.year_id = '" . mysqli_real_escape_string($conn, $year_id_filter) . "'";
+    }
+    if (!empty($section_id_filter)) {
+        $countQuery .= " AND u.section_id = '" . mysqli_real_escape_string($conn, $section_id_filter) . "'";
+    }
+    if (!empty($status_id_filter)) {
+        $countQuery .= " AND u.status_id = '" . mysqli_real_escape_string($conn, $status_id_filter) . "'";
+    }
+    $countResult = mysqli_query($conn, $countQuery);
+    $countRow = mysqli_fetch_assoc($countResult);
+    return $countRow['total'];
+}
+
+// Fetch filter options once
+$courseOptions = [];
+if ($conn) {
+    $courseQuery = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name ASC";
+    $courseResult = mysqli_query($conn, $courseQuery);
+    if ($courseResult) {
+        while ($row = mysqli_fetch_assoc($courseResult)) {
+            $courseOptions[] = $row;
+        }
+    }
+}
+
+$yearOptions = [];
+if ($conn) {
+    $yearQuery = "SELECT year_id, year FROM year_tbl ORDER BY year ASC";
+    $yearResult = mysqli_query($conn, $yearQuery);
+    if ($yearResult) {
+        while ($row = mysqli_fetch_assoc($yearResult)) {
+            $yearOptions[] = $row;
+        }
+    }
+}
+
+$sectionOptions = [];
+if ($conn) {
+    $sectionQuery = "SELECT section_id, section_name FROM section_tbl ORDER BY section_name ASC";
+    $sectionResult = mysqli_query($conn, $sectionQuery);
+    if ($sectionResult) {
+        while ($row = mysqli_fetch_assoc($sectionResult)) {
+            $sectionOptions[] = $row;
+        }
+    }
+}
+
+$statusOptions = [];
+if ($conn) {
+    $statusQuery = "SELECT status_id, status_name FROM status_tbl ORDER BY status_name ASC";
+    $statusResult = mysqli_query($conn, $statusQuery);
+    if ($statusResult) {
+        while ($row = mysqli_fetch_assoc($statusResult)) {
+            $statusOptions[] = $row;
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +82,7 @@ include '../PHP/dbcon.php';
     <title>User Management</title>
     <link rel="stylesheet" href="../admin-dashboard/admin_style.css">
     <link rel="stylesheet" href="./user_management.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <header class="main-header">
@@ -32,9 +105,9 @@ include '../PHP/dbcon.php';
     <div class="container">
         <h1>User Management</h1>
         <div class="tabs">
-            <button class="tab active" data-tab="students">Students</button>
-            <button class="tab" data-tab="admins">Admins</button>
-            <button class="tab" data-tab="security">Security</button>
+            <button class="tab active" data-tab="students"><i class="fas fa-user-graduate"></i> Students</button>
+            <button class="tab" data-tab="admins"><i class="fas fa-user-tie"></i> Admins</button>
+            <button class="tab" data-tab="security"><i class="fas fa-user-shield"></i> Security</button>
         </div>
 
         <div id="students-content" class="tab-content active">
@@ -46,59 +119,35 @@ include '../PHP/dbcon.php';
                             <form method="GET" action="" id="student-filter-form">
                                 <input type="hidden" name="tab" value="students">
                                 <select name="course" onchange="this.form.submit()"><option value="">Select Course</option>
-                                    <?php 
-                                    if ($conn) { 
-                                        $courseQuery = "SELECT course_id, course_name FROM course_tbl ORDER BY course_name ASC"; 
-                                        $courseResultPHP = mysqli_query($conn, $courseQuery); 
-                                        if ($courseResultPHP) { 
-                                            while ($row = mysqli_fetch_assoc($courseResultPHP)) { 
-                                                $selected = isset($_GET['course']) && $_GET['course'] == $row['course_id'] ? 'selected' : ''; 
-                                                echo "<option value='{$row['course_id']}' $selected>{$row['course_name']}</option>"; 
-                                            } 
-                                        } 
-                                    } 
+                                    <?php
+                                    foreach ($courseOptions as $row) {
+                                        $selected = isset($_GET['course']) && $_GET['course'] == $row['course_id'] ? 'selected' : '';
+                                        echo "<option value='{$row['course_id']}' $selected>" . htmlspecialchars($row['course_name']) . "</option>";
+                                    }
                                     ?>
                                 </select>
                                 <select name="year" onchange="this.form.submit()"><option value="">Select Year</option>
-                                    <?php 
-                                    if ($conn) { 
-                                        $yearQuery = "SELECT year_id, year FROM year_tbl ORDER BY year ASC"; 
-                                        $yearResultPHP = mysqli_query($conn, $yearQuery); 
-                                        if ($yearResultPHP) { 
-                                            while ($row = mysqli_fetch_assoc($yearResultPHP)) { 
-                                                $selected = isset($_GET['year']) && $_GET['year'] == $row['year_id'] ? 'selected' : ''; 
-                                                echo "<option value='{$row['year_id']}' $selected>{$row['year']}</option>"; 
-                                            } 
-                                        } 
-                                    } 
+                                    <?php
+                                    foreach ($yearOptions as $row) {
+                                        $selected = isset($_GET['year']) && $_GET['year'] == $row['year_id'] ? 'selected' : '';
+                                        echo "<option value='{$row['year_id']}' $selected>" . htmlspecialchars($row['year']) . "</option>";
+                                    }
                                     ?>
                                 </select>
                                 <select name="section" onchange="this.form.submit()"><option value="">Select Section</option>
-                                    <?php 
-                                    if ($conn) { 
-                                        $sectionQuery = "SELECT section_id, section_name FROM section_tbl ORDER BY section_name ASC"; 
-                                        $sectionResultPHP = mysqli_query($conn, $sectionQuery); 
-                                        if ($sectionResultPHP) { 
-                                            while ($row = mysqli_fetch_assoc($sectionResultPHP)) { 
-                                                $selected = isset($_GET['section']) && $_GET['section'] == $row['section_id'] ? 'selected' : ''; 
-                                                echo "<option value='{$row['section_id']}' $selected>{$row['section_name']}</option>"; 
-                                            } 
-                                        } 
-                                    } 
+                                    <?php
+                                    foreach ($sectionOptions as $row) {
+                                        $selected = isset($_GET['section']) && $_GET['section'] == $row['section_id'] ? 'selected' : '';
+                                        echo "<option value='{$row['section_id']}' $selected>" . htmlspecialchars($row['section_name']) . "</option>";
+                                    }
                                     ?>
                                 </select>
                                 <select name="status" onchange="this.form.submit()"><option value="">Select Status</option>
-                                    <?php 
-                                    if ($conn) { 
-                                        $statusQuery = "SELECT status_id, status_name FROM status_tbl ORDER BY status_name ASC"; 
-                                        $statusResultPHP = mysqli_query($conn, $statusQuery); 
-                                        if ($statusResultPHP) { 
-                                            while ($row = mysqli_fetch_assoc($statusResultPHP)) { 
-                                                $selected = isset($_GET['status']) && $_GET['status'] == $row['status_id'] ? 'selected' : ''; 
-                                                echo "<option value='{$row['status_id']}' $selected>{$row['status_name']}</option>"; 
-                                            } 
-                                        } 
-                                    } 
+                                    <?php
+                                    foreach ($statusOptions as $row) {
+                                        $selected = isset($_GET['status']) && $_GET['status'] == $row['status_id'] ? 'selected' : '';
+                                        echo "<option value='{$row['status_id']}' $selected>" . htmlspecialchars($row['status_name']) . "</option>";
+                                    }
                                     ?>
                                 </select>
                                 <div class="search-field-group">
@@ -125,25 +174,69 @@ include '../PHP/dbcon.php';
                             $year_id_filter = isset($_GET['year']) ? mysqli_real_escape_string($conn, $_GET['year']) : '';
                             $section_id_filter = isset($_GET['section']) ? mysqli_real_escape_string($conn, $_GET['section']) : '';
                             $status_id_filter = isset($_GET['status']) ? mysqli_real_escape_string($conn, $_GET['status']) : '';
-                            $query = "SELECT u.student_number, u.last_name, u.first_name, u.middle_name, u.email, u.course_id, c.course_name, u.year_id, y.year, u.section_id, s.section_name, u.status_id, st.status_name FROM users_tbl u LEFT JOIN course_tbl c ON u.course_id = c.course_id LEFT JOIN year_tbl y ON u.year_id = y.year_id LEFT JOIN section_tbl s ON u.section_id = s.section_id LEFT JOIN status_tbl st ON u.status_id = st.status_id WHERE 1";
+
+                            $total_students = getTotalStudents($conn, $search_student, $course_id_filter, $year_id_filter, $section_id_filter, $status_id_filter);
+                            $total_pages = ceil($total_students / $limit);
+
+                            $query = "SELECT u.student_number, u.last_name, u.first_name, u.middle_name, u.email, u.course_id, c.course_name, u.year_id, y.year, u.section_id, s.section_name, u.status_id, st.status_name, u.new_until FROM users_tbl u LEFT JOIN course_tbl c ON u.course_id = c.course_id LEFT JOIN year_tbl y ON u.year_id = y.year_id LEFT JOIN section_tbl s ON u.section_id = s.section_id LEFT JOIN status_tbl st ON u.status_id = st.status_id WHERE 1";
                             if (!empty($search_student)) { $query .= " AND u.student_number LIKE '%$search_student%'"; }
                             if (!empty($course_id_filter)) { $query .= " AND u.course_id = '$course_id_filter'"; }
                             if (!empty($year_id_filter)) { $query .= " AND u.year_id = '$year_id_filter'"; }
                             if (!empty($section_id_filter)) { $query .= " AND u.section_id = '$section_id_filter'"; }
                             if (!empty($status_id_filter)) { $query .= " AND u.status_id = '$status_id_filter'"; }
-                            $query .= " ORDER BY u.last_name ASC, u.first_name ASC";
+                            $query .= " ORDER BY u.last_name ASC, u.first_name ASC LIMIT $limit OFFSET $offset";
                             $result = mysqli_query($conn, $query);
+
                             if ($result && mysqli_num_rows($result) > 0) {
                                 while ($row = mysqli_fetch_assoc($result)) {
-                                    $student_data_json = htmlspecialchars(json_encode(['student_number' => $row['student_number'],'first_name' => $row['first_name'],'middle_name' => $row['middle_name'],'last_name' => $row['last_name'],'email' => $row['email'],'course_id' => $row['course_id'],'year_id' => $row['year_id'],'section_id' => $row['section_id'],'status_id' => $row['status_id']]), ENT_QUOTES, 'UTF-8');
+                                    $student_data_json = htmlspecialchars(json_encode([
+                                        'student_number' => $row['student_number'],
+                                        'first_name' => $row['first_name'],
+                                        'middle_name' => $row['middle_name'],
+                                        'last_name' => $row['last_name'],
+                                        'email' => $row['email'],
+                                        'course_id' => $row['course_id'],
+                                        'year_id' => $row['year_id'],
+                                        'section_id' => $row['section_id'],
+                                        'status_id' => $row['status_id']
+                                    ]), ENT_QUOTES, 'UTF-8');
                                     $status_class = strtolower(htmlspecialchars($row['status_name'])) == 'active' ? 'status-active' : 'status-inactive';
-                                    echo "<tr><td>".htmlspecialchars($row['student_number'])."</td><td>".htmlspecialchars($row['last_name'])."</td><td>".htmlspecialchars($row['first_name'])."</td><td>".htmlspecialchars($row['middle_name'])."</td><td>".htmlspecialchars($row['email'])."</td><td>".htmlspecialchars($row['course_name'])."</td><td>".htmlspecialchars($row['year'])."</td><td>".htmlspecialchars($row['section_name'])."</td><td><span class='status-badge ".$status_class."'>".htmlspecialchars($row['status_name'])."</span></td><td><div class='table-action-buttons'><button class='edit-btn student-edit-btn' data-student='".$student_data_json."'><i class='fas fa-pencil-alt'></i> Edit</button><button type='button' class='delete-btn student-delete-trigger-btn' data-id='".htmlspecialchars($row['student_number'])."' data-name='".htmlspecialchars($row['student_number'])."' data-type='student'><i class='fas fa-trash-alt'></i> Delete</button></div></td></tr>";
+
+                                    $new_badge = '';
+                                    if (!empty($row['new_until'])) {
+                                        $new_until_timestamp = strtotime($row['new_until']);
+                                        if (time() < $new_until_timestamp) {
+                                            $new_badge = "<span class='new-badge' data-new-until='{$new_until_timestamp}'>NEW</span>";
+                                        }
+                                    }
+
+                                    echo "<tr>";
+                                    echo "<td>".htmlspecialchars($row['student_number'])." ".$new_badge."</td>";
+                                    echo "<td>".htmlspecialchars($row['last_name'])."</td>";
+                                    echo "<td>".htmlspecialchars($row['first_name'])."</td>";
+                                    echo "<td>".htmlspecialchars($row['middle_name'])."</td>";
+                                    echo "<td>".htmlspecialchars($row['email'])."</td>";
+                                    echo "<td>".htmlspecialchars($row['course_name'])."</td>";
+                                    echo "<td>".htmlspecialchars($row['year'])."</td>";
+                                    echo "<td>".htmlspecialchars($row['section_name'])."</td>";
+                                    echo "<td><span class='status-badge ".$status_class."'>".htmlspecialchars($row['status_name'])."</span></td>";
+                                    echo "<td><div class='table-action-buttons'><button class='edit-btn student-edit-btn' data-student='".$student_data_json."'><i class='fas fa-pencil-alt'></i> Edit</button><button type='button' class='delete-btn student-delete-trigger-btn' data-id='".htmlspecialchars($row['student_number'])."' data-name='".htmlspecialchars($row['first_name'])." ".htmlspecialchars($row['last_name'])."' data-type='student'><i class='fas fa-trash-alt'></i> Delete</button></div></td>";
+                                    echo "</tr>";
                                 }
                             } else { echo "<tr><td colspan='10'>No student data available</td></tr>"; }
                         } else { echo "<tr><td colspan='10'>Database connection error.</td></tr>"; }
                         ?>
                     </tbody>
                 </table>
+                <?php if ($total_pages > 1): ?>
+                    <div class="pagination-controls">
+                        <a href="?tab=students&page=<?php echo max(1, $current_page - 1); ?>&course=<?php echo htmlspecialchars($_GET['course'] ?? ''); ?>&year=<?php echo htmlspecialchars($_GET['year'] ?? ''); ?>&section=<?php echo htmlspecialchars($_GET['section'] ?? ''); ?>&status=<?php echo htmlspecialchars($_GET['status'] ?? ''); ?>&search=<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" class="pagination-btn <?php echo ($current_page == 1) ? 'disabled' : ''; ?>"><i class="fas fa-angle-left"></i> Previous</a>
+                        <?php for ($p = 1; $p <= $total_pages; $p++): ?>
+                            <a href="?tab=students&page=<?php echo $p; ?>&course=<?php echo htmlspecialchars($_GET['course'] ?? ''); ?>&year=<?php echo htmlspecialchars($_GET['year'] ?? ''); ?>&section=<?php echo htmlspecialchars($_GET['section'] ?? ''); ?>&status=<?php echo htmlspecialchars($_GET['status'] ?? ''); ?>&search=<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" class="pagination-btn pagination-page-btn <?php echo ($p == $current_page) ? 'active' : ''; ?>"><?php echo $p; ?></a>
+                        <?php endfor; ?>
+                        <a href="?tab=students&page=<?php echo min($total_pages, $current_page + 1); ?>&course=<?php echo htmlspecialchars($_GET['course'] ?? ''); ?>&year=<?php echo htmlspecialchars($_GET['year'] ?? ''); ?>&section=<?php echo htmlspecialchars($_GET['section'] ?? ''); ?>&status=<?php echo htmlspecialchars($_GET['status'] ?? ''); ?>&search=<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" class="pagination-btn <?php echo ($current_page == $total_pages) ? 'disabled' : ''; ?>">Next <i class="fas fa-angle-right"></i></a>
+                    </div>
+                <?php endif; ?>
             </div>
             <div id="student-history-view" style="display: none;">
                 <div class="controls"><div class="main-controls-wrapper"><div class="left-control-group"><h3 style="margin: 0;">Student Action History</h3></div><div class="right-control-group"><button type="button" id="back-to-student-list-btn" class="secondary-button"><i class="fas fa-arrow-left"></i> Back to Student List</button></div></div></div>
@@ -303,39 +396,30 @@ include '../PHP/dbcon.php';
         </div>
     </div>
     
-    <div id="edit-student-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Student</h3><form id="edit-student-form"><input type="hidden" id="original-student-number" name="original_student_number"><div><label>Student Number:</label><input type="text" id="edit-student-number" name="student_number" required></div><div><label>First Name:</label><input type="text" id="edit-student-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-student-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-student-last-name" name="last_name" required></div><div><label>Email:</label><input type="email" id="edit-student-email" name="email" required></div><div><label>Course:</label><select id="edit-student-course" name="course_id" required><option value="">Select Course</option><?php if (isset($courseResultPHP) && $courseResultPHP) { mysqli_data_seek($courseResultPHP, 0); while ($row = mysqli_fetch_assoc($courseResultPHP)) { echo "<option value='{$row['course_id']}'>{$row['course_name']}</option>"; } } ?></select></div><div><label>Year:</label><select id="edit-student-year" name="year_id" required><option value="">Select Year</option><?php if (isset($yearResultPHP) && $yearResultPHP) { mysqli_data_seek($yearResultPHP, 0); while ($row = mysqli_fetch_assoc($yearResultPHP)) { echo "<option value='{$row['year_id']}'>{$row['year']}</option>"; } } ?></select></div><div><label>Section:</label><select id="edit-student-section" name="section_id" required><option value="">Select Section</option><?php if (isset($sectionResultPHP) && $sectionResultPHP) { mysqli_data_seek($sectionResultPHP, 0); while ($row = mysqli_fetch_assoc($sectionResultPHP)) { echo "<option value='{$row['section_id']}'>{$row['section_name']}</option>"; } } ?></select></div><div><label>Status:</label><select id="edit-student-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP) && $statusResultPHP) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Student</button></form></div></div>
-    <div id="add-student-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Student</h3><form id="add-student-form"><div><label>Student Number:</label><input type="text" name="student_number" required></div><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Email:</label><input type="email" name="email" required></div><div><label>Course:</label><select name="course_id" required><option value="">Select Course</option><?php if (isset($courseResultPHP) && $courseResultPHP) { mysqli_data_seek($courseResultPHP, 0); while ($row = mysqli_fetch_assoc($courseResultPHP)) { echo "<option value='{$row['course_id']}'>{$row['course_name']}</option>"; } } ?></select></div><div><label>Year:</label><select name="year_id" required><option value="">Select Year</option><?php if (isset($yearResultPHP) && $yearResultPHP) { mysqli_data_seek($yearResultPHP, 0); while ($row = mysqli_fetch_assoc($yearResultPHP)) { echo "<option value='{$row['year_id']}'>{$row['year']}</option>"; } } ?></select></div><div><label>Section:</label><select name="section_id" required><option value="">Select Section</option><?php if (isset($sectionResultPHP) && $sectionResultPHP) { mysqli_data_seek($sectionResultPHP, 0); while ($row = mysqli_fetch_assoc($sectionResultPHP)) { echo "<option value='{$row['section_id']}'>{$row['section_name']}</option>"; } } ?></select></div><div><label>Status:</label><select name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP) && $statusResultPHP) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-plus"></i> Add Student</button></form></div></div>
+    <div id="edit-student-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Student</h3><form id="edit-student-form"><input type="hidden" id="original-student-number" name="original_student_number"><div><label>Student Number:</label><input type="text" id="edit-student-number" name="student_number" required></div><div><label>First Name:</label><input type="text" id="edit-student-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-student-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-student-last-name" name="last_name" required></div><div><label>Email:</label><input type="email" id="edit-student-email" name="email" required></div><div><label>Course:</label><select id="edit-student-course" name="course_id" required><option value="">Select Course</option><?php foreach ($courseOptions as $row) { echo "<option value='{$row['course_id']}'>".htmlspecialchars($row['course_name'])."</option>"; } ?></select></div><div><label>Year:</label><select id="edit-student-year" name="year_id" required><option value="">Select Year</option><?php foreach ($yearOptions as $row) { echo "<option value='{$row['year_id']}'>".htmlspecialchars($row['year'])."</option>"; } ?></select></div><div><label>Section:</label><select id="edit-student-section" name="section_id" required><option value="">Select Section</option><?php foreach ($sectionOptions as $row) { echo "<option value='{$row['section_id']}'>".htmlspecialchars($row['section_name'])."</option>"; } ?></select></div><div><label>Status:</label><select id="edit-student-status" name="status_id" required><option value="">Select Status</option><?php foreach ($statusOptions as $row) { echo "<option value='{$row['status_id']}'>".htmlspecialchars($row['status_name'])."</option>"; } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Student</button></form></div></div>
+    <div id="add-student-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Student</h3><form id="add-student-form"><div><label>Student Number:</label><input type="text" name="student_number" required></div><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Email:</label><input type="email" name="email" required></div><div><label>Course:</label><select name="course_id" required><option value="">Select Course</option><?php foreach ($courseOptions as $row) { echo "<option value='{$row['course_id']}'>".htmlspecialchars($row['course_name'])."</option>"; } ?></select></div><div><label>Year:</label><select name="year_id" required><option value="">Select Year</option><?php foreach ($yearOptions as $row) { echo "<option value='{$row['year_id']}'>".htmlspecialchars($row['year'])."</option>"; } ?></select></div><div><label>Section:</label><select name="section_id" required><option value="">Select Section</option><?php foreach ($sectionOptions as $row) { echo "<option value='{$row['section_id']}'>".htmlspecialchars($row['section_name'])."</option>"; } ?></select></div><div><label>Status:</label><select name="status_id" required><option value="">Select Status</option><?php foreach ($statusOptions as $row) { echo "<option value='{$row['status_id']}'>".htmlspecialchars($row['status_name'])."</option>"; } ?></select></div><button type="submit"><i class="fas fa-plus"></i> Add Student</button></form></div></div>
     
     <div id="add-admin-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Admin</h3><form id="add-admin-form"><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Email (will be used as Username):</label><input type="email" name="email" required></div><button type="submit"><i class="fas fa-plus"></i> Add Admin</button></form></div></div>
-    <div id="edit-admin-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Admin</h3><form id="edit-admin-form"><input type="hidden" id="edit-admin-id" name="admin_id"><div><label>First Name:</label><input type="text" id="edit-admin-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-admin-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-admin-last-name" name="last_name" required></div><div><label>Position:</label><input type="text" id="edit-admin-position" name="position" required></div><div><label>Email:</label><input type="email" id="edit-admin-email" name="email" required></div><div><label>New Password:</label><input type="password" id="edit-admin-password" name="password" placeholder="Leave blank to keep current password"></div><div><label>Status:</label><select id="edit-admin-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP)) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Admin</button></form></div></div>
+    <div id="edit-admin-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Admin</h3><form id="edit-admin-form"><input type="hidden" id="edit-admin-id" name="admin_id"><div><label>First Name:</label><input type="text" id="edit-admin-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-admin-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-admin-last-name" name="last_name" required></div><div><label>Position:</label><input type="text" id="edit-admin-position" name="position" required></div><div><label>Email:</label><input type="email" id="edit-admin-email" name="email" required></div><div><label>New Password:</label><input type="password" id="edit-admin-password" name="password" placeholder="Leave blank to keep current password"></div><div><label>Status:</label><select id="edit-admin-status" name="status_id" required><option value="">Select Status</option><?php foreach ($statusOptions as $row) { echo "<option value='{$row['status_id']}'>".htmlspecialchars($row['status_name'])."</option>"; } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Admin</button></form></div></div>
     
     <div id="add-security-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Add New Security</h3><form id="add-security-form"><div><label>First Name:</label><input type="text" name="first_name" required></div><div><label>Middle Name:</label><input type="text" name="middle_name"></div><div><label>Last Name:</label><input type="text" name="last_name" required></div><div><label>Email (will be used as Username):</label><input type="email" name="email" required></div><button type="submit"><i class="fas fa-plus"></i> Add Security</button></form></div></div>
-    <div id="edit-security-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Security</h3><form id="edit-security-form"><input type="hidden" id="edit-security-id" name="security_id"><div><label>First Name:</label><input type="text" id="edit-security-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-security-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-security-last-name" name="last_name" required></div><div><label>Position:</label><input type="text" id="edit-security-position" name="position" required></div><div><label>Email:</label><input type="email" id="edit-security-email" name="email" required></div><div><label>New Password:</label><input type="password" id="edit-security-password" name="password" placeholder="Leave blank to keep current password"></div><div><label>Status:</label><select id="edit-security-status" name="status_id" required><option value="">Select Status</option><?php if (isset($statusResultPHP)) { mysqli_data_seek($statusResultPHP, 0); while ($row = mysqli_fetch_assoc($statusResultPHP)) { echo "<option value='{$row['status_id']}'>{$row['status_name']}</option>"; } } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Security</button></form></div></div>
+    <div id="edit-security-modal" class="modal"><div class="modal-content"><span class="close-modal">&times;</span><h3>Edit Security</h3><form id="edit-security-form"><input type="hidden" id="edit-security-id" name="security_id"><div><label>First Name:</label><input type="text" id="edit-security-first-name" name="first_name" required></div><div><label>Middle Name:</label><input type="text" id="edit-security-middle-name" name="middle_name"></div><div><label>Last Name:</label><input type="text" id="edit-security-last-name" name="last_name" required></div><div><label>Position:</label><input type="text" id="edit-security-position" name="position" required></div><div><label>Email:</label><input type="email" id="edit-security-email" name="email" required></div><div><label>New Password:</label><input type="password" id="edit-security-password" name="password" placeholder="Leave blank to keep current password"></div><div><label>Status:</label><select id="edit-security-status" name="status_id" required><option value="">Select Status</option><?php foreach ($statusOptions as $row) { echo "<option value='{$row['status_id']}'>".htmlspecialchars($row['status_name'])."</option>"; } ?></select></div><button type="submit"><i class="fas fa-save"></i> Update Security</button></form></div></div>
 
     <div id="import-student-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
-            <h3>Import Students from CSV</h3>
-            <p>Please upload a CSV file with student data. The CSV should contain a header row with the following columns:</p>
-            <ul>
-                <li><strong><code>student_number</code></strong> (e.g., `2022-00205-TG-0`)</li>
-                <li><strong><code>first_name</code></strong></li>
-                <li><strong><code>middle_name</code></strong> (optional)</li>
-                <li><strong><code>last_name</code></strong></li>
-                <li><strong><code>email</code></strong> (must be unique)</li>
-                <li><strong><code>course_id</code></strong> (numerical ID, e.g., 1 for DIT)</li>
-                <li><strong><code>year_id</code></strong> (numerical ID, e.g., 3 for 3rd year)</li>
-                <li><strong><code>section_id</code></strong> (numerical ID, e.g., 1 for Section 1)</li>
-                <li><strong><code>gender_id</code></strong> (numerical ID, e.g., 1 for Male, 2 for Female)</li>
-                <li><strong><code>password</code></strong> (plain-text password; will be hashed)</li>
-            </ul>
-            <p>All imported students will be set to <strong>'Active' status</strong> and <strong>'Student' role</strong> automatically.</p>
+            <h3>Import Students from CSV/XLSX</h3>
+            <p>Please upload a CSV or XLSX file with student data. The file should contain a header row with the following columns:</p>
+            <button type="button" id="download-student-csv-template-btn" class="secondary-button download-template-button"><i class="fas fa-download"></i> Download CSV Template</button>
+
+            <p>The password for each account will be <strong>automatically generated</strong> and sent to the student's email address provided in the file.</p>
+            <p>All imported students will be set to <strong>'Active' status'</strong> and <strong>'Student' role'</strong> automatically.</p>
             <form id="import-student-form" enctype="multipart/form-data">
                 <div>
-                    <label for="student_csv_file">Upload CSV File:</label>
-                    <input type="file" id="student_csv_file" name="csv_file" accept=".csv" required>
+                    <label for="student_csv_file">Upload CSV/XLSX File:</label>
+                    <input type="file" id="student_csv_file" name="csv_file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" required>
                 </div>
-                <button type="submit"><i class="fas fa-upload"></i> Import Students</button>
+                <button type="submit" class="import-button"><i class="fas fa-upload"></i> Import Students</button>
             </form>
         </div>
     </div>
@@ -352,7 +436,7 @@ include '../PHP/dbcon.php';
                 <li><strong><code>middle_name</code></strong> (optional)</li>
                 <li><strong><code>last_name</code></strong></li>
             </ul>
-            <p>All imported admins will be set to <strong>'Active' status</strong> and <strong>'Admin' position/role</strong> automatically.</p>
+            <p>All imported admins will be set to <strong>'Active' status'</strong> and <strong>'Admin' position/role'</strong> automatically.</p>
             <form id="import-admin-form" enctype="multipart/form-data">
                 <div>
                     <label for="admin_csv_file">Upload CSV File:</label>
@@ -375,7 +459,7 @@ include '../PHP/dbcon.php';
                 <li><strong><code>middle_name</code></strong> (optional)</li>
                 <li><strong><code>last_name</code></strong></li>
             </ul>
-            <p>All imported security personnel will be set to <strong>'Active' status</strong> and <strong>'Security Guard' position/role</strong> automatically.</p>
+            <p>All imported security personnel will be set to <strong>'Active' status'</strong> and <strong>'Security Guard' position/role'</strong> automatically.</p>
             <form id="import-security-form" enctype="multipart/form-data">
                 <div>
                     <label for="security_csv_file">Upload CSV File:</label>

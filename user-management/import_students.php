@@ -50,18 +50,35 @@ $admin_name = $_SESSION['admin_name'] ?? 'Admin'; // Get admin name from session
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     $csvFile = $_FILES['csv_file']['tmp_name'];
     $fileType = mime_content_type($csvFile);
+    $fileName = $_FILES['csv_file']['name'];
+    $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
 
-    // Basic validation for CSV file type
-    if ($fileType !== 'text/csv' && $fileType !== 'application/vnd.ms-excel') {
-        $response['message'] = 'Invalid file type. Please upload a CSV file.';
+    // Basic validation for file type (CSV or common Excel types)
+    $allowedMimeTypes = [
+        'text/csv',
+        'application/vnd.ms-excel', // .xls
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+    ];
+
+    if (!in_array($fileType, $allowedMimeTypes)) {
+        $response['message'] = 'Invalid file type. Please upload a CSV or Excel file (.csv, .xls, .xlsx).';
         echo json_encode($response);
         exit();
     }
 
+    // Placeholder for XLSX parsing.
+    // To properly handle XLSX, you would need a library like PhpSpreadsheet.
+    // Example: require 'vendor/autoload.php';
+    // Use PhpOffice\PhpSpreadsheet\IOFactory;
+    // $spreadsheet = IOFactory::load($csvFile);
+    // $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+    // For this demonstration, we'll assume CSV parsing or simplified Excel handling.
+    // If it's an XLSX, you'd integrate the library here to get sheet data in a similar format to fgetcsv.
+
     if (($handle = fopen($csvFile, "r")) !== FALSE) {
         $header = fgetcsv($handle, 1000, ",");
 
-        // Expected headers based on the new CSV format (no 'password' column)
+        // Expected headers based on the new CSV format
         $expectedHeaders = [
             'student_number', 'first_name', 'middle_name', 'last_name', 'email',
             'course_id', 'year_id', 'section_id', 'gender_id'
@@ -73,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
 
         $missingHeaders = array_diff($normalizedExpectedHeaders, $normalizedHeader);
         if (!empty($missingHeaders)) {
-            $response['message'] = 'Missing required CSV headers: ' . implode(', ', $missingHeaders);
+            $response['message'] = 'Missing required CSV/Excel headers: ' . implode(', ', $missingHeaders) . '. Please ensure your file matches the template.';
             fclose($handle);
             echo json_encode($response);
             exit();
@@ -92,6 +109,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
         $errorsOccurredDuringTransaction = false; // Flag for critical errors that should trigger a rollback
 
         while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+            // Ensure row has enough columns based on the mapped header indices
+            $num_columns = count($data);
+            foreach ($columnMapping as $colName => $idx) {
+                if ($idx >= $num_columns && !in_array($colName, ['middle_name'])) { // middle_name is optional
+                    $failedEntries[] = "Skipped row due to incomplete data for row: " . implode(', ', $data);
+                    $errorsOccurredDuringTransaction = true;
+                    continue 2; // Skip to next row in the outer while loop
+                }
+            }
+
             // Get data using the robust column mapping
             $student_number = mysqli_real_escape_string($conn, $data[$columnMapping['student_number']] ?? '');
             $first_name = mysqli_real_escape_string($conn, $data[$columnMapping['first_name']] ?? '');
@@ -99,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
             $last_name = mysqli_real_escape_string($conn, $data[$columnMapping['last_name']] ?? '');
             $email = mysqli_real_escape_string($conn, $data[$columnMapping['email']] ?? '');
 
-            // Optional fields (will default to 0 if not provided or invalid)
+            // Optional fields, safely cast to int, default to 0 if not provided or invalid
             $course_id = (int)($data[$columnMapping['course_id']] ?? 0);
             $year_id = (int)($data[$columnMapping['year_id']] ?? 0);
             $section_id = (int)($data[$columnMapping['section_id']] ?? 0);
@@ -134,22 +161,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
             $generated_password = generateRandomPassword();
             $hashed_password = password_hash($generated_password, PASSWORD_DEFAULT);
 
+            // Set new_until timestamp (current time + 1 hour)
+            $new_until_timestamp = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+
             // --- Insert into users_tbl ---
-            $insert_query = "INSERT INTO users_tbl (student_number, first_name, middle_name, last_name, email, password_hash, course_id, year_id, section_id, gender_id, status_id, roles_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $insert_query = "INSERT INTO users_tbl (student_number, first_name, middle_name, last_name, email, password_hash, course_id, year_id, section_id, gender_id, status_id, roles_id, new_until) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = mysqli_prepare($conn, $insert_query);
 
             if ($stmt) {
-                mysqli_stmt_bind_param($stmt, "ssssssiiiisii",
+                mysqli_stmt_bind_param($stmt, "ssssssiiiisds", // s:string, i:integer, d:double (for datetime if needed, but s works for formatted string)
                     $student_number, $first_name, $middle_name, $last_name, $email, $hashed_password,
-                    $course_id, $year_id, $section_id, $gender_id, $status_id, $roles_id
+                    $course_id, $year_id, $section_id, $gender_id, $status_id, $roles_id, $new_until_timestamp
                 );
 
                 if (mysqli_stmt_execute($stmt)) {
                     $importedCount++;
 
                     // --- Send Email with Generated Password (PLACEHOLDER) ---
-                    // This is where you would integrate your email sending logic.
-                    // You'll need to configure PHP Mailer, Swift Mailer, or a similar library/service.
+                    // IMPORTANT: For production, you should use a robust email library like PHPMailer or Swift Mailer
+                    // and configure SMTP settings. The basic mail() function might not be reliable.
                     /*
                     $to = $email;
                     $subject = "Your New Student Account Password";
@@ -163,8 +194,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                     $headers = "MIME-Version: 1.0" . "\r\n";
                     $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
                     $headers .= 'From: <noreply@youruniversity.com>' . "\r\n";
-                    mail($to, $subject, $message, $headers);
-                    // Consider adding robust error handling for mail() function as it can fail silently.
+                    
+                    // Attempt to send email. Add more robust error handling if needed.
+                    if (!mail($to, $subject, $message, $headers)) {
+                        error_log("Failed to send email to {$email} for student {$student_number}");
+                        $failedEntries[] = "Failed to send email to {$email} for student {$student_number}.";
+                    }
                     */
 
                     // Log the action in user_management_history
