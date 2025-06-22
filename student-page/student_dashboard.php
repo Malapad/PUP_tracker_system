@@ -1,21 +1,12 @@
 <?php
-require_once '../PHP/dbcon.php';
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (!isset($_SESSION["current_user_id"]) || !isset($_SESSION["user_student_number"])) {
-    header("Location: ./student_login.php");
-    exit();
-}
+require_once './student_auth_check.php';
 
 $student_stud_number_from_session = $_SESSION["user_student_number"];
 
 $violations_query = "SELECT vt.violation_category_id, vt.violation_type
-                     FROM violation_tbl v
-                     JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
-                     WHERE v.student_number = ?";
+                      FROM violation_tbl v
+                      JOIN violation_type_tbl vt ON v.violation_type = vt.violation_type_id
+                      WHERE v.student_number = ?";
 
 $violations_by_category = [];
 $total_violations = 0;

@@ -1,255 +1,243 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-include '../PHP/dbcon.php'; // Adjust path as necessary for your db connection
-session_start();
 
-// Function to generate a random password
+ob_start();
+session_start();
+include '../PHP/dbcon.php';
+require_once './history_logger.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
 function generateRandomPassword($length = 12) {
-    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+';
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+-=[]{}|';
     $password = '';
+    $characterCount = strlen($characters);
     for ($i = 0; $i < $length; $i++) {
-        $password .= $characters[random_int(0, strlen($characters) - 1)];
+        $password .= $characters[rand(0, $characterCount - 1)];
     }
     return $password;
 }
 
-// Function to log actions in user_management_history
-function log_user_action($conn, $action_type, $target_user_type, $target_user_identifier, $details = null) {
-    // Get admin ID and name from session for history logging
-    $admin_id = $_SESSION['admin_id'] ?? 0;
-    $admin_name = $_SESSION['admin_name'] ?? 'System/Unknown';
+function sendCredentialEmail($conn, $email, $first_name, $last_name, $student_number, $plain_text_password) {
+    $mail = new PHPMailer(true);
+    try {
+        $mail->SMTPDebug = SMTP::DEBUG_OFF;
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'pupinsync@gmail.com';
+        $mail->Password = 'rnjrnircjdbuqhqm';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+        $mail->setFrom('pupinsync@gmail.com', 'PUPT Tracker System');
+        $mail->addAddress($email, $first_name . ' ' . $last_name);
+        $mail->isHTML(true);
+        $mail->Subject = 'Welcome! Your Account for PUPT Tracker System';
+        
+        $student_login_url = "https://insync.ojt-ims-bsit.net/student-page/student_login.php";
 
-    $action_type = mysqli_real_escape_string($conn, $action_type);
-    $target_user_type = mysqli_real_escape_string($conn, $target_user_type);
-    $target_user_identifier = mysqli_real_escape_string($conn, $target_user_identifier);
-    $details = $details ? mysqli_real_escape_string($conn, $details) : 'N/A';
+        $emailBody = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Student Account Created</title></head><body style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, Helvetica, sans-serif;">';
+        $emailBody .= '<div style="max-width:600px; margin:20px auto; background-color:#ffffff; border:1px solid #dddddd; border-radius:8px; overflow:hidden;">';
+        $emailBody .= '<div style="background-color:#8a1c1c; color:#ffffff; padding:20px; text-align:center;">';
+        $emailBody .= '<img src="https://insync.ojt-ims-bsit.net/assets/PUP_logo.png" alt="PUPT Logo" style="max-width:80px; margin-bottom:10px;">';
+        $emailBody .= '<h1 style="margin:0; font-size:24px;">PUPT Tracker System</h1>';
+        $emailBody .= '</div>';
+        $emailBody .= '<div style="padding:20px 30px; color:#333333; line-height:1.6;">';
+        $emailBody .= "<p>Hello " . htmlspecialchars($first_name) . ",</p>";
+        $emailBody .= "<p>Welcome to the PUPT Tracker System! Your student account has been successfully created.</p>";
+        $emailBody .= "<p>Here are your login credentials:<br>";
+        $emailBody .= "Student Number: <strong style=\"color:#555555;\">" . htmlspecialchars($student_number) . "</strong><br>";
+        $emailBody .= "Temporary Password: <strong style=\"color:#555555;\">" . htmlspecialchars($plain_text_password) . "</strong></p>";
+        $emailBody .= "<p>You can log in to your account using the button below:</p>";
+        $emailBody .= "<p style=\"text-align:center;\"><a href='" . $student_login_url . "' style='display:inline-block; background-color:#8a1c1c; color:#ffffff; padding:12px 25px; text-decoration:none; border-radius:5px; font-size:16px;'>Go to Student Login</a></p>";
+        $emailBody .= "<p>Please use these to access the system. We strongly recommend that you change your password after your first login for security reasons.</p>";
+        $emailBody .= "<p>Regards,<br>PUPT Tracker System Administration</p>";
+        $emailBody .= '</div>';
+        $emailBody .= '<div style="background-color:#f0f0f0; padding:15px 30px; text-align:center; font-size:12px; color:#777777;">';
+        $emailBody .= '&copy; ' . date("Y") . ' PUPT Tracker System. All rights reserved.';
+        $emailBody .= '</div>';
+        $emailBody .= '</div></body></html>';
 
-    $query = "INSERT INTO user_management_history (performed_by_admin_id, performed_by_admin_name, action_type, target_user_type, target_user_identifier, details) VALUES (?, ?, ?, ?, ?, ?)";
-    $stmt = mysqli_prepare($conn, $query);
-
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "isssss", $admin_id, $admin_name, $action_type, $target_user_type, $target_user_identifier, $details);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-    } else {
-        error_log("Failed to prepare log statement: " . mysqli_error($conn));
+        $mail->Body = $emailBody;
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Mailer Error for student {$student_number} ({$email}): " . $mail->ErrorInfo);
+        return false;
     }
 }
 
-// Ensure this script is only accessible by authorized admins
 if (!isset($_SESSION['admin_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized access.']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized access. Please log in again.']);
     exit();
 }
 
 header('Content-Type: application/json');
-$response = ['success' => false, 'message' => ''];
-$admin_name = $_SESSION['admin_name'] ?? 'Admin'; // Get admin name from session for history logging
+$response = ['success' => false, 'message' => 'An unknown error occurred.'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
-    $csvFile = $_FILES['csv_file']['tmp_name'];
-    $fileType = mime_content_type($csvFile);
-    $fileName = $_FILES['csv_file']['name'];
-    $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_FILES['csv_file'])) {
+    $response['message'] = 'No file uploaded or invalid request method.';
+    echo json_encode($response);
+    exit();
+}
 
-    // Basic validation for file type (CSV or common Excel types)
-    $allowedMimeTypes = [
-        'text/csv',
-        'application/vnd.ms-excel', // .xls
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
-    ];
+$csvFile = $_FILES['csv_file']['tmp_name'];
+$import_type = $_POST['import_type'] ?? 'activate';
 
-    if (!in_array($fileType, $allowedMimeTypes)) {
-        $response['message'] = 'Invalid file type. Please upload a CSV or Excel file (.csv, .xls, .xlsx).';
+if (!is_uploaded_file($csvFile)) {
+    $response['message'] = 'File upload failed.';
+    echo json_encode($response);
+    exit();
+}
+
+mysqli_autocommit($conn, false);
+
+if ($import_type === 'deactivate') {
+    $deactivatedCount = 0;
+    $failedEntries = [];
+    $status_id_inactive = 2; 
+
+    $file = fopen($csvFile, 'r');
+    $header = fgetcsv($file);
+    if (empty($header) || strtolower(trim($header[0])) !== 'student_number') {
+        $response['message'] = 'Invalid file format for deactivation. The file must contain a single header column named "student_number".';
+        fclose($file);
         echo json_encode($response);
         exit();
     }
 
-    // Placeholder for XLSX parsing.
-    // To properly handle XLSX, you would need a library like PhpSpreadsheet.
-    // Example: require 'vendor/autoload.php';
-    // Use PhpOffice\PhpSpreadsheet\IOFactory;
-    // $spreadsheet = IOFactory::load($csvFile);
-    // $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
-    // For this demonstration, we'll assume CSV parsing or simplified Excel handling.
-    // If it's an XLSX, you'd integrate the library here to get sheet data in a similar format to fgetcsv.
+    $update_stmt = mysqli_prepare($conn, "UPDATE users_tbl SET status_id = ? WHERE student_number = ? AND status_id != ?");
 
-    if (($handle = fopen($csvFile, "r")) !== FALSE) {
-        $header = fgetcsv($handle, 1000, ",");
+    while (($row = fgetcsv($file)) !== false) {
+        $student_number = trim($row[0]);
+        if (empty($student_number)) continue;
 
-        // Expected headers based on the new CSV format
-        $expectedHeaders = [
-            'student_number', 'first_name', 'middle_name', 'last_name', 'email',
-            'course_id', 'year_id', 'section_id', 'gender_id'
-        ];
-
-        // Check if all required headers are present (case-insensitive and trimmed for robustness)
-        $normalizedHeader = array_map(function($h) { return strtolower(trim($h)); }, $header);
-        $normalizedExpectedHeaders = array_map(function($h) { return strtolower(trim($h)); }, $expectedHeaders);
-
-        $missingHeaders = array_diff($normalizedExpectedHeaders, $normalizedHeader);
-        if (!empty($missingHeaders)) {
-            $response['message'] = 'Missing required CSV/Excel headers: ' . implode(', ', $missingHeaders) . '. Please ensure your file matches the template.';
-            fclose($handle);
-            echo json_encode($response);
-            exit();
-        }
-
-        $importedCount = 0;
-        $failedEntries = [];
-        // Create a mapping from cleaned CSV header to original index for data retrieval
-        $columnMapping = [];
-        foreach ($header as $index => $colName) {
-            $columnMapping[strtolower(trim($colName))] = $index;
-        }
-
-        // Start transaction for atomicity
-        mysqli_begin_transaction($conn);
-        $errorsOccurredDuringTransaction = false; // Flag for critical errors that should trigger a rollback
-
-        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-            // Ensure row has enough columns based on the mapped header indices
-            $num_columns = count($data);
-            foreach ($columnMapping as $colName => $idx) {
-                if ($idx >= $num_columns && !in_array($colName, ['middle_name'])) { // middle_name is optional
-                    $failedEntries[] = "Skipped row due to incomplete data for row: " . implode(', ', $data);
-                    $errorsOccurredDuringTransaction = true;
-                    continue 2; // Skip to next row in the outer while loop
-                }
-            }
-
-            // Get data using the robust column mapping
-            $student_number = mysqli_real_escape_string($conn, $data[$columnMapping['student_number']] ?? '');
-            $first_name = mysqli_real_escape_string($conn, $data[$columnMapping['first_name']] ?? '');
-            $middle_name = mysqli_real_escape_string($conn, $data[$columnMapping['middle_name']] ?? '');
-            $last_name = mysqli_real_escape_string($conn, $data[$columnMapping['last_name']] ?? '');
-            $email = mysqli_real_escape_string($conn, $data[$columnMapping['email']] ?? '');
-
-            // Optional fields, safely cast to int, default to 0 if not provided or invalid
-            $course_id = (int)($data[$columnMapping['course_id']] ?? 0);
-            $year_id = (int)($data[$columnMapping['year_id']] ?? 0);
-            $section_id = (int)($data[$columnMapping['section_id']] ?? 0);
-            $gender_id = (int)($data[$columnMapping['gender_id']] ?? 0);
-
-            // Auto-fill status_id to 'Active' (ID 1) and roles_id to 'Student' (ID 2)
-            $status_id = 1; // Assuming 1 is 'Active' in status_tbl
-            $roles_id = 2; // Assuming 2 is 'Student' in roles_tbl
-
-            // --- Validation for critical fields ---
-            if (empty($student_number) || empty($first_name) || empty($last_name) || empty($email)) {
-                $failedEntries[] = "Skipped row due to missing critical data (Student Number, First Name, Last Name, or Email) for row: " . implode(', ', $data);
-                $errorsOccurredDuringTransaction = true; // Mark as an error that might require rollback for this row
-                continue; // Skip to next row
-            }
-
-            // --- Check for existing student number or email to prevent duplicates ---
-            $check_query = "SELECT student_number, email FROM users_tbl WHERE student_number = ? OR email = ?";
-            $check_stmt = mysqli_prepare($conn, $check_query);
-            mysqli_stmt_bind_param($check_stmt, "ss", $student_number, $email);
-            mysqli_stmt_execute($check_stmt);
-            mysqli_stmt_store_result($check_stmt);
-
-            if (mysqli_stmt_num_rows($check_stmt) > 0) {
-                $failedEntries[] = "Duplicate entry skipped: Student Number '{$student_number}' or Email '{$email}' already exists.";
-                mysqli_stmt_close($check_stmt);
-                continue; // Skip to next row
-            }
-            mysqli_stmt_close($check_stmt);
-
-            // --- Generate Password ---
-            $generated_password = generateRandomPassword();
-            $hashed_password = password_hash($generated_password, PASSWORD_DEFAULT);
-
-            // Set new_until timestamp (current time + 1 hour)
-            $new_until_timestamp = date('Y-m-d H:i:s', strtotime('+1 hour'));
-
-
-            // --- Insert into users_tbl ---
-            $insert_query = "INSERT INTO users_tbl (student_number, first_name, middle_name, last_name, email, password_hash, course_id, year_id, section_id, gender_id, status_id, roles_id, new_until) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            $stmt = mysqli_prepare($conn, $insert_query);
-
-            if ($stmt) {
-                mysqli_stmt_bind_param($stmt, "ssssssiiiisds", // s:string, i:integer, d:double (for datetime if needed, but s works for formatted string)
-                    $student_number, $first_name, $middle_name, $last_name, $email, $hashed_password,
-                    $course_id, $year_id, $section_id, $gender_id, $status_id, $roles_id, $new_until_timestamp
-                );
-
-                if (mysqli_stmt_execute($stmt)) {
-                    $importedCount++;
-
-                    // --- Send Email with Generated Password (PLACEHOLDER) ---
-                    // IMPORTANT: For production, you should use a robust email library like PHPMailer or Swift Mailer
-                    // and configure SMTP settings. The basic mail() function might not be reliable.
-                    /*
-                    $to = $email;
-                    $subject = "Your New Student Account Password";
-                    $message = "Dear " . htmlspecialchars($first_name) . ",<br><br>"
-                             . "Your new student account has been created. Your credentials are:<br>"
-                             . "Student Number: <b>" . htmlspecialchars($student_number) . "</b><br>"
-                             . "Email (Username): <b>" . htmlspecialchars($email) . "</b><br>"
-                             . "Temporary Password: <b>" . htmlspecialchars($generated_password) . "</b><br><br>"
-                             . "Please log in and change your password immediately.<br><br>"
-                             . "Regards,<br>Your University Admin Team";
-                    $headers = "MIME-Version: 1.0" . "\r\n";
-                    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-                    $headers .= 'From: <noreply@youruniversity.com>' . "\r\n";
-                    
-                    // Attempt to send email. Add more robust error handling if needed.
-                    if (!mail($to, $subject, $message, $headers)) {
-                        error_log("Failed to send email to {$email} for student {$student_number}");
-                        $failedEntries[] = "Failed to send email to {$email} for student {$student_number}.";
-                    }
-                    */
-
-                    // Log the action in user_management_history
-                    $details = "Imported student: <b>" . htmlspecialchars($first_name) . " " . htmlspecialchars($last_name) . "</b> (Student No: " . htmlspecialchars($student_number) . "). Password system-generated and sent to email.";
-
-                    // Check for missing optional data and append to details for logging
-                    $missing_optional_info = [];
-                    if ($course_id === 0) $missing_optional_info[] = "Course";
-                    if ($year_id === 0) $missing_optional_info[] = "Year";
-                    if ($section_id === 0) $missing_optional_info[] = "Section";
-                    if ($gender_id === 0) $missing_optional_info[] = "Gender";
-
-                    if (!empty($missing_optional_info)) {
-                        $details .= " Missing: " . implode(', ', $missing_optional_info) . ".";
-                    }
-
-                    log_user_action($conn, "Import Student", "Student", $student_number, $details);
-
-                } else {
-                    $failedEntries[] = "Failed to insert row for student number {$student_number}: " . mysqli_error($conn);
-                    $errorsOccurredDuringTransaction = true;
-                }
-                mysqli_stmt_close($stmt);
+        mysqli_stmt_bind_param($update_stmt, "isi", $status_id_inactive, $student_number, $status_id_inactive);
+        if (mysqli_stmt_execute($update_stmt)) {
+            if (mysqli_stmt_affected_rows($update_stmt) > 0) {
+                $deactivatedCount++;
+                log_user_action($conn, "Deactivate Student (Import)", "Student", $student_number, "Deactivated via bulk import.");
             } else {
-                $failedEntries[] = "Failed to prepare insert statement for student number {$student_number}: " . mysqli_error($conn);
-                $errorsOccurredDuringTransaction = true;
+                $failedEntries[] = "Student '{$student_number}' not found or already inactive.";
             }
-        }
-        fclose($handle);
-
-        // Commit or Rollback transaction
-        if ($errorsOccurredDuringTransaction) {
-            mysqli_rollback($conn);
-            $response['success'] = false; // Indicate overall failure if critical errors occurred
-            $response['message'] = "Import completed with errors. All changes have been rolled back. " . (!empty($failedEntries) ? "Errors: " . implode('; ', $failedEntries) : "");
         } else {
-            mysqli_commit($conn);
-            $response['success'] = true;
-            $response['message'] = "Successfully imported $importedCount students.";
-            if (!empty($failedEntries)) {
-                $response['message'] .= " Some entries had missing optional data or warnings: " . implode('; ', $failedEntries);
-            }
+            $failedEntries[] = "Failed to update student '{$student_number}'.";
         }
-    } else {
-        $response['message'] = 'Error opening CSV file.';
     }
-} else {
-    $response['message'] = 'No CSV file uploaded or invalid request method.';
+    fclose($file);
+    mysqli_stmt_close($update_stmt);
+
+    if (empty($failedEntries)) {
+        mysqli_commit($conn);
+        $response['success'] = true;
+        $response['message'] = "Successfully deactivated {$deactivatedCount} students.";
+    } else {
+        mysqli_rollback($conn);
+        $response['message'] = "Process finished. Deactivated: {$deactivatedCount}. Failed/Skipped: " . count($failedEntries) . ". Errors: " . implode('; ', array_slice($failedEntries, 0, 5));
+    }
+
+} elseif ($import_type === 'activate') {
+    $lookup = ['courses' => [], 'years' => [], 'sections' => [], 'genders' => []];
+    $result = mysqli_query($conn, "SELECT course_name, course_id FROM course_tbl");
+    while($row = mysqli_fetch_assoc($result)) { $lookup['courses'][strtolower(trim($row['course_name']))] = $row['course_id']; }
+    $result = mysqli_query($conn, "SELECT year, year_id FROM year_tbl");
+    while($row = mysqli_fetch_assoc($result)) { $lookup['years'][strtolower(trim($row['year']))] = $row['year_id']; }
+    $result = mysqli_query($conn, "SELECT section_name, section_id FROM section_tbl");
+    while($row = mysqli_fetch_assoc($result)) { $lookup['sections'][strtolower(trim($row['section_name']))] = $row['section_id']; }
+    $result = mysqli_query($conn, "SELECT gender_name, gender_id FROM gender_tbl");
+    while($row = mysqli_fetch_assoc($result)) { $lookup['genders'][strtolower(trim($row['gender_name']))] = $row['gender_id']; }
+
+    $file = fopen($csvFile, 'r');
+    $header = array_map('strtolower', array_map('trim', fgetcsv($file)));
+    $expected_headers = ['student_number', 'first_name', 'middle_name', 'last_name', 'email', 'course_name', 'year', 'section', 'gender'];
+    if (count(array_diff($expected_headers, $header)) > 0) {
+        $response['message'] = 'CSV headers do not match the template. Please download and use the provided template.';
+        fclose($file);
+        echo json_encode($response);
+        exit();
+    }
+    $col_map = array_flip($header);
+    
+    $importedCount = 0;
+    $failedEntries = [];
+    $credentials_to_email = [];
+
+    $insert_stmt = mysqli_prepare($conn, "INSERT INTO users_tbl (student_number, first_name, middle_name, last_name, email, password_hash, course_id, year_id, section_id, gender_id, status_id, roles_id, new_until) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $check_stmt = mysqli_prepare($conn, "SELECT user_id FROM users_tbl WHERE student_number = ? OR email = ?");
+
+    while (($row = fgetcsv($file)) !== false) {
+        $student_number = trim($row[$col_map['student_number']] ?? '');
+        $email = trim($row[$col_map['email']] ?? '');
+        if (empty($student_number) || empty($email)) {
+            $failedEntries[] = "Skipped row due to empty Student Number or Email.";
+            continue;
+        }
+
+        mysqli_stmt_bind_param($check_stmt, "ss", $student_number, $email);
+        mysqli_stmt_execute($check_stmt);
+        mysqli_stmt_store_result($check_stmt);
+        if (mysqli_stmt_num_rows($check_stmt) > 0) {
+            $failedEntries[] = "Skipped: Student Number '{$student_number}' or Email '{$email}' already exists.";
+            continue;
+        }
+
+        $course_id = $lookup['courses'][strtolower(trim($row[$col_map['course_name']]))] ?? 0;
+        $year_id = $lookup['years'][strtolower(trim($row[$col_map['year']]))] ?? 0;
+        $section_id = $lookup['sections'][strtolower(trim($row[$col_map['section']]))] ?? 0;
+        $gender_id = $lookup['genders'][strtolower(trim($row[$col_map['gender']]))] ?? 0;
+
+        if ($course_id == 0 || $year_id == 0 || $section_id == 0 || $gender_id == 0) {
+            $failedEntries[] = "Skipped '{$student_number}': Invalid Course, Year, Section, or Gender name provided.";
+            continue;
+        }
+
+        $first_name = trim($row[$col_map['first_name']]);
+        $middle_name = trim($row[$col_map['middle_name']]);
+        $last_name = trim($row[$col_map['last_name']]);
+        $password = generateRandomPassword();
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+        $status_id = 1;
+        $roles_id = 2;
+        $new_until = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+        mysqli_stmt_bind_param($insert_stmt, "ssssssiiiisds", $student_number, $first_name, $middle_name, $last_name, $email, $password_hash, $course_id, $year_id, $section_id, $gender_id, $status_id, $roles_id, $new_until);
+        
+        if (mysqli_stmt_execute($insert_stmt)) {
+            $importedCount++;
+            $credentials_to_email[] = ['email' => $email, 'first_name' => $first_name, 'last_name' => $last_name, 'student_number' => $student_number, 'password' => $password];
+            log_user_action($conn, 'Import Student', 'Student', $student_number, "Imported student: {$first_name} {$last_name}.");
+        } else {
+            $failedEntries[] = "Database error for '{$student_number}': " . mysqli_stmt_error($insert_stmt);
+        }
+    }
+    fclose($file);
+    mysqli_stmt_close($insert_stmt);
+    mysqli_stmt_close($check_stmt);
+
+    if (empty($failedEntries)) {
+        mysqli_commit($conn);
+        $response['success'] = true;
+        $response['message'] = "Successfully imported and activated {$importedCount} students. Sending credential emails...";
+
+        foreach ($credentials_to_email as $cred) {
+            sendCredentialEmail($conn, $cred['email'], $cred['first_name'], $cred['last_name'], $cred['student_number'], $cred['password']);
+        }
+
+    } else {
+        mysqli_rollback($conn);
+        if ($importedCount > 0) {
+            $response['message'] = "Import failed due to errors. No students were added. Imported {$importedCount} before failure. Errors: " . implode('; ', array_slice($failedEntries, 0, 5));
+        } else {
+            $response['message'] = "Import failed. No students were added. Errors: " . implode('; ', array_slice($failedEntries, 0, 5));
+        }
+    }
 }
 
+ob_end_clean();
 echo json_encode($response);
+mysqli_close($conn);
 exit();
-?>

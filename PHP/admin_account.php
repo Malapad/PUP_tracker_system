@@ -2,6 +2,43 @@
 session_start();
 include '../PHP/dbcon.php';
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$admin_session_id = $_SESSION['admin_id'] ?? null;
+
+if ($admin_session_id === null) {
+    header("Location: ../admin-login/admin_login.php"); 
+    exit();
+}
+
+$unread_admin_notifications = [];
+$unread_admin_notification_count = 0;
+if (isset($conn)) {
+    $sql_admin_notifs = "SELECT * FROM admin_notifications_tbl WHERE is_read = ? ORDER BY created_at DESC LIMIT 5";
+    if($stmt_notifs = $conn->prepare($sql_admin_notifs)) {
+        $is_read_val = 0;
+        $stmt_notifs->bind_param("i", $is_read_val);
+        $stmt_notifs->execute();
+        $result_admin_notifs = $stmt_notifs->get_result();
+        while($row = $result_admin_notifs->fetch_assoc()) {
+            $unread_admin_notifications[] = $row;
+        }
+        $stmt_notifs->close();
+    }
+
+    $sql_admin_notif_count = "SELECT COUNT(*) as total_unread FROM admin_notifications_tbl WHERE is_read = ?";
+    if($stmt_count = $conn->prepare($sql_admin_notif_count)) {
+        $is_read_val = 0; 
+        $stmt_count->bind_param("i", $is_read_val);
+        $stmt_count->execute();
+        $result_admin_notif_count = $stmt_count->get_result()->fetch_assoc();
+        $unread_admin_notification_count = $result_admin_notif_count['total_unread'] ?? 0;
+        $stmt_count->close();
+    }
+}
+
 $adminPageData = [
     'isLoggedIn' => false,
     'firstName' => 'N/A',
@@ -58,94 +95,113 @@ if (isset($_SESSION['admin_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Account Information</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="../CSS/admin_account.css">
-    <link rel="stylesheet" href="../CSS/header.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../CSS/admin_account.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
 
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top py-0">
-            <div class="container-fluid px-4 px-md-5">
-                <a class="navbar-brand py-0" href="../HTML/admin_homepage.html">
-                    <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo" class="img-fluid" style="height: 60px; width: 180px;">
+    <header class="main-header">
+       <div class="header-content">
+         <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
+         <nav class="main-nav">
+             <a href="../admin-dashboard/admin_homepage.php">Home</a>
+             <a href="../updated-admin-violation/admin_violation_page.php">Violations</a>
+             <a href="../updated-admin-sanction/admin_sanction.php">Student Sanction</a>
+             <a href="../user-management/user_management.php">User Management</a>
+             <a href="../PHP/admin_announcements.php">Announcements</a>
+         </nav>
+         <div class="user-icons">
+            <div class="notification-icon-area">
+                <a href="#" class="notification" id="notificationLinkToggle">
+                    <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg>
+                    <?php if ($unread_admin_notification_count > 0): ?>
+                        <span class="notification-count"><?php echo $unread_admin_notification_count; ?></span>
+                    <?php endif; ?>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link" href="../HTML/admin_homepage.html">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="../updated-admin-violation/admin-violationpage.php">Violations</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">Student Sanction</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="../user-management/user_management.php">User Management</a>
-                        </li>
+                <div class="notifications-dropdown" id="notificationsDropdownContent">
+                    <div class="notification-header">
+                        <h3>Notifications</h3>
+                    </div>
+                    <ul class="notification-list">
+                        <?php if (!empty($unread_admin_notifications)): ?>
+                            <?php foreach ($unread_admin_notifications as $notification): ?>
+                                <li class="notification-item">
+                                    <a href="<?php echo htmlspecialchars($notification['link']); ?>">
+                                        <div class="icon-wrapper">
+                                            <i class="fas fa-user-check"></i>
+                                        </div>
+                                        <div class="content">
+                                            <p><?php echo htmlspecialchars($notification['message']); ?></p>
+                                            <small><?php echo date("M d, Y, h:i A", strtotime($notification['created_at'])); ?></small>
+                                        </div>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <li class="no-notifications">
+                                <i class="fas fa-check-circle"></i>
+                                <p>No new notifications</p>
+                            </li>
+                        <?php endif; ?>
                     </ul>
-                    <div class="d-flex align-items-center">
-                        <a href="notification.html" class="me-3">
-                            <img src="https://img.icons8.com/?size=100&id=83193&format=png&color=000000" alt="Notifications" style="width: 35px; height: 35px;"/>
-                        </a>
-                        <a href="admin_account.html">
-                            <img src="https://img.icons8.com/?size=100&id=77883&format=png&color=000000" alt="Admin Account" style="width: 35px; height: 35px;"/>
-                        </a>
+                    <div class="notification-footer">
+                        <a href="../PHP/admin_notifications.php">View All Notifications</a>
                     </div>
                 </div>
             </div>
-        </nav>
+            <a href="./admin_account.php" class="admin-profile">
+                <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </a>
+         </div>
+       </div>
     </header>
 
-
-    <div class="container">
-        <h1>Account Information</h1>
-        <div class="info-box">
-            <div class="info-row">
-                <span class="info-label">
-                    <i class="fas fa-user icon-style"></i>
-                    <strong>First Name:</strong>
-                </span>
-                <span class="info-value" id="adminFirstName"></span>
+    <main class="container">
+        <div class="account-container">
+            <h1>Account Information</h1>
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-user icon-style"></i>
+                        <strong>First Name:</strong>
+                    </span>
+                    <span class="info-value" id="adminFirstName"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-user icon-style"></i>
+                        <strong>Middle Name:</strong>
+                    </span>
+                    <span class="info-value" id="adminMiddleName"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-user icon-style"></i>
+                        <strong>Last Name:</strong>
+                    </span>
+                    <span class="info-value" id="adminLastName"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-briefcase icon-style"></i>
+                        <strong>Position:</strong>
+                    </span>
+                    <span class="info-value" id="adminPosition"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-envelope icon-style"></i>
+                        <strong>Email:</strong>
+                    </span>
+                    <span class="info-value" id="adminEmail"></span>
+                </div>
             </div>
-            <div class="info-row">
-                <span class="info-label">
-                    <i class="fas fa-user icon-style"></i>
-                    <strong>Middle Name:</strong>
-                </span>
-                <span class="info-value" id="adminMiddleName"></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">
-                    <i class="fas fa-user icon-style"></i>
-                    <strong>Last Name:</strong>
-                </span>
-                <span class="info-value" id="adminLastName"></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">
-                    <i class="fas fa-briefcase icon-style"></i>
-                    <strong>Position:</strong>
-                </span>
-                <span class="info-value" id="adminPosition"></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">
-                    <i class="fas fa-envelope icon-style"></i>
-                    <strong>Email:</strong>
-                </span>
-                <span class="info-value" id="adminEmail"></span>
-            </div>
+            <button id="signOutBtn">Sign Out</button>
+            <div id="errorMessageDisplay" style="color: red; margin-top: 15px;"></div>
         </div>
-        <button id="signOutBtn">Sign Out</button>
-        <div id="errorMessageDisplay" style="color: red; margin-top: 15px;"></div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    </main>
+    
+    <script src="../JS/admin_header_script.js?v=<?php echo time(); ?>"></script>
     <script>
         const adminData = <?php echo json_encode($adminPageData); ?>;
 

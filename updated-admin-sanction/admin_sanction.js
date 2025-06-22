@@ -8,9 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const editSanctionForm = document.getElementById('editSanctionForm');
     const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
     const deleteSanctionForm = document.getElementById('deleteSanctionForm');
-    const notificationLink = document.getElementById('notificationLinkToggle');
-    const notificationDropdown = document.getElementById('notificationsDropdownContent');
-    const notificationCountBadge = notificationLink?.querySelector('.notification-count');
     const violationSelectModal = document.getElementById('violation_type_id_sanction_modal');
 
     const openModal = (modalElement) => {
@@ -20,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeModal = (modalElement) => {
         if (modalElement) {
             modalElement.style.display = "none";
-            // Specifically for the add sanction modal, re-enable the select field upon close
             if (modalElement.id === 'addSanctionModal') {
                 if (violationSelectModal) {
                     violationSelectModal.disabled = false;
@@ -57,31 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
             
             window.location.href = newUrl;
         });
-    });
-
-    notificationLink?.addEventListener('click', (e) => {
-        e.preventDefault();
-        notificationDropdown.classList.toggle('show');
-        if (notificationDropdown.classList.contains('show') && notificationCountBadge) {
-            const formData = new FormData();
-            formData.append('action', 'mark_admin_notifs_read');
-            fetch(window.location.pathname, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    notificationCountBadge.style.display = 'none';
-                }
-            }).catch(error => console.error('Error marking notifications as read:', error));
-        }
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!notificationLink?.contains(e.target) && !notificationDropdown?.contains(e.target)) {
-            notificationDropdown?.classList.remove('show');
-        }
     });
 
     document.querySelector('#sanction-request')?.addEventListener('click', (e) => {
@@ -222,8 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         });
     }
-
-    // UPDATED: Combined event listener for Add/Edit/Delete buttons
+    
     document.querySelector('#sanction-config')?.addEventListener('click', async (e) => {
         const addBtn = e.target.closest('.add-sanction-btn');
         const editBtn = e.target.closest('.edit-sanction-btn');
@@ -238,14 +208,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const violationTypeName = addBtn.dataset.violationTypeName;
             
             if (violationTypeId && violationSelectModal) {
-                // Button inside accordion was clicked
                 violationSelectModal.value = violationTypeId;
-                violationSelectModal.disabled = true; // Disable dropdown
+                violationSelectModal.disabled = true;
                 document.getElementById('add_violation_type_name_hidden').value = violationTypeName;
             } else if (violationSelectModal) {
-                // Global button was clicked
-                violationSelectModal.value = ""; // Reset value
-                violationSelectModal.disabled = false; // Ensure dropdown is enabled
+                violationSelectModal.value = "";
+                violationSelectModal.disabled = false;
                 document.getElementById('add_violation_type_name_hidden').value = "";
             }
             openModal(addSanctionModal);
@@ -283,8 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
             openModal(deleteConfirmationModal);
         }
     });
-
-    // NEW: Event listener for the modal dropdown to populate hidden field
+    
     if (violationSelectModal) {
         violationSelectModal.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
@@ -376,7 +343,6 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => { toast.classList.remove('show'); }, duration);
     }
     
-    // Search functionality for violation types in the accordion
     const violationSearchInput = document.getElementById('violation-type-search');
     if (violationSearchInput) {
         violationSearchInput.addEventListener('keyup', () => {

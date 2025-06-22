@@ -2,6 +2,38 @@
 session_start();
 include '../PHP/dbcon.php';
 
+$admin_session_id = $_SESSION['admin_id'] ?? null;
+if ($admin_session_id === null) {
+    header("Location: ../admin-login/admin_login.php"); 
+    exit();
+}
+
+$unread_admin_notifications = [];
+$unread_admin_notification_count = 0;
+if (isset($conn)) {
+    $sql_admin_notifs = "SELECT * FROM admin_notifications_tbl WHERE is_read = ? ORDER BY created_at DESC LIMIT 5";
+    if($stmt_notifs = $conn->prepare($sql_admin_notifs)) {
+        $is_read_val = 0;
+        $stmt_notifs->bind_param("i", $is_read_val);
+        $stmt_notifs->execute();
+        $result_admin_notifs = $stmt_notifs->get_result();
+        while($row = $result_admin_notifs->fetch_assoc()) {
+            $unread_admin_notifications[] = $row;
+        }
+        $stmt_notifs->close();
+    }
+
+    $sql_admin_notif_count = "SELECT COUNT(*) as total_unread FROM admin_notifications_tbl WHERE is_read = ?";
+    if($stmt_count = $conn->prepare($sql_admin_notif_count)) {
+        $is_read_val = 0; 
+        $stmt_count->bind_param("i", $is_read_val);
+        $stmt_count->execute();
+        $result_admin_notif_count = $stmt_count->get_result()->fetch_assoc();
+        $unread_admin_notification_count = $result_admin_notif_count['total_unread'] ?? 0;
+        $stmt_count->close();
+    }
+}
+
 $current_page_filename = basename($_SERVER['PHP_SELF']);
 
 if (isset($_GET['action']) && $_GET['action'] == 'search_student_for_violation' && isset($_GET['student_search_number'])) {
@@ -505,20 +537,59 @@ function getIconForCategory($categoryName) {
         <div id="toast-notification" class="toast"></div>
 
         <header class="main-header">
-     <div class="header-content">
-        <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
-        <nav class="main-nav">
-            <a href="../admin-dashboard/admin_homepage.php">Home</a>
-            <a href="admin_violation_page.php" class="active-nav">Violations</a>
-            <a href="../updated-admin-sanction/admin_sanction.php">Student Sanction</a>
-            <a href="../user-management/user_management.php">User Management</a>
-            <a href="../PHP/admin_announcements.php">Announcements</a>
-        </nav>
-        <div class="user-icons">
-            <a href="notification.html" class="notification"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg></a>
-            <a href="../PHP/admin_account.php" class="admin-profile"><svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
+   <div class="header-content">
+     <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
+     <nav class="main-nav">
+         <a href="../admin-dashboard/admin_homepage.php">Home</a>
+         <a href="../updated-admin-violation/admin_violation_page.php" class="active-nav">Violations</a> 
+         <a href="../updated-admin-sanction/admin_sanction.php">Student Sanction</a>
+         <a href="../user-management/user_management.php">User Management</a>
+         <a href="../PHP/admin_announcements.php">Announcements</a>
+     </nav>
+     <div class="user-icons">
+        <div class="notification-icon-area">
+            <a href="#" class="notification" id="notificationLinkToggle">
+                <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg>
+                <?php if ($unread_admin_notification_count > 0): ?>
+                    <span class="notification-count"><?php echo $unread_admin_notification_count; ?></span>
+                <?php endif; ?>
+            </a>
+            <div class="notifications-dropdown" id="notificationsDropdownContent">
+                <div class="notification-header">
+                    <h3>Notifications</h3>
+                </div>
+                <ul class="notification-list">
+                    <?php if (!empty($unread_admin_notifications)): ?>
+                        <?php foreach ($unread_admin_notifications as $notification): ?>
+                            <li class="notification-item">
+                                <a href="<?php echo htmlspecialchars($notification['link']); ?>">
+                                    <div class="icon-wrapper">
+                                        <i class="fas fa-user-check"></i>
+                                    </div>
+                                    <div class="content">
+                                        <p><?php echo htmlspecialchars($notification['message']); ?></p>
+                                        <small><?php echo date("M d, Y, h:i A", strtotime($notification['created_at'])); ?></small>
+                                    </div>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <li class="no-notifications">
+                            <i class="fas fa-check-circle"></i>
+                            <p>No new notifications</p>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+                <div class="notification-footer">
+                    <a href="../PHP/admin_notifications.php">View All Notifications</a>
+                </div>
+            </div>
         </div>
-    </div>
+        <a href="../PHP/admin_account.php" class="admin-profile">
+            <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </a>
+     </div>
+   </div>
 </header>
         <div class="container">
             <h1>Student Violation Records</h1>
@@ -1047,6 +1118,7 @@ function getIconForCategory($categoryName) {
             });
         </script>
         <script src="./admin_violation_page.js"></script>
+        <script src="../JS/admin_header_script.js?v=<?php echo time(); ?>"></script>
     </body>
 </html>
 <?php $conn->close(); ?>

@@ -1,13 +1,5 @@
 <?php
-require_once "../PHP/dbcon.php";
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (!isset($_SESSION["current_user_id"]) || !isset($_SESSION["user_student_number"])) {
-    header("Location: ./student_login.php");
-    exit();
-}
+require_once './student_auth_check.php';
 
 $session_user_id_for_account = $_SESSION["current_user_id"];
 $student_stud_number_from_session = $_SESSION["user_student_number"];

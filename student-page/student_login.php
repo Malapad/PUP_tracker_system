@@ -20,7 +20,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (!$conn) {
             $errors['db_error'] = "Database connection failed. Please try again later or contact support.";
         } else {
-            $sql = "SELECT user_id, first_name, student_number, email, password_hash FROM users_tbl WHERE student_number = ?";
+            // --- CHANGE 1: Added 'status_id' to the SQL query ---
+            $sql = "SELECT user_id, first_name, student_number, email, password_hash, status_id FROM users_tbl WHERE student_number = ?";
             if ($stmt = $conn->prepare($sql)) {
                 $stmt->bind_param("s", $studentNumber);
                 $stmt->execute();
@@ -29,12 +30,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($result->num_rows == 1) {
                     $user = $result->fetch_assoc();
                     if (password_verify($password, $user["password_hash"])) {
-                        $_SESSION["current_user_id"] = $user["user_id"];
-                        $_SESSION["user_first_name"] = $user["first_name"];
-                        $_SESSION["user_student_number"] = $user["student_number"];
-                        $_SESSION["user_email"] = $user["email"];
-                        header("Location: ./student_dashboard.php");
-                        exit();
+                        
+                        // --- CHANGE 2: Added the status check ---
+                        // Check if the account is active (status_id = 1)
+                        if ($user['status_id'] == 1) {
+                            // Status is Active, proceed with login
+                            session_regenerate_id(true); // Security measure
+                            $_SESSION["current_user_id"] = $user["user_id"];
+                            $_SESSION["user_first_name"] = $user["first_name"];
+                            $_SESSION["user_student_number"] = $user["student_number"];
+                            $_SESSION["user_email"] = $user["email"];
+                            header("Location: ./student_dashboard.php");
+                            exit();
+                        } else {
+                            // Account is Inactive, set an error message
+                            $errors['login_error'] = "Your account has been deactivated. Please contact an administrator.";
+                        }
                     } else {
                         $errors['login_error'] = "Incorrect student number or password! Please try again.";
                     }

@@ -1,5 +1,5 @@
 <?php
-include '../PHP/dbcon.php'; 
+include '../PHP/dbcon.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -13,7 +13,7 @@ if (isset($_SESSION['admin_user_id'])) {
 }
 
 if ($admin_session_id === null) {
-    header("Location: ../admin-login/admin_login.php"); 
+    header("Location: ../admin-login/admin_login.php");
     exit();
 }
 
@@ -38,8 +38,8 @@ if (isset($conn)) {
         $stmt_admin_info->execute();
         $result_admin_info = $stmt_admin_info->get_result();
         if ($admin_info = $result_admin_info->fetch_assoc()) {
-            $admin_name = htmlspecialchars($admin_info['firstname']) . ' ' . 
-                          (!empty($admin_info['middlename']) ? htmlspecialchars(substr($admin_info['middlename'], 0, 1)) . '. ' : '') . 
+            $admin_name = htmlspecialchars($admin_info['firstname']) . ' ' .
+                          (!empty($admin_info['middlename']) ? htmlspecialchars(substr($admin_info['middlename'], 0, 1)) . '. ' : '') .
                           htmlspecialchars($admin_info['lastname']);
         }
         $stmt_admin_info->close();
@@ -63,7 +63,7 @@ if (isset($conn)) {
 
     $sql_admin_notif_count = "SELECT COUNT(*) as total_unread FROM admin_notifications_tbl WHERE is_read = ?";
     if($stmt_count = $conn->prepare($sql_admin_notif_count)) {
-        $is_read_val = 0; 
+        $is_read_val = 0;
         $stmt_count->bind_param("i", $is_read_val);
         $stmt_count->execute();
         $result_admin_notif_count = $stmt_count->get_result()->fetch_assoc();
@@ -72,7 +72,6 @@ if (isset($conn)) {
     }
 }
 
-// Fetch all violation types for the Add Sanction modal dropdown
 $all_violation_types = [];
 if (isset($conn)) {
     $vt_query_modal = "SELECT violation_type_id, violation_type FROM violation_type_tbl ORDER BY violation_type ASC";
@@ -403,72 +402,65 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Sanction Management</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./admin_sanction.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <div id="toast-notification" class="toast"></div>
-    <header>
-        <div class="header-content-wrapper">
-            <div class="logo">
-                <a href="../HTML/admin_homepage.html">
-                    <img src="../IMAGE/Tracker-logo.png" alt="PUP Logo">
+    <header class="main-header">
+       <div class="header-content">
+         <div class="logo"><img src="../IMAGE/Tracker-logo.png" alt="PUP Logo"></div>
+         <nav class="main-nav">
+             <a href="../admin-dashboard/admin_homepage.php">Home</a>
+             <a href="../updated-admin-violation/admin_violation_page.php">Violations</a>
+             <a href="../updated-admin-sanction/admin_sanction.php" class="active-nav">Student Sanction</a>
+             <a href="../user-management/user_management.php">User Management</a>
+             <a href="../PHP/admin_announcements.php">Announcements</a>
+         </nav>
+         <div class="user-icons">
+            <div class="notification-icon-area">
+                <a href="#" class="notification" id="notificationLinkToggle">
+                    <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13.586V10c0-3.217-2.185-5.927-5.145-6.742C13.562 2.52 12.846 2 12 2s-1.562.52-1.855 1.258C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zm-7 5a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"/></svg>
+                    <?php if ($unread_admin_notification_count > 0): ?>
+                        <span class="notification-count"><?php echo $unread_admin_notification_count; ?></span>
+                    <?php endif; ?>
                 </a>
-            </div>
-            <nav>
-                <a href="../admin-dashboard/admin_homepage.php">Home</a>
-                <a href="../updated-admin-violation/admin_violation_page.php">Violations</a>
-                <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="active">Student Sanction</a>
-                <a href="../user-management/user_management.php">User Management</a>
-                <a href="../PHP/admin_announcements.php">Announcements</a>
-            </nav>
-            <div class="admin-icons">
-                <div class="notification-icon-area">
-                    <a href="#" class="notification" id="notificationLinkToggle">
-                        <i class="fas fa-bell"></i>
-                        <?php if ($unread_admin_notification_count > 0): ?>
-                            <span class="notification-count"><?php echo $unread_admin_notification_count; ?></span>
-                        <?php endif; ?>
-                    </a>
-                    <div class="notifications-dropdown" id="notificationsDropdownContent">
-                        <div class="notification-header">
-                            <h3>Notifications</h3>
-                        </div>
-                        <ul class="notification-list">
-                            <?php if (!empty($unread_admin_notifications)): ?>
-                                <?php foreach ($unread_admin_notifications as $notification): ?>
-                                    <li class="notification-item">
-                                        <a href="<?php echo htmlspecialchars($notification['link']); ?>">
-                                            <div class="icon-wrapper">
-                                                <i class="fas fa-user-check"></i>
-                                            </div>
-                                            <div class="content">
-                                                <p><?php echo htmlspecialchars($notification['message']); ?></p>
-                                                <small><?php echo date("M d, Y, h:i A", strtotime($notification['created_at'])); ?></small>
-                                            </div>
-                                        </a>
-                                    </li>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <li class="no-notifications">
-                                    <i class="fas fa-check-circle"></i>
-                                    <p>No new notifications</p>
+                <div class="notifications-dropdown" id="notificationsDropdownContent">
+                    <div class="notification-header">
+                        <h3>Notifications</h3>
+                    </div>
+                    <ul class="notification-list">
+                        <?php if (!empty($unread_admin_notifications)): ?>
+                            <?php foreach ($unread_admin_notifications as $notification): ?>
+                                <li class="notification-item">
+                                    <a href="<?php echo htmlspecialchars($notification['link']); ?>">
+                                        <div class="icon-wrapper">
+                                            <i class="fas fa-user-check"></i>
+                                        </div>
+                                        <div class="content">
+                                            <p><?php echo htmlspecialchars($notification['message']); ?></p>
+                                            <small><?php echo date("M d, Y, h:i A", strtotime($notification['created_at'])); ?></small>
+                                        </div>
+                                    </a>
                                 </li>
-                            <?php endif; ?>
-                        </ul>
-                        <div class="notification-footer">
-                            <a href="admin_notifications.php">View All Notifications</a>
-                        </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <li class="no-notifications">
+                                <i class="fas fa-check-circle"></i>
+                                <p>No new notifications</p>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                    <div class="notification-footer">
+                        <a href="../PHP/admin_notifications.php">View All Notifications</a>
                     </div>
                 </div>
-                <a href="admin_account.html" class="admin">
-                    <i class="fas fa-user-circle"></i>
-                </a>
             </div>
-        </div>
+            <a href="../PHP/admin_account.php" class="admin-profile">
+                <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </a>
+         </div>
+       </div>
     </header>
 
     <main class="container">
@@ -612,7 +604,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                             </tr>
                         </thead>
                         <tbody>
-                                 <?php
+                                <?php
                                 $sql_base = "SELECT sr.request_id, sr.request_date, u.student_number, u.first_name, u.middle_name, u.last_name, c.course_name, y.year, s.section_name, vt.violation_type_id, vt.violation_type, (SELECT COUNT(*) FROM violation_tbl v_count WHERE v_count.student_number = u.student_number AND v_count.violation_type = vt.violation_type_id) as offense_count, ds.disciplinary_sanction_id, ds.disciplinary_sanction, ds.offense_level FROM sanction_requests_tbl sr JOIN users_tbl u ON sr.student_number = u.student_number JOIN violation_type_tbl vt ON sr.violation_type_id = vt.violation_type_id LEFT JOIN course_tbl c ON u.course_id = c.course_id LEFT JOIN year_tbl y ON u.year_id = y.year_id LEFT JOIN section_tbl s ON u.section_id = s.section_id LEFT JOIN ( SELECT student_number, violation_type, COUNT(*) as offense_count FROM violation_tbl GROUP BY student_number, violation_type ) as offense_counts ON offense_counts.student_number = u.student_number AND offense_counts.violation_type = vt.violation_type_id LEFT JOIN disciplinary_sanctions ds ON ds.violation_type_id = vt.violation_type_id AND ds.offense_level LIKE CONCAT(offense_counts.offense_count, '%Offense')";
                                 
                                 $conditions = ["sr.is_active = 1"];
@@ -697,7 +689,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                             </tr>
                         </thead>
                         <tbody>
-                                 <?php
+                                <?php
                                 
                                 $params = [];
                                 $types = "";
@@ -869,7 +861,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                         <label for="deadlineDate">Set Starting Date for Compliance:</label>
                         <input type="date" id="deadlineDate" name="deadline_date" class="form-control" required>
                     </div>
-                     <div id="approveSanctionModalMessage" class="modal-message" style="display: none;"></div>
+                    <div id="approveSanctionModalMessage" class="modal-message" style="display: none;"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close-modal-button" data-modal="viewSanctionDetailsModal">Cancel</button>
@@ -886,18 +878,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                 <button class="close-modal-button" data-modal="deleteConfirmationModal">&times;</button>
             </div>
             <div class="modal-body">
-                 <p>Are you sure you want to delete this sanction? This action cannot be undone.</p>
-                 <div id="deleteModalErrorMessage" class="modal-message error-message" style="display: none;"></div>
+                <p>Are you sure you want to delete this sanction? This action cannot be undone.</p>
+                <div id="deleteModalErrorMessage" class="modal-message error-message" style="display: none;"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary close-modal-button" data-modal="deleteConfirmationModal">Cancel</button>
                 <form id="deleteSanctionForm" method="POST" style="display:inline;">
-                     <input type="hidden" id="delete_disciplinary_sanction_id" name="delete_disciplinary_sanction_id">
-                     <input type="hidden" id="delete_violation_type_id_hidden" name="violation_type_id_hidden">
-                     <input type="hidden" id="delete_violation_type_name_hidden" name="violation_type_name_hidden">
-                     <input type="hidden" id="delete_offense_level_hidden" name="offense_level_hidden">
-                     <input type="hidden" id="delete_sanction_details_hidden" name="sanction_details_hidden">
-                     <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Confirm Delete</button>
+                    <input type="hidden" id="delete_disciplinary_sanction_id" name="delete_disciplinary_sanction_id">
+                    <input type="hidden" id="delete_violation_type_id_hidden" name="violation_type_id_hidden">
+                    <input type="hidden" id="delete_violation_type_name_hidden" name="violation_type_name_hidden">
+                    <input type="hidden" id="delete_offense_level_hidden" name="offense_level_hidden">
+                    <input type="hidden" id="delete_sanction_details_hidden" name="sanction_details_hidden">
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Confirm Delete</button>
                 </form>
             </div>
         </div>
@@ -955,7 +947,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                     <input type="hidden" id="edit_violation_type_id_sanction_modal" name="edit_violation_type_id_sanction_modal">
                     <input type="hidden" id="edit_violation_type_name_hidden" name="edit_violation_type_name_hidden">
                     
-                     <p>Editing sanction for: <strong id="editSanctionViolationName"></strong></p>
+                    <p>Editing sanction for: <strong id="editSanctionViolationName"></strong></p>
 
                     <div class="form-group">
                         <label for="edit_offense_level_sanction_modal">Offense Level</label>
@@ -965,7 +957,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
                         <label for="edit_disciplinary_sanction_text">Disciplinary Sanction</label>
                         <textarea id="edit_disciplinary_sanction_text" name="edit_disciplinary_sanction_text" class="form-control" rows="3" required></textarea>
                     </div>
-                     <div id="editSanctionModalMessage" class="modal-message" style="display: none;"></div>
+                    <div id="editSanctionModalMessage" class="modal-message" style="display: none;"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary close-modal-button" data-modal="editSanctionModal">Cancel</button>
@@ -975,6 +967,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_disciplinary_sa
         </div>
     </div>
     
+    <script src="../JS/admin_header_script.js?v=<?php echo time(); ?>"></script>
     <script src="./admin_sanction.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
